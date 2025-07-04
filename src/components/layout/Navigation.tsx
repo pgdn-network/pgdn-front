@@ -47,12 +47,12 @@ const Navigation: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-white shadow">
+    <nav className="bg-surface border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-gray-900">DePIN Scanner</span>
+              <span className="text-xl font-bold text-primary">DePIN Scanner</span>
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
               {navigation.map((item) => (
@@ -61,8 +61,8 @@ const Navigation: React.FC = () => {
                   to={item.href}
                   className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                     item.current
-                      ? 'border-blue-500 text-gray-900'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-accent text-primary'
+                      : 'border-transparent text-secondary hover:text-primary hover:border-border'
                   }`}
                 >
                   {item.name}
@@ -76,7 +76,7 @@ const Navigation: React.FC = () => {
             <div className="md:hidden">
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                className="inline-flex items-center justify-center p-2 rounded-md text-secondary hover:text-primary hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -88,7 +88,7 @@ const Navigation: React.FC = () => {
               <div className="flex-shrink-0">
                 <button 
                   onClick={handleQuickScan}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  className="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
                   Quick Scan
                 </button>
@@ -98,22 +98,22 @@ const Navigation: React.FC = () => {
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={toggleUserMenu}
-                  className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent"
                 >
-                  <div className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center">
+                  <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
                     <span className="text-white font-medium text-sm">JD</span>
                   </div>
-                  <span className="ml-2 text-gray-700 text-sm font-medium">John Doe</span>
-                  <svg className="ml-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="ml-2 text-primary text-sm font-medium">John Doe</span>
+                  <svg className="ml-2 h-4 w-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-md shadow-lg py-1 z-50">
                     <Link
                       to="/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-primary hover:bg-surface-hover"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <svg className="inline h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,7 +124,7 @@ const Navigation: React.FC = () => {
                     </Link>
                     <Link
                       to="/organizations"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block px-4 py-2 text-sm text-primary hover:bg-surface-hover"
                       onClick={() => setShowUserMenu(false)}
                     >
                       <svg className="inline h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,13 +132,13 @@ const Navigation: React.FC = () => {
                       </svg>
                       My Organizations
                     </Link>
-                    <hr className="my-1" />
+                    <hr className="my-1 border-border" />
                     <button
                       onClick={() => {
                         setShowUserMenu(false);
                         handleLogout();
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-primary hover:bg-surface-hover"
                     >
                       <svg className="inline h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -162,8 +162,8 @@ const Navigation: React.FC = () => {
                   to={item.href}
                   className={`block px-3 py-2 rounded-md text-base font-medium ${
                     item.current
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-accent text-white'
+                      : 'text-primary hover:bg-surface-hover hover:text-primary'
                   }`}
                   onClick={() => setShowMobileMenu(false)}
                 >
@@ -171,20 +171,20 @@ const Navigation: React.FC = () => {
                 </Link>
               ))}
             </div>
-            <div className="pt-4 pb-3 border-t border-gray-200">
+            <div className="pt-4 pb-3 border-t border-border">
               <div className="flex items-center px-5">
-                <div className="h-10 w-10 rounded-full bg-gray-400 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
                   <span className="text-white font-medium">JD</span>
                 </div>
                 <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">John Doe</div>
-                  <div className="text-sm font-medium text-gray-500">john.doe@example.com</div>
+                  <div className="text-base font-medium text-primary">John Doe</div>
+                  <div className="text-sm font-medium text-secondary">john.doe@example.com</div>
                 </div>
               </div>
               <div className="mt-3 px-2 space-y-1">
                 <Link
                   to="/settings"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-surface-hover hover:text-primary"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   Settings
@@ -194,7 +194,7 @@ const Navigation: React.FC = () => {
                     setShowMobileMenu(false);
                     handleQuickScan();
                   }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-surface-hover hover:text-primary"
                 >
                   Quick Scan
                 </button>
@@ -203,7 +203,7 @@ const Navigation: React.FC = () => {
                     setShowMobileMenu(false);
                     handleLogout();
                   }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-surface-hover hover:text-primary"
                 >
                   Logout
                 </button>

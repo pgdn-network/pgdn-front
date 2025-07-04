@@ -151,7 +151,7 @@ const NodeDetail: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                                        <div className="w-2 h-2 bg-secondary"></div>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                 <div className="flex-1">
                   <p className="text-sm text-foreground">Security scan completed</p>
                   <p className="text-xs text-gray-500-foreground">3 hours ago</p>

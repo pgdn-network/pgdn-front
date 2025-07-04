@@ -1,256 +1,252 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Breadcrumb from '../components/common/Breadcrumb';
+import { Card } from '@/components/ui/custom/Card';
+import { StatusDot } from '@/components/ui/custom/StatusDot';
+import { Badge } from '@/components/ui/custom/Badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
+import { Button } from '@/components/ui/button';
+import { mockUser } from '@/mocks/user';
+import { 
+  Server, 
+  Shield, 
+  CheckCircle,
+  XCircle,
+  Globe,
+  Clock,
+  MapPin,
+  Cpu,
+  HardDrive,
+  Network,
+  Eye,
+  ArrowUpRight
+} from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const breadcrumbItems = [
-    { label: 'Dashboard' }
+  // Mock data for stats with enhanced visual indicators
+  const stats = [
+    {
+      title: 'Total Nodes',
+      value: '247',
+      change: '+12%',
+      icon: Server,
+      trend: 'up',
+      description: 'Active network nodes'
+    },
+    {
+      title: 'Online Nodes',
+      value: '231',
+      change: '+5%',
+      icon: CheckCircle,
+      trend: 'up',
+      description: 'Healthy and responding'
+    },
+    {
+      title: 'Offline Nodes',
+      value: '16',
+      change: '-8%',
+      icon: XCircle,
+      trend: 'down',
+      description: 'Require attention'
+    },
+    {
+      title: 'Security Score',
+      value: '98.5%',
+      change: '+2%',
+      icon: Shield,
+      trend: 'up',
+      description: 'Network security rating'
+    }
   ];
 
-  // Mock data for nodes
-  const mockNodes = [
+  // Enhanced mock data for recent nodes with more details
+  const recentNodes = [
     {
       id: 'node-1',
       name: 'DePIN Node Alpha',
       type: 'Storage',
-      status: 'Online',
+      status: 'online' as const,
       location: 'New York, NY',
       uptime: '99.9%',
-      lastSeen: '2 minutes ago'
+      lastSeen: '2 minutes ago',
+      performance: 95,
+      resources: '85% CPU, 67% Memory'
     },
     {
       id: 'node-2',
       name: 'DePIN Node Beta',
       type: 'Compute',
-      status: 'Online',
+      status: 'online' as const,
       location: 'San Francisco, CA',
       uptime: '98.7%',
-      lastSeen: '1 minute ago'
+      lastSeen: '1 minute ago',
+      performance: 88,
+      resources: '72% CPU, 54% Memory'
     },
     {
       id: 'node-3',
       name: 'DePIN Node Gamma',
       type: 'Network',
-      status: 'Offline',
+      status: 'offline' as const,
       location: 'Austin, TX',
       uptime: '95.2%',
-      lastSeen: '2 hours ago'
+      lastSeen: '2 hours ago',
+      performance: 0,
+      resources: 'N/A'
     },
     {
       id: 'node-4',
       name: 'DePIN Node Delta',
       type: 'Storage',
-      status: 'Online',
+      status: 'degraded' as const,
       location: 'Miami, FL',
       uptime: '99.5%',
-      lastSeen: '30 seconds ago'
+      lastSeen: '30 seconds ago',
+      performance: 67,
+      resources: '92% CPU, 78% Memory'
     },
     {
       id: 'node-5',
       name: 'DePIN Node Echo',
       type: 'Compute',
-      status: 'Warning',
+      status: 'online' as const,
       location: 'Seattle, WA',
-      uptime: '97.8%',
-      lastSeen: '5 minutes ago'
+      uptime: '99.8%',
+      lastSeen: '45 seconds ago',
+      performance: 92,
+      resources: '68% CPU, 45% Memory'
     }
   ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Online':
-        return 'bg-green-100 text-green-800';
-      case 'Offline':
-        return 'bg-red-100 text-red-800';
-      case 'Warning':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <Breadcrumb items={breadcrumbItems} />
-      
-      <div className="mt-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Overview of your DePIN network monitoring
-        </p>
-      </div>
-        
-        <div className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Metrics Cards Placeholder */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full"></div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Organizations
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        3
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Total Nodes
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        46
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-green-500 rounded-full"></div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Active Nodes
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        41
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-red-500 rounded-full"></div>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
-                        Alerts
-                      </dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        2
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
+          <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{mockUser.name.split(' ')[0]}</span></p>
+          <p className="text-muted max-w-2xl mt-2">Monitor your DePIN network performance, track node health, and manage your decentralized infrastructure from one central hub.</p>
         </div>
-        
-        {/* Recent Nodes Section */}
-        <div className="mt-8">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium text-gray-900">Recent Nodes</h2>
-                <Link
-                  to="/nodes"
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                >
-                  View all nodes
-                </Link>
-              </div>
-            </div>
-            <div className="overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Node
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Uptime
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Seen
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {mockNodes.map((node) => (
-                    <tr key={node.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link
-                          to={`/nodes/${node.id}`}
-                          className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                        >
-                          {node.name}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {node.type}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(node.status)}`}>
-                          {node.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {node.location}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {node.uptime}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {node.lastSeen}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-8">
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900">Recent Activity</h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Latest network monitoring activities will appear here
-            </p>
-            {/* TODO: Add activity feed */}
-            {/* TODO: Add charts/graphs */}
-            {/* TODO: Add quick actions */}
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted">Network Status</span>
+          <StatusDot status="online" />
+          <span className="text-success font-semibold">All Systems Operational</span>
         </div>
       </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="flex flex-col items-start gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-surface-secondary flex items-center justify-center">
+                <stat.icon className="w-5 h-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted uppercase tracking-widest">{stat.title}</p>
+                <p className="text-sm text-secondary">{stat.description}</p>
+              </div>
+            </div>
+            <p className="text-3xl font-black text-primary leading-none">{stat.value}</p>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {stat.trend === 'up' ? '↗' : '↘'}
+                {stat.change}
+              </Badge>
+              <span className="text-xs text-muted">from last month</span>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Table Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-primary flex items-center gap-2">
+            <Globe className="w-5 h-5 text-secondary" />
+            Network Nodes
+          </h2>
+          <Button variant="default" asChild>
+            <Link to="/nodes">
+              <Server className="w-4 h-4 mr-2" />
+              Manage Nodes
+            </Link>
+          </Button>
+        </div>
+        <Card className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Node</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Uptime</TableHead>
+                <TableHead>Last Seen</TableHead>
+                <TableHead>Performance</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentNodes.map((node) => (
+                <TableRow key={node.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-surface-secondary flex items-center justify-center">
+                        <Server className="w-4 h-4 text-secondary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-primary">{node.name}</p>
+                        <p className="text-xs text-muted">ID: {node.id}</p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{node.type}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <StatusDot status={node.status} />
+                      <span className="capitalize text-sm">{node.status}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-sm">
+                      <MapPin className="w-3 h-3 text-muted" />
+                      {node.location}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-sm font-medium">{node.uptime}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-sm">
+                      <Clock className="w-3 h-3 text-muted" />
+                      {node.lastSeen}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-surface-secondary h-2">
+                        <div 
+                          className="h-2 bg-secondary"
+                          style={{ width: `${node.performance}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium">{node.performance}%</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm">
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+    </div>
   );
 };
 

@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
+import { Settings as SettingsIcon, User, Shield, Bell, Palette, Save, Trash2, Key, Lock } from 'lucide-react';
 import Breadcrumb from '../components/common/Breadcrumb';
+import { Card } from '@/components/ui/custom/Card';
+import { Badge } from '@/components/ui/custom/Badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Settings: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -10,21 +15,38 @@ const Settings: React.FC = () => {
     timezone: 'UTC',
     language: 'English',
     newsletter: true,
-    analytics: false
+    analytics: false,
+    notifications: {
+      email: true,
+      browser: true,
+      mobile: false,
+      security: true
+    },
+    theme: 'system',
+    autoSave: true,
+    twoFactor: false
   });
-
-  const [activeTab, setActiveTab] = useState('profile');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
+    if (name.startsWith('notifications.')) {
+      const notificationKey = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        notifications: {
+          ...prev.notifications,
+          [notificationKey]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      }));
+    }
   };
 
   const handleSave = () => {
-    // TODO: Implement API call to save settings
     console.log('Saving settings:', formData);
     alert('Settings saved successfully!');
   };
@@ -32,7 +54,6 @@ const Settings: React.FC = () => {
   const handleDeleteAccount = () => {
     const confirmDelete = window.confirm('Are you sure you want to delete your account? This action cannot be undone.');
     if (confirmDelete) {
-      // TODO: Implement account deletion
       alert('Account deletion - TODO: Implement API call');
     }
   };
@@ -42,228 +63,304 @@ const Settings: React.FC = () => {
     { label: 'Settings' }
   ];
 
-  const tabs = [
-    { id: 'profile', name: 'Profile', current: activeTab === 'profile' },
-    { id: 'account', name: 'Account', current: activeTab === 'account' },
-    { id: 'security', name: 'Security', current: activeTab === 'security' },
-    { id: 'notifications', name: 'Notifications', current: activeTab === 'notifications' },
-    { id: 'preferences', name: 'Preferences', current: activeTab === 'preferences' },
-    { id: 'api', name: 'API Keys', current: activeTab === 'api' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Breadcrumb items={breadcrumbItems} />
-        
-        <div className="mt-8">
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Manage your account and application preferences
-          </p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
+            <SettingsIcon className="w-8 h-8 text-accent" />
+            Settings
+          </h1>
+          <p className="text-secondary max-w-2xl mt-2">Manage your account preferences and application settings</p>
         </div>
-        
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Settings Navigation */}
-          <div className="lg:col-span-1">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <nav className="space-y-1">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`${
-                        tab.current
-                          ? 'bg-blue-50 border-blue-500 text-blue-700 border-l-4'
-                          : 'text-gray-900 hover:text-gray-900 hover:bg-gray-50'
-                      } block w-full text-left pl-3 pr-4 py-2 text-sm font-medium`}
-                    >
-                      {tab.name}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            </div>
-          </div>
-          
-          {/* Settings Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-6">Profile Settings</h2>
-                
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        placeholder="John"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        placeholder="Doe"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      placeholder="john.doe@example.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Organization
-                    </label>
-                    <input
-                      type="text"
-                      name="organization"
-                      value={formData.organization}
-                      onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                      placeholder="Your Organization"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Time Zone
-                    </label>
-                    <select 
-                      name="timezone"
-                      value={formData.timezone}
-                      onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    >
-                      <option value="UTC">UTC</option>
-                      <option value="America/New_York">America/New_York</option>
-                      <option value="America/Los_Angeles">America/Los_Angeles</option>
-                      <option value="Europe/London">Europe/London</option>
-                      <option value="Asia/Tokyo">Asia/Tokyo</option>
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Language
-                    </label>
-                    <select 
-                      name="language"
-                      value={formData.language}
-                      onChange={handleInputChange}
-                      className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    >
-                      <option value="English">English</option>
-                      <option value="Spanish">Spanish</option>
-                      <option value="French">French</option>
-                      <option value="German">German</option>
-                      <option value="Japanese">Japanese</option>
-                    </select>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <input
-                      id="newsletter"
-                      name="newsletter"
-                      type="checkbox"
-                      checked={formData.newsletter}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="newsletter" className="ml-2 block text-sm text-gray-900">
-                      Subscribe to newsletter and product updates
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <input
-                      id="analytics"
-                      name="analytics"
-                      type="checkbox"
-                      checked={formData.analytics}
-                      onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="analytics" className="ml-2 block text-sm text-gray-900">
-                      Help improve our product by sharing usage analytics
-                    </label>
-                  </div>
-                  
-                  <div className="flex justify-end space-x-3">
-                    <button 
-                      type="button"
-                      className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-md text-sm font-medium"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={handleSave}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Danger Zone */}
-            <div className="mt-6 bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-medium text-red-900 mb-4">Danger Zone</h2>
-                <div className="border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-medium text-red-900">Delete Account</h3>
-                      <p className="text-sm text-red-700">
-                        Permanently delete your account and all associated data
-                      </p>
-                    </div>
-                    <button 
-                      onClick={handleDeleteAccount}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                    >
-                      Delete Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* TODO: Add password change functionality */}
-        {/* TODO: Add two-factor authentication */}
-        {/* TODO: Add API key management */}
-        {/* TODO: Add notification preferences */}
+        <Button variant="default" onClick={handleSave}>
+          <Save className="w-4 h-4 mr-2" />
+          Save Changes
+        </Button>
       </div>
+
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="profile" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="account" className="flex items-center gap-2">
+              <SettingsIcon className="w-4 h-4" />
+              Account
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="flex items-center gap-2">
+              <Palette className="w-4 h-4" />
+              Preferences
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold text-primary mb-4">Profile Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Organization
+                  </label>
+                  <input
+                    type="text"
+                    name="organization"
+                    value={formData.organization}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  />
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="account" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold text-primary mb-4">Account Settings</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Timezone
+                  </label>
+                  <select
+                    name="timezone"
+                    value={formData.timezone}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  >
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">Eastern Time</option>
+                    <option value="America/Chicago">Central Time</option>
+                    <option value="America/Denver">Mountain Time</option>
+                    <option value="America/Los_Angeles">Pacific Time</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Language
+                  </label>
+                  <select
+                    name="language"
+                    value={formData.language}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  >
+                    <option value="English">English</option>
+                    <option value="Spanish">Spanish</option>
+                    <option value="French">French</option>
+                    <option value="German">German</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="autoSave"
+                    checked={formData.autoSave}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                  <label className="text-sm text-primary">
+                    Auto-save changes
+                  </label>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold text-primary mb-4">Security Settings</h3>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-lg font-medium text-primary">Two-Factor Authentication</h4>
+                    <p className="text-sm text-secondary">Add an extra layer of security to your account</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={formData.twoFactor ? 'success' : 'secondary'}>
+                      {formData.twoFactor ? 'Enabled' : 'Disabled'}
+                    </Badge>
+                    <Button variant="outline" size="sm">
+                      <Key className="w-4 h-4 mr-2" />
+                      {formData.twoFactor ? 'Disable' : 'Enable'}
+                    </Button>
+                  </div>
+                </div>
+                <div className="border-t border-border pt-4">
+                  <Button variant="outline" className="w-full">
+                    <Lock className="w-4 h-4 mr-2" />
+                    Change Password
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold text-primary mb-4">Notification Preferences</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-primary">Email Notifications</h4>
+                    <p className="text-xs text-secondary">Receive notifications via email</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="notifications.email"
+                    checked={formData.notifications.email}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-primary">Browser Notifications</h4>
+                    <p className="text-xs text-secondary">Show notifications in your browser</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="notifications.browser"
+                    checked={formData.notifications.browser}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-primary">Mobile Notifications</h4>
+                    <p className="text-xs text-secondary">Send notifications to your mobile device</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="notifications.mobile"
+                    checked={formData.notifications.mobile}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-medium text-primary">Security Alerts</h4>
+                    <p className="text-xs text-secondary">Important security notifications</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    name="notifications.security"
+                    checked={formData.notifications.security}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="preferences" className="space-y-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold text-primary mb-4">Application Preferences</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-primary mb-2">
+                    Theme
+                  </label>
+                  <select
+                    name="theme"
+                    value={formData.theme}
+                    onChange={handleInputChange}
+                    className="w-full border border-border rounded-xl px-3 py-2 bg-surface-secondary focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-primary"
+                  >
+                    <option value="system">System Default</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="newsletter"
+                    checked={formData.newsletter}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                  <label className="text-sm text-primary">
+                    Subscribe to newsletter
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="analytics"
+                    checked={formData.analytics}
+                    onChange={handleInputChange}
+                    className="rounded border-border"
+                  />
+                  <label className="text-sm text-primary">
+                    Share analytics data to improve the product
+                  </label>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Danger Zone */}
+        <Card className="p-6 border-danger bg-danger/10">
+          <h3 className="text-xl font-semibold text-danger mb-4">Danger Zone</h3>
+          <p className="text-sm text-danger mb-4">
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+          <Button variant="destructive" onClick={handleDeleteAccount}>
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete Account
+          </Button>
+        </Card>
     </div>
   );
 };

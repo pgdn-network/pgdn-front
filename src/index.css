@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,8 +8,8 @@
 :root {
   --background: 0 0% 100%;         /* white */
   --surface: 0 0% 98%;             /* very light gray */
-  --surface-secondary: 0 0% 95%;   /* light gray */
-  --surface-hover: 0 0% 92%;       /* slightly darker gray for hover */
+  --surface-secondary: 0 0% 100%;  /* white */
+  --surface-hover: 0 0% 100%;      /* white for hover */
   --border: 0 0% 85%;              /* subtle border gray */
   --border-strong: 0 0% 70%;       /* stronger border */
   --primary: 0 0% 15%;             /* main text: dark gray */
@@ -16,6 +17,8 @@
   --muted: 0 0% 60%;               /* muted text: light gray */
   --accent: 0 0% 30%;              /* accent: slightly lighter than primary */
   --accent-hover: 0 0% 10%;        /* accent hover: almost black */
+  --link: 0 0% 30%;                /* link: same as accent for light mode */
+  --link-hover: 0 0% 10%;          /* link hover: same as accent-hover for light mode */
   --success: 0 0% 50%;             /* gray for success (MVP, not green) */
   --warning: 0 0% 60%;             /* gray for warning (MVP, not yellow) */
   --danger: 0 0% 30%;              /* gray for danger (MVP, not red) */
@@ -24,15 +27,17 @@
 .dark {
   --background: 0 0% 8%;           /* almost black */
   --surface: 0 0% 12%;             /* very dark gray */
-  --surface-secondary: 0 0% 16%;   /* dark gray */
-  --surface-hover: 0 0% 22%;       /* hover gray */
+  --surface-secondary: 0 0% 10%;   /* dark gray for sidebar */
+  --surface-hover: 0 0% 15%;       /* slightly lighter for hover */
   --border: 0 0% 25%;              /* border gray */
   --border-strong: 0 0% 40%;       /* strong border */
   --primary: 0 0% 90%;             /* main text: very light gray */
   --secondary: 0 0% 60%;           /* secondary text: medium gray */
   --muted: 0 0% 40%;               /* muted text: dark gray */
-  --accent: 0 0% 80%;              /* accent: light gray */
-  --accent-hover: 0 0% 100%;       /* accent hover: white */
+  --accent: 0 0% 20%;              /* accent: dark gray for selected items */
+  --accent-hover: 0 0% 25%;        /* accent hover: slightly lighter */
+  --link: 0 0% 70%;                /* link: light gray for better visibility */
+  --link-hover: 0 0% 100%;         /* link hover: white */
   --success: 0 0% 70%;             /* gray for success */
   --warning: 0 0% 60%;             /* gray for warning */
   --danger: 0 0% 50%;              /* gray for danger */
@@ -46,7 +51,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--primary));
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'JetBrains Mono', monospace;
     font-feature-settings: "rlig" 1, "calt" 1;
     line-height: 1.5;
     font-weight: 400;

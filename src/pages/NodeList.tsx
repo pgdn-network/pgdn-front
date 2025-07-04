@@ -1,6 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Breadcrumb from '../components/common/Breadcrumb';
+import { Card } from '@/components/ui/custom/Card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
+import { Badge } from '@/components/ui/custom/Badge';
+import { Button } from '@/components/ui/button';
+
 
 const NodeList: React.FC = () => {
   const handleAddNode = () => {
@@ -13,126 +18,81 @@ const NodeList: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Breadcrumb items={breadcrumbItems} />
-        
-        <div className="mt-8">
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-gray-900">All Network Nodes</h1>
-              <p className="mt-2 text-sm text-gray-600">
-                Monitor and manage all nodes across all organizations
-              </p>
-            </div>
-            <div className="mt-4 flex md:mt-0 md:ml-4">
-              <button 
-                onClick={handleAddNode}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Add Node
-              </button>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">All Network Nodes</h1>
+          <p className="text-secondary max-w-2xl mt-2">Monitor and manage all nodes across all organizations</p>
         </div>
-        
-        <div className="mt-8">
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Node ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Organization
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Last Seen
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {/* Placeholder rows */}
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link to="/nodes/sample-node-1" className="text-blue-600 hover:text-blue-900">
-                          node-001
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Link to="/organizations" className="text-blue-600 hover:text-blue-900">
-                          TechCorp Inc.
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        Storage
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        2 minutes ago
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link to="/nodes/sample-node-1" className="text-blue-600 hover:text-blue-900">
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Link to="/nodes/sample-node-2" className="text-blue-600 hover:text-blue-900">
-                          node-002
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Link to="/organizations" className="text-blue-600 hover:text-blue-900">
-                          DataFlow Systems
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                          Offline
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        Compute
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        1 hour ago
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link to="/nodes/sample-node-2" className="text-blue-600 hover:text-blue-900">
-                          View
-                        </Link>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* TODO: Add pagination */}
-        {/* TODO: Add search and filters */}
-        {/* TODO: Add bulk actions */}
-        {/* TODO: Add real-time status updates */}
+        <Button variant="default" onClick={handleAddNode}>
+          Add Node
+        </Button>
       </div>
+
+      {/* Table Section */}
+      <Card className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Node ID</TableHead>
+              <TableHead>Organization</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Last Seen</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* Placeholder rows */}
+            <TableRow>
+                                <TableCell>
+                    <Link to="/nodes/sample-node-1" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
+                      node-001
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link to="/organizations" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
+                      TechCorp Inc.
+                    </Link>
+                  </TableCell>
+              <TableCell>
+                <Badge variant="success">Active</Badge>
+              </TableCell>
+              <TableCell>Storage</TableCell>
+              <TableCell>2 minutes ago</TableCell>
+              <TableCell>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/nodes/sample-node-1">View</Link>
+                </Button>
+              </TableCell>
+            </TableRow>
+            <TableRow>
+                                <TableCell>
+                    <Link to="/nodes/sample-node-2" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
+                      node-002
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Link to="/organizations" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
+                      DataFlow Systems
+                    </Link>
+                  </TableCell>
+              <TableCell>
+                <Badge variant="destructive">Offline</Badge>
+              </TableCell>
+              <TableCell>Compute</TableCell>
+              <TableCell>1 hour ago</TableCell>
+              <TableCell>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/nodes/sample-node-2">View</Link>
+                </Button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Card>
+      {/* TODO: Add pagination, search, filters, bulk actions, real-time status updates */}
     </div>
   );
 };
