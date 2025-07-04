@@ -104,7 +104,7 @@ const Settings: React.FC = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="space-y-6">
+          <TabsContent value="profile" className="space-y-6 mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-semibold text-primary mb-4">Profile Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -160,7 +160,7 @@ const Settings: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="account" className="space-y-6">
+          <TabsContent value="account" className="space-y-6 mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-semibold text-primary mb-4">Account Settings</h3>
               <div className="space-y-4">
@@ -213,7 +213,7 @@ const Settings: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="security" className="space-y-6">
+          <TabsContent value="security" className="space-y-6 mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-semibold text-primary mb-4">Security Settings</h3>
               <div className="space-y-6">
@@ -242,7 +242,7 @@ const Settings: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="notifications" className="space-y-6">
+          <TabsContent value="notifications" className="space-y-6 mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-semibold text-primary mb-4">Notification Preferences</h3>
               <div className="space-y-4">
@@ -302,7 +302,7 @@ const Settings: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="preferences" className="space-y-6">
+          <TabsContent value="preferences" className="space-y-6 mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-semibold text-primary mb-4">Application Preferences</h3>
               <div className="space-y-4">
