@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LogIn, Mail, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
@@ -7,9 +9,35 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const Login: React.FC = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+  const [error, setError] = useState('');
+  const { login, isLoading } = useAuth();
+
   const breadcrumbItems = [
-    { label: 'Login' }
+    { label: 'PGDN' }
   ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    try {
+      await login(formData);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -32,18 +60,26 @@ const Login: React.FC = () => {
           </div>
           
           <Card className="p-6">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                  {error}
+                </div>
+              )}
+              
               <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
+                <Label htmlFor="username">Email address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                   <Input
-                    id="email"
-                    name="email"
+                    id="username"
+                    name="username"
                     type="email"
                     required
                     className="pl-10"
                     placeholder="Enter your email"
+                    value={formData.username}
+                    onChange={handleChange}
                   />
                 </div>
               </div>
@@ -59,6 +95,8 @@ const Login: React.FC = () => {
                     required
                     className="pl-10"
                     placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
                   />
                 </div>
               </div>
@@ -76,14 +114,14 @@ const Login: React.FC = () => {
                   </label>
                 </div>
                 <div className="text-sm">
-                  <a href="#" className="text-gray-900 hover:text-gray-900/80">
+                  <Link to="/forgot-password" className="text-gray-900 hover:text-gray-900/80">
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
               </div>
               
-              <Button type="submit" className="w-full">
-                Sign in
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
           </Card>

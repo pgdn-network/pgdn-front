@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Search, Bell, Menu, Sun, Moon, Settings, User, LogOut, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { mockUser } from '@/mocks/user'
+import { useAuth } from '@/hooks/useAuth'
 
 interface HeaderProps {
   onMobileMenuToggle: () => void
@@ -12,10 +12,16 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const [isDark, setIsDark] = React.useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
+  const { user, logout } = useAuth()
 
   const toggleTheme = () => {
     setIsDark(!isDark)
     document.documentElement.classList.toggle('dark')
+  }
+
+  const handleLogout = async () => {
+    setIsUserMenuOpen(false)
+    await logout()
   }
 
   return (
@@ -91,8 +97,10 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                 <User className="w-4 h-4 text-white" />
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-primary">{mockUser.name}</p>
-                <p className="text-xs text-muted">{mockUser.role}</p>
+                <p className="text-sm font-medium text-primary">
+                  {user?.first_name || user?.username || 'User'}
+                </p>
+                <p className="text-xs text-muted">{user?.role || 'Member'}</p>
               </div>
               <ChevronDown className={`w-4 h-4 text-muted transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
             </Button>
@@ -101,8 +109,10 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-surface rounded-lg border border-border py-2 z-50">
                 <div className="px-4 py-3 border-b border-border">
-                  <p className="text-sm font-semibold text-primary">{mockUser.name}</p>
-                  <p className="text-xs text-muted">{mockUser.email}</p>
+                  <p className="text-sm font-semibold text-primary">
+                    {user?.first_name || user?.username || 'User'}
+                  </p>
+                  <p className="text-xs text-muted">{user?.email || user?.username}</p>
                 </div>
                 <div className="py-2">
                   <Button
@@ -111,7 +121,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                     asChild
                     className="w-full justify-start gap-3 px-4 py-2 text-sm hover:bg-surface-hover no-underline"
                   >
-                    <Link to="/settings">
+                    <Link to="/profile">
                       <User className="w-4 h-4" />
                       Profile
                     </Link>
@@ -132,6 +142,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={handleLogout}
                     className="w-full justify-start gap-3 px-4 py-2 text-sm hover:bg-surface-hover text-danger hover:text-danger"
                   >
                     <LogOut className="w-4 h-4" />

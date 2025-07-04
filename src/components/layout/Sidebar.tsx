@@ -15,7 +15,7 @@ import {
   Globe
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { mockUser } from '@/mocks/user'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 
 const navItems = [
@@ -27,6 +27,12 @@ const navItems = [
 ]
 
 export function Sidebar() {
+  const { user, logout } = useAuth()
+
+  const handleLogout = async () => {
+    await logout()
+  }
+
   return (
     <div className="w-60 h-full bg-surface-secondary border-r border-border-strong flex flex-col">
       {/* Company/Workspace Header */}
@@ -39,7 +45,7 @@ export function Sidebar() {
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-success border-2 border-surface"></div>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-primary text-base">{mockUser.company}</h3>
+            <h3 className="font-semibold text-primary text-base">PGDN</h3>
             <p className="text-sm text-muted">
               Security Dashboard
             </p>
@@ -102,12 +108,15 @@ export function Sidebar() {
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success border-2 border-surface"></div>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-primary truncate">{mockUser.name}</p>
-            <p className="text-xs text-muted truncate">{mockUser.role}</p>
+            <p className="text-sm font-medium text-primary truncate">
+              {user?.first_name || user?.username || 'User'}
+            </p>
+            <p className="text-xs text-muted truncate">{user?.role || 'Member'}</p>
           </div>
           <Button 
             variant="ghost" 
             size="sm"
+            onClick={handleLogout}
             className="opacity-0 group-hover:opacity-100 transition-all duration-200 p-1 h-auto"
           >
             <LogOut className="w-4 h-4 text-muted" />
