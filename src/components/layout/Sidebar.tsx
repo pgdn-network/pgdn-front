@@ -40,8 +40,7 @@ export function Sidebar() {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-primary text-base">{mockUser.company}</h3>
-            <p className="text-sm text-muted flex items-center gap-1">
-              <Zap className="w-3 h-3" />
+            <p className="text-sm text-muted">
               Security Dashboard
             </p>
           </div>
