@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CVECard } from '@/components/ui/custom/CVECard';
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
+import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -306,17 +307,7 @@ const OrgNodeDetail: React.FC = () => {
 
         {/* Scan Sessions Section */}
         <div className="mt-8">
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Scan Sessions</h2>
-              <span className="text-sm text-gray-500">
-                {scanSessionsData?.scan_sessions?.length || 0} sessions
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              {scanSessionsData ? 'Scan sessions data loaded' : 'Loading scan sessions...'}
-            </div>
-          </div>
+          <ScanSessionsCard scanSessions={scanSessionsData?.scans || []} />
         </div>
 
         {/* Reports Section */}

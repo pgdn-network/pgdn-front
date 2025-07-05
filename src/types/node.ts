@@ -168,19 +168,26 @@ export interface NodeTasksResponse {
 
 // Scan Sessions
 export interface NodeScanSession {
-  id: string;
+  scan_id: string;
+  node_uuid: string;
+  organization_uuid: string;
+  target: string | null;
+  protocol_filter: string | null;
+  scan_level: number | null;
   status: string;
+  started_at: string;
+  completed_at: string | null;
+  error_message: string | null;
   created_at: string;
-  updated_at: string;
-  results?: unknown;
-  normalized_data?: unknown;
-  scores?: unknown;
-  // Will be updated with actual response structure
 }
 
 export interface NodeScanSessionsResponse {
-  scan_sessions: NodeScanSession[];
-  // Will be updated with actual response structure
+  scans: NodeScanSession[];
+  total: number;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
 }
 
 // Reports

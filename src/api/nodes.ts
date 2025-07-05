@@ -76,7 +76,7 @@ export class NodeApiService {
 
   static async getNodeScanSessions(organizationUuid: string, nodeUuid: string): Promise<NodeScanSessionsResponse> {
     const response = await apiService.get<NodeScanSessionsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scan-sessions?include_results=true`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scans`
     );
     return response.data;
   }
