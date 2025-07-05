@@ -185,15 +185,22 @@ export interface NodeScanSessionsResponse {
 
 // Reports
 export interface NodeReport {
-  id: string;
-  name: string;
-  status: string;
+  uuid: string;
+  scan_session_id: number;
+  session_id: string;
+  node_uuid: string;
+  organization_uuid: string;
+  report_type: string;
+  title: string;
+  summary: string;
+  risk_score: number;
   created_at: string;
-  updated_at: string;
-  // Will be updated with actual response structure
+  updated_at: string | null;
 }
 
 export interface NodeReportsResponse {
   reports: NodeReport[];
-  // Will be updated with actual response structure
+  total: number;
+  organization_uuid: string;
+  node_uuid: string;
 }

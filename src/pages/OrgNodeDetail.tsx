@@ -4,6 +4,7 @@ import { Server, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CVECard } from '@/components/ui/custom/CVECard';
 import { EventCard } from '@/components/ui/custom/EventCard';
+import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -320,17 +321,7 @@ const OrgNodeDetail: React.FC = () => {
 
         {/* Reports Section */}
         <div className="mt-8">
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Reports</h2>
-              <span className="text-sm text-gray-500">
-                {reportsData?.reports?.length || 0} reports
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              {reportsData ? 'Reports data loaded' : 'Loading reports...'}
-            </div>
-          </div>
+          <ReportsCard reports={reportsData?.reports || []} />
         </div>
         
         {/* TODO: Add organization-specific node configuration */}

@@ -5,7 +5,9 @@ import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
-import { CVECard } from '@/components/ui/custom/CVECard';
+import { CVECard } from '@/components/ui/custom/CVECard'
+import { EventCard } from '@/components/ui/custom/EventCard';
+import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -273,17 +275,7 @@ const NodeDetail: React.FC = () => {
 
         {/* Events Section */}
         <div className="mt-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">Events</h2>
-              <span className="text-sm text-muted-foreground">
-                {eventsData?.events?.length || 0} events
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {eventsData ? 'Events data loaded' : 'Loading events...'}
-            </div>
-          </Card>
+          <EventCard events={eventsData?.events || []} />
         </div>
 
         {/* Interventions Section */}
@@ -333,17 +325,7 @@ const NodeDetail: React.FC = () => {
 
         {/* Reports Section */}
         <div className="mt-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">Reports</h2>
-              <span className="text-sm text-muted-foreground">
-                {reportsData?.reports?.length || 0} reports
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {reportsData ? 'Reports data loaded' : 'Loading reports...'}
-            </div>
-          </Card>
+          <ReportsCard reports={reportsData?.reports || []} />
         </div>
       </div>
     </div>
