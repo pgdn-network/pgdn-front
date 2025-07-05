@@ -51,7 +51,8 @@ function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="organizations" element={<Organizations />} />
-                <Route path="organizations/:slug" element={<OrgNodeList />} />
+                {/* TODO: Re-enable when organization detail page is implemented */}
+                {/* <Route path="organizations/:slug" element={<OrgNodeList />} /> */}
                 <Route path="organizations/:slug/nodes/create" element={<OrgNodeCreate />} />
                 <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
               </Route>

@@ -84,8 +84,16 @@ const Dashboard: React.FC = () => {
         
         let url: string;
         if (selectedOrg && selectedOrg !== 'all') {
-          // Organization-specific API call using slug
-          url = `http://localhost:8000/api/v1/organizations/${selectedOrg}/nodes?limit=50&offset=0`;
+          // Find organization UUID from slug using cached organizations
+          const org = organizations.find(org => org.slug === selectedOrg);
+          if (org) {
+            // Organization-specific API call using UUID
+            url = `http://localhost:8000/api/v1/organizations/${org.uuid}/nodes?limit=50&offset=0`;
+          } else {
+            console.warn(`Organization with slug "${selectedOrg}" not found in cache`);
+            // Fallback to general nodes API call
+            url = 'http://localhost:8000/api/v1/nodes?limit=50&offset=0';
+          }
         } else {
           // General nodes API call
           url = 'http://localhost:8000/api/v1/nodes?limit=50&offset=0';
@@ -120,7 +128,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchNodes();
-  }, [selectedOrg]); // Re-fetch when organization filter changes
+  }, [selectedOrg, organizations]); // Re-fetch when organization filter changes or organizations load
 
   // Update loading state when all API calls complete
   React.useEffect(() => {

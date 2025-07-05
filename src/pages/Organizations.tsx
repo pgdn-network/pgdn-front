@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Plus } from 'lucide-react';
+import { Building2, Plus, Eye, Edit, Settings } from 'lucide-react';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
+import { useOrganizations } from '@/contexts/OrganizationsContext';
 
 const Organizations: React.FC = () => {
+  const { organizations, loading, error, refetch, clearCache } = useOrganizations();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     type: 'enterprise'
   });
+
+  // Clear cache and fetch fresh data when component mounts
+  useEffect(() => {
+    clearCache();
+    refetch();
+  }, []); // Empty dependency array - only run on mount
 
   const handleCreateOrg = () => {
     setFormData({ name: '', description: '', type: 'enterprise' });
@@ -60,81 +68,81 @@ const Organizations: React.FC = () => {
       
       {/* Table Section */}
       <Card className="p-0">
+        {loading ? (
+          <div className="p-8 text-center">
+            <div className="text-secondary">Loading organizations...</div>
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center">
+            <div className="text-red-500 mb-4">Error loading organizations: {error}</div>
+            <Button onClick={refetch} variant="outline">Retry</Button>
+          </div>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow className="bg-surface-secondary">
                 <TableHead className="text-primary font-semibold">Organization</TableHead>
-                <TableHead className="text-primary font-semibold">Nodes</TableHead>
+                <TableHead className="text-primary font-semibold">Role</TableHead>
                 <TableHead className="text-primary font-semibold">Status</TableHead>
-                <TableHead className="text-primary font-semibold">Last Updated</TableHead>
+                <TableHead className="text-primary font-semibold">Joined</TableHead>
+                <TableHead className="text-primary font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow className="hover:bg-surface-hover">
-                <TableCell>
-                  <Link to="/?org=techcorp-inc" className="hover:underline">
-                    <div className="text-sm font-medium text-primary">TechCorp Inc.</div>
-                    <div className="text-xs text-secondary">Enterprise organization</div>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Link 
-                    to="/?org=techcorp-inc" 
-                    className="text-link font-medium hover:text-link-hover hover:underline transition-colors"
-                  >
-                    23 nodes
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="success">Active</Badge>
-                </TableCell>
-                <TableCell className="text-secondary">2 hours ago</TableCell>
-              </TableRow>
-              
-              <TableRow className="hover:bg-surface-hover">
-                <TableCell>
-                  <Link to="/?org=dataflow-systems" className="hover:underline">
-                    <div className="text-sm font-medium text-primary">DataFlow Systems</div>
-                    <div className="text-xs text-secondary">Startup organization</div>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Link 
-                    to="/?org=dataflow-systems" 
-                    className="text-link font-medium hover:text-link-hover hover:underline transition-colors"
-                  >
-                    12 nodes
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="success">Active</Badge>
-                </TableCell>
-                <TableCell className="text-secondary">4 hours ago</TableCell>
-              </TableRow>
-              
-              <TableRow className="hover:bg-surface-hover">
-                <TableCell>
-                  <Link to="/?org=cloudnet-solutions" className="hover:underline">
-                    <div className="text-sm font-medium text-primary">CloudNet Solutions</div>
-                    <div className="text-xs text-secondary">Individual organization</div>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Link 
-                    to="/?org=cloudnet-solutions" 
-                    className="text-link font-medium hover:text-link-hover hover:underline transition-colors"
-                  >
-                    5 nodes
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="warning">Pending</Badge>
-                </TableCell>
-                <TableCell className="text-secondary">1 day ago</TableCell>
-              </TableRow>
+              {organizations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-secondary">
+                    No organizations found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                organizations.map((org) => (
+                  <TableRow key={org.uuid} className="hover:bg-surface-hover">
+                    <TableCell>
+                      <Link to={`/?org=${org.slug}`} className="hover:underline">
+                        <div className="text-sm font-medium text-primary">{org.name}</div>
+                        <div className="text-xs text-secondary">{org.slug}</div>
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="default">{org.role_name}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={org.membership_active ? "success" : "warning"}>
+                        {org.membership_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {new Date(org.joined_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Link 
+                          to={`/?org=${org.slug}`}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-secondary hover:text-primary border border-border rounded hover:bg-surface-hover transition-colors"
+                          title="View Nodes"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Nodes
+                        </Link>
+                        {/* TODO: Create organization settings page */}
+                        {/* <Link 
+                          to={`/organizations/${org.slug}/settings`}
+                          className="inline-flex items-center px-2 py-1 text-xs font-medium text-secondary hover:text-primary border border-border rounded hover:bg-surface-hover transition-colors"
+                          title="Edit Organization"
+                        >
+                          <Settings className="h-3 w-3 mr-1" />
+                          Settings
+                        </Link> */}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-        </Card>
+        )}
+      </Card>
         {/* TODO: Add pagination, search, filters, bulk actions, real-time status updates */}
         
         {/* Create Organization Modal */}
