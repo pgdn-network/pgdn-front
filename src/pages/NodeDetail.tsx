@@ -1,26 +1,79 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Server, Activity, Shield, Settings, Play, BarChart3, Clock, MapPin } from 'lucide-react';
+import { Server, Activity, Shield, Settings, Play, BarChart3, Clock, MapPin, AlertTriangle, Loader2 } from 'lucide-react';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
+import { useNodeData } from '@/hooks/useNodeData';
+import { useOrganizations } from '@/contexts/OrganizationsContext';
 
 const NodeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { organizations, loading: orgsLoading } = useOrganizations();
+  
+  const organizationUuid = organizations.length > 0 ? organizations[0].uuid : '';
+  const { node, cveData, loading, error, refetch } = useNodeData(organizationUuid, id || '');
+  
   
   const breadcrumbItems = [
     { label: 'Dashboard', href: '/' },
     { label: 'Nodes', href: '/nodes' },
-    { label: id || 'Node' }
+    { label: node?.name || id || 'Node' }
   ];
+
+  if (loading || orgsLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2 text-lg">Loading node data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || (!orgsLoading && organizations.length === 0)) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col items-center justify-center h-64">
+            <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">Error Loading Node</h2>
+            <p className="text-gray-500 mb-4">
+              {error || (!orgsLoading && organizations.length === 0 ? 'No organizations available' : 'Unknown error')}
+            </p>
+            <Button onClick={refetch} variant="outline">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!node) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col items-center justify-center h-64">
+            <Server className="h-12 w-12 text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">Node Not Found</h2>
+            <p className="text-gray-500">The requested node could not be found.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4">
         <Breadcrumb items={breadcrumbItems} />
         
-        <div className="mt-8">
+        <div className="mt-4">
           <div className="md:flex md:items-center md:justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-3">
@@ -28,9 +81,9 @@ const NodeDetail: React.FC = () => {
                   <Server className="h-6 w-6 text-gray-900" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-foreground">Node: {id}</h1>
+                  <h1 className="text-3xl font-bold text-foreground">{node.name}</h1>
                   <p className="mt-1 text-sm text-gray-500-foreground">
-                    Detailed information and metrics for this node
+                    {node.address} • {node.protocol_details.display_name}
                   </p>
                 </div>
               </div>
@@ -58,19 +111,21 @@ const NodeDetail: React.FC = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500-foreground">Status:</span>
-                <Badge variant="success">Active</Badge>
+                <Badge variant={node.status === 'active' ? 'success' : 'secondary'}>
+                  {node.status.charAt(0).toUpperCase() + node.status.slice(1)}
+                </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Type:</span>
-                <span className="text-sm text-foreground">Edge Node</span>
+                <span className="text-sm text-gray-500-foreground">State:</span>
+                <span className="text-sm text-foreground">{node.current_state}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Version:</span>
-                <span className="text-sm text-foreground">v2.1.0</span>
+                <span className="text-sm text-gray-500-foreground">Protocol:</span>
+                <span className="text-sm text-foreground">{node.protocol_details.display_name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Uptime:</span>
-                <span className="text-sm text-foreground">15 days, 4 hours</span>
+                <span className="text-sm text-gray-500-foreground">Created:</span>
+                <span className="text-sm text-foreground">{new Date(node.created_at).toLocaleDateString()}</span>
               </div>
             </div>
           </Card>
@@ -83,20 +138,22 @@ const NodeDetail: React.FC = () => {
             </div>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Country:</span>
-                <span className="text-sm text-foreground">United States</span>
+                <span className="text-sm text-gray-500-foreground">Address:</span>
+                <span className="text-sm text-foreground">{node.address}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Region:</span>
-                <span className="text-sm text-foreground">US-West-2</span>
+                <span className="text-sm text-gray-500-foreground">Resolved IPs:</span>
+                <span className="text-sm text-foreground">{node.resolved_ips.length}</span>
               </div>
+              {node.resolved_ips.length > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-500-foreground">Primary IP:</span>
+                  <span className="text-sm text-foreground">{node.resolved_ips[0].ip_address}</span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">IP Address:</span>
-                <span className="text-sm text-foreground">192.168.1.100</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Port:</span>
-                <span className="text-sm text-foreground">8080</span>
+                <span className="text-sm text-gray-500-foreground">Ports:</span>
+                <span className="text-sm text-foreground">{node.protocol_details.ports.join(', ')}</span>
               </div>
             </div>
           </Card>
@@ -109,20 +166,20 @@ const NodeDetail: React.FC = () => {
             </div>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">CPU Usage:</span>
-                <span className="text-sm text-foreground">45%</span>
+                <span className="text-sm text-gray-500-foreground">Total Scans:</span>
+                <span className="text-sm text-foreground">{node.total_scan_sessions}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Memory:</span>
-                <span className="text-sm text-foreground">2.1 GB / 4 GB</span>
+                <span className="text-sm text-gray-500-foreground">Total Reports:</span>
+                <span className="text-sm text-foreground">{node.total_reports}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Network:</span>
-                <span className="text-sm text-foreground">125 Mbps</span>
+                <span className="text-sm text-gray-500-foreground">Last Scan:</span>
+                <span className="text-sm text-foreground">{node.last_scan_session ? 'Available' : 'Never'}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500-foreground">Latency:</span>
-                <span className="text-sm text-foreground">23ms</span>
+                <span className="text-sm text-gray-500-foreground">Endpoints:</span>
+                <span className="text-sm text-foreground">{node.protocol_details.endpoints.length}</span>
               </div>
             </div>
           </Card>
@@ -139,24 +196,26 @@ const NodeDetail: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="text-sm text-foreground">Node started successfully</p>
-                  <p className="text-xs text-gray-500-foreground">2 minutes ago</p>
+                  <p className="text-sm text-foreground">Node created</p>
+                  <p className="text-xs text-gray-500-foreground">{new Date(node.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="text-sm text-foreground">Configuration updated</p>
-                  <p className="text-xs text-gray-500-foreground">1 hour ago</p>
+                  <p className="text-sm text-foreground">Last updated</p>
+                  <p className="text-xs text-gray-500-foreground">{new Date(node.updated_at).toLocaleDateString()}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                                        <div className="w-2 h-2 bg-secondary"></div>
-                <div className="flex-1">
-                  <p className="text-sm text-foreground">Security scan completed</p>
-                  <p className="text-xs text-gray-500-foreground">3 hours ago</p>
+              {node.meta.notes && (
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground">Notes</p>
+                    <p className="text-xs text-gray-500-foreground">{node.meta.notes}</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </Card>
 
@@ -168,24 +227,67 @@ const NodeDetail: React.FC = () => {
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500-foreground">Security Level:</span>
-                <Badge variant="success">High</Badge>
+                <span className="text-sm text-gray-500-foreground">Total CVEs:</span>
+                <Badge variant={node.cve_summary.total_cves > 0 ? 'warning' : 'success'}>
+                  {node.cve_summary.total_cves}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500-foreground">Last Scan:</span>
-                <span className="text-sm text-foreground">2 hours ago</span>
+                <span className="text-sm text-gray-500-foreground">Critical:</span>
+                <Badge variant={node.cve_summary.critical_count > 0 ? 'warning' : 'secondary'}>
+                  {node.cve_summary.critical_count}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500-foreground">Vulnerabilities:</span>
-                <Badge variant="secondary">0 Found</Badge>
+                <span className="text-sm text-gray-500-foreground">High:</span>
+                <Badge variant={node.cve_summary.high_count > 0 ? 'warning' : 'secondary'}>
+                  {node.cve_summary.high_count}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500-foreground">Firewall:</span>
-                <Badge variant="success">Active</Badge>
+                <span className="text-sm text-gray-500-foreground">Medium + Low:</span>
+                <Badge variant={node.cve_summary.medium_count + node.cve_summary.low_count > 0 ? 'secondary' : 'success'}>
+                  {node.cve_summary.medium_count + node.cve_summary.low_count}
+                </Badge>
               </div>
             </div>
           </Card>
         </div>
+        
+        {/* CVE Details Section */}
+        {cveData && cveData.total_matches > 0 && (
+          <div className="mt-6">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-foreground">CVE Details</h2>
+                <Badge variant="warning">{cveData.total_matches} Matches</Badge>
+              </div>
+              <div className="space-y-4">
+                {cveData.matches.slice(0, 5).map((cve) => (
+                  <div key={cve.id} className="border-l-4 border-orange-500 pl-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-medium text-foreground">{cve.cve_id}</h3>
+                      <Badge variant={cve.severity === 'critical' ? 'warning' : 'secondary'}>
+                        {cve.severity.toUpperCase()}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-500-foreground mb-2">{cve.description}</p>
+                    <div className="flex items-center text-xs text-gray-500">
+                      <span>CVSS: {cve.cvss_score}</span>
+                      <span className="mx-2">•</span>
+                      <span>Published: {new Date(cve.published_date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+                {cveData.matches.length > 5 && (
+                  <p className="text-sm text-gray-500 text-center mt-4">
+                    And {cveData.matches.length - 5} more CVEs...
+                  </p>
+                )}
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

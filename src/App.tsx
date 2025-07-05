@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './components/theme/ThemeProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { OrganizationsProvider } from './contexts/OrganizationsContext';
+import { ProtocolsProvider } from './contexts/ProtocolsContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
@@ -29,6 +30,7 @@ function App() {
       <Router>
         <AuthProvider>
           <OrganizationsProvider>
+            <ProtocolsProvider>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -55,6 +57,7 @@ function App() {
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </ProtocolsProvider>
           </OrganizationsProvider>
         </AuthProvider>
       </Router>

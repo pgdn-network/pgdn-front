@@ -1,54 +1,53 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import { storage } from '@/utils/storage';
 
-interface Organization {
+export interface Protocol {
   uuid: string;
-  slug: string;
   name: string;
-  role_name: string;
-  membership_active: boolean;
-  joined_at: string;
+  display_name: string;
+  category: string;
 }
 
-interface OrganizationsContextType {
-  organizations: Organization[];
+interface ProtocolsContextType {
+  protocols: Protocol[];
   loading: boolean;
   error: string | null;
   refetch: () => void;
   clearCache: () => void;
+  getProtocol: (uuid: string) => Protocol | null;
 }
 
-const OrganizationsContext = createContext<OrganizationsContextType | undefined>(undefined);
+const ProtocolsContext = createContext<ProtocolsContextType | undefined>(undefined);
 
-export const useOrganizations = () => {
-  const context = useContext(OrganizationsContext);
+export const useProtocols = () => {
+  const context = useContext(ProtocolsContext);
   if (context === undefined) {
-    throw new Error('useOrganizations must be used within an OrganizationsProvider');
+    throw new Error('useProtocols must be used within a ProtocolsProvider');
   }
   return context;
 };
 
-interface OrganizationsProviderProps {
+interface ProtocolsProviderProps {
   children: ReactNode;
 }
 
 // Cache key for localStorage
-const ORG_CACHE_KEY = 'organizations_cache';
-const ORG_CACHE_TIMESTAMP_KEY = 'organizations_cache_timestamp';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const PROTOCOLS_CACHE_KEY = 'protocols_cache';
+const PROTOCOLS_CACHE_TIMESTAMP_KEY = 'protocols_cache_timestamp';
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes (protocols change less frequently)
 
-export const OrganizationsProvider: React.FC<OrganizationsProviderProps> = ({ children }) => {
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+export const ProtocolsProvider: React.FC<ProtocolsProviderProps> = ({ children }) => {
+  const [protocols, setProtocols] = useState<Protocol[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const hasInitialized = useRef(false);
   const isFetching = useRef(false);
 
-  // Load organizations from cache
+  // Load protocols from cache
   const loadFromCache = (): boolean => {
     try {
-      const cachedData = localStorage.getItem(ORG_CACHE_KEY);
-      const cacheTimestamp = localStorage.getItem(ORG_CACHE_TIMESTAMP_KEY);
+      const cachedData = localStorage.getItem(PROTOCOLS_CACHE_KEY);
+      const cacheTimestamp = localStorage.getItem(PROTOCOLS_CACHE_TIMESTAMP_KEY);
       
       if (!cachedData || !cacheTimestamp) {
         return false;
@@ -58,38 +57,38 @@ export const OrganizationsProvider: React.FC<OrganizationsProviderProps> = ({ ch
       const isExpired = Date.now() - timestamp > CACHE_DURATION;
       
       if (isExpired) {
-        localStorage.removeItem(ORG_CACHE_KEY);
-        localStorage.removeItem(ORG_CACHE_TIMESTAMP_KEY);
+        localStorage.removeItem(PROTOCOLS_CACHE_KEY);
+        localStorage.removeItem(PROTOCOLS_CACHE_TIMESTAMP_KEY);
         return false;
       }
       
-      const organizations = JSON.parse(cachedData);
-      setOrganizations(organizations);
+      const protocols = JSON.parse(cachedData);
+      setProtocols(protocols);
       setLoading(false);
       return true;
     } catch (error) {
-      console.error('Error loading organizations from cache:', error);
+      console.error('Error loading protocols from cache:', error);
       return false;
     }
   };
   
-  // Save organizations to cache
-  const saveToCache = (orgs: Organization[]) => {
+  // Save protocols to cache
+  const saveToCache = (protocolsData: Protocol[]) => {
     try {
-      localStorage.setItem(ORG_CACHE_KEY, JSON.stringify(orgs));
-      localStorage.setItem(ORG_CACHE_TIMESTAMP_KEY, Date.now().toString());
+      localStorage.setItem(PROTOCOLS_CACHE_KEY, JSON.stringify(protocolsData));
+      localStorage.setItem(PROTOCOLS_CACHE_TIMESTAMP_KEY, Date.now().toString());
     } catch (error) {
-      console.error('Error saving organizations to cache:', error);
+      console.error('Error saving protocols to cache:', error);
     }
   };
   
   // Clear cache
   const clearCache = () => {
-    localStorage.removeItem(ORG_CACHE_KEY);
-    localStorage.removeItem(ORG_CACHE_TIMESTAMP_KEY);
+    localStorage.removeItem(PROTOCOLS_CACHE_KEY);
+    localStorage.removeItem(PROTOCOLS_CACHE_TIMESTAMP_KEY);
   };
 
-  const fetchOrganizations = async (forceRefresh = false) => {
+  const fetchProtocols = async (forceRefresh = false) => {
     // Prevent multiple concurrent requests
     if (isFetching.current) {
       return;
@@ -107,12 +106,12 @@ export const OrganizationsProvider: React.FC<OrganizationsProviderProps> = ({ ch
       const token = storage.getAccessToken();
       
       if (!token) {
-        console.error('No access token found. User may need to log in.');
+        console.error('No access token found for protocols request. User may need to log in.');
         setError('No access token found');
         return;
       }
 
-      const url = 'http://localhost:8000/api/v1/organizations';
+      const url = 'http://localhost:8000/api/v1/protocols';
       const response = await fetch(url, {
         headers: {
           'Accept': '*/*',
@@ -128,13 +127,13 @@ export const OrganizationsProvider: React.FC<OrganizationsProviderProps> = ({ ch
 
       const data = await response.json();
       
-      if (data.organizations && Array.isArray(data.organizations)) {
-        setOrganizations(data.organizations);
-        saveToCache(data.organizations);
+      if (data && Array.isArray(data)) {
+        setProtocols(data);
+        saveToCache(data);
       }
       
     } catch (error) {
-      console.error('Error fetching organizations:', error);
+      console.error('Error fetching protocols:', error);
       setError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
@@ -152,21 +151,27 @@ export const OrganizationsProvider: React.FC<OrganizationsProviderProps> = ({ ch
     
     // Try to load from cache first, then fetch if needed
     if (!loadFromCache()) {
-      fetchOrganizations();
+      fetchProtocols();
     }
   }, []);
 
+  // Helper function to get protocol by UUID
+  const getProtocol = (uuid: string): Protocol | null => {
+    return protocols.find(protocol => protocol.uuid === uuid) || null;
+  };
+
   const value = {
-    organizations,
+    protocols,
     loading,
     error,
-    refetch: () => fetchOrganizations(true), // Force refresh when explicitly called
-    clearCache
+    refetch: () => fetchProtocols(true), // Force refresh when explicitly called
+    clearCache,
+    getProtocol
   };
 
   return (
-    <OrganizationsContext.Provider value={value}>
+    <ProtocolsContext.Provider value={value}>
       {children}
-    </OrganizationsContext.Provider>
+    </ProtocolsContext.Provider>
   );
 };

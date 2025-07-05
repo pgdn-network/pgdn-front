@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import Loader from '@/components/ui/custom/Loader';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
+import { useProtocols } from '@/contexts/ProtocolsContext';
 import { mockUser } from '@/mocks/user';
 import { storage } from '@/utils/storage';
 import { 
@@ -32,13 +33,6 @@ import {
   Loader2,
   HelpCircle
 } from 'lucide-react';
-
-interface Protocol {
-  uuid: string;
-  name: string;
-  display_name: string;
-  category: string;
-}
 
 interface Node {
   uuid: string;
@@ -59,11 +53,11 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedOrg = searchParams.get('org') || 'all';
-  const [protocols, setProtocols] = React.useState<Protocol[]>([]);
   const [nodes, setNodes] = React.useState<Node[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [nodesLoading, setNodesLoading] = React.useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const { loading: protocolsLoading, getProtocol } = useProtocols();
   
   const handleOrgChange = (value: string) => {
     if (value === 'all') {
@@ -128,65 +122,12 @@ const Dashboard: React.FC = () => {
     fetchNodes();
   }, [selectedOrg]); // Re-fetch when organization filter changes
 
-  // Update loading state when both API calls complete
+  // Update loading state when all API calls complete
   React.useEffect(() => {
-    setLoading(nodesLoading || orgsLoading);
-  }, [nodesLoading, orgsLoading]);
+    setLoading(nodesLoading || orgsLoading || protocolsLoading);
+  }, [nodesLoading, orgsLoading, protocolsLoading]);
 
-  // Fetch protocols data from API
-  React.useEffect(() => {
-    const fetchProtocols = async () => {
-      try {
-        // Get JWT token using the proper storage utility
-        const token = storage.getAccessToken();
-        
-        if (!token) {
-          console.error('No access token found for protocols request. User may need to log in.');
-          return;
-        }
-
-        const url = 'http://localhost:8000/api/v1/protocols';
-        console.log('Fetching protocols from:', url);
-
-        const response = await fetch(url, {
-          headers: {
-            'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Origin': 'http://localhost:5173',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data: Protocol[] = await response.json();
-        console.log('Protocols data received:', data);
-        setProtocols(data);
-        
-      } catch (error) {
-        console.error('Error fetching protocols:', error);
-      }
-    };
-
-    fetchProtocols();
-  }, []); // Fetch protocols once on component mount
-
-  // Create protocol lookup map for efficiency
-  const protocolMap = React.useMemo(() => {
-    const map = new Map<string, Protocol>();
-    protocols.forEach(protocol => {
-      map.set(protocol.uuid, protocol);
-    });
-    return map;
-  }, [protocols]);
-
-  // Helper function to get protocol info by UUID
-  const getProtocol = (protocolUuid: string | null): Protocol | null => {
-    if (!protocolUuid) return null;
-    return protocolMap.get(protocolUuid) || null;
-  };
+  // getProtocol is now provided by the ProtocolsContext
 
   // Helper function to get organization slug by UUID
   const getOrgSlug = (orgUuid: string): string => {
@@ -423,7 +364,7 @@ const Dashboard: React.FC = () => {
             </TableHeader>
             <TableBody>
               {nodes.map((node) => {
-                const protocol = getProtocol(node.protocol_uuid);
+                const protocol = node.protocol_uuid ? getProtocol(node.protocol_uuid) : null;
                 const stateInfo = getStateIcon(node.current_state);
                 const StateIcon = stateInfo.icon;
                 

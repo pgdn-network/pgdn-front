@@ -194,6 +194,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       // Always clear local storage and redirect
       storage.clearTokens();
+      
+      // Clear organizations cache
+      localStorage.removeItem('organizations_cache');
+      localStorage.removeItem('organizations_cache_timestamp');
+      
+      // Clear protocols cache  
+      localStorage.removeItem('protocols_cache');
+      localStorage.removeItem('protocols_cache_timestamp');
+      
       setUser(null);
       navigate('/login');
     }
