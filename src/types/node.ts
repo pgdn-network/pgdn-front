@@ -98,37 +98,57 @@ export type NodeCveResponse = CveMatch[];
 
 // Events
 export interface NodeEvent {
-  id: string;
-  status: string;
+  uuid: string;
+  node_uuid: string;
+  user_uuid: string;
+  organization_uuid: string;
   orchestrator_type: string;
+  input_state: {
+    scan_level: number;
+    timeout_minutes: number;
+    enable_deep_scan: boolean;
+    parallel_processing: boolean;
+  };
+  decision: {
+    scan_session_id: string;
+  };
+  executed_action: string;
+  action_status: string;
   created_at: string;
-  updated_at: string;
-  // Will be updated with actual response structure
 }
 
 export interface NodeEventsResponse {
   events: NodeEvent[];
-  pagination?: {
-    page: number;
-    page_size: number;
-    total: number;
-  };
-  // Will be updated with actual response structure
+  total: number;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
 }
 
 // Interventions
 export interface NodeIntervention {
-  id: string;
-  status: string;
+  uuid: string;
+  related_uuid: string;
+  related_type: string;
+  reason: string;
+  status: 'open' | 'in_progress' | 'resolved';
+  created_by: string | null;
+  resolved_by: string | null;
   created_at: string;
-  updated_at: string;
-  // Will be updated with actual response structure
+  resolved_at: string | null;
 }
 
 export interface NodeInterventionsResponse {
   interventions: NodeIntervention[];
-  status_counts?: Record<string, number>;
-  // Will be updated with actual response structure
+  total: number;
+  open_count: number;
+  in_progress_count: number;
+  resolved_count: number;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
 }
 
 // Tasks
