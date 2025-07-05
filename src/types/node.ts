@@ -50,20 +50,48 @@ export interface Node {
 }
 
 export interface CveMatch {
-  id: string;
+  match_uuid: string;
   cve_id: string;
-  description: string;
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  confidence_score: number;
+  match_type: string;
+  match_reason: string;
+  severity: string;
   cvss_score: number;
-  published_date: string;
-  last_modified: string;
-  affected_software: string;
-  fixed_version?: string;
-  references: string[];
+  affected_products: string[];
+  matched_at: string;
+  cve_description: string;
+  cve_published_date: string;
+  cve_last_modified: string;
+  cve_cvss_vector: string;
+  cve_source: string | null;
+  cve_references: string[] | null;
+  cwe_ids: string[] | null;
+  attack_vector: string | null;
+  attack_complexity: string | null;
+  privileges_required: string | null;
+  user_interaction: string | null;
+  scope: string | null;
+  confidentiality_impact: string | null;
+  integrity_impact: string | null;
+  availability_impact: string | null;
+  fixed: boolean;
+  date_fixed: string | null;
+  fixed_version: string | null;
+  fixed_by_user_uuid: string | null;
+  fixed_notes: string | null;
+  fix_info: {
+    fix_available: boolean;
+    patch_version: string | null;
+    vendor_advisory_url: string | null;
+    remediation_steps: string | null;
+    workaround: string | null;
+    fixed_versions: string[] | null;
+    vendor_urls: string[] | null;
+    patch_urls: string[] | null;
+    mitigation_strategies: string[] | null;
+  };
+  scan_date: string;
+  target_ip: string | null;
 }
 
-export interface NodeCveResponse {
-  node_uuid: string;
-  total_matches: number;
-  matches: CveMatch[];
-}
+export type NodeCveResponse = CveMatch[];

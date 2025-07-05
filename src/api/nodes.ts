@@ -13,7 +13,7 @@ export class NodeApiService {
 
   static async getNodeCveMatches(organizationUuid: string, nodeUuid: string): Promise<NodeCveResponse> {
     const response = await apiService.get<NodeCveResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/cve-matches`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/cve-matches?fixed_status=open`
     );
     return response.data;
   }

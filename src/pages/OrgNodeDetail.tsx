@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Server, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CVECard } from '@/components/ui/custom/CVECard';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -12,7 +13,7 @@ const OrgNodeDetail: React.FC = () => {
   // Find organization by slug
   const organization = organizations.find(org => org.slug === slug);
   const organizationUuid = organization?.uuid || '';
-  const { node, loading, error, refetch } = useNodeData(organizationUuid, nodeId || '');
+  const { node, cveData, loading, error, refetch } = useNodeData(organizationUuid, nodeId || '');
   
 
   if (loading || orgsLoading) {
@@ -98,7 +99,7 @@ const OrgNodeDetail: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Type:</span>
-                <span className="text-sm text-gray-900">{node.protocol_details.display_name}</span>
+                <span className="text-sm text-gray-900">{node.protocol_details?.display_name || 'Unknown'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Last Seen:</span>
@@ -148,7 +149,7 @@ const OrgNodeDetail: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Port:</span>
-                <span className="text-sm text-gray-900">{node.protocol_details.ports.length > 0 ? node.protocol_details.ports[0] : 'N/A'}</span>
+                <span className="text-sm text-gray-900">{node.protocol_details?.ports?.length > 0 ? node.protocol_details.ports[0] : 'N/A'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Location:</span>
@@ -203,13 +204,18 @@ const OrgNodeDetail: React.FC = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-700">Node Role</h3>
                 <div className="mt-2 space-y-1">
-                  <p className="text-sm text-gray-600">Role: {node.protocol_details.display_name} Node</p>
+                  <p className="text-sm text-gray-600">Role: {node.protocol_details?.display_name || 'Unknown'} Node</p>
                   <p className="text-sm text-gray-600">Assigned: {new Date(node.created_at).toLocaleDateString()}</p>
                   <p className="text-sm text-gray-600">Priority: {node.status === 'active' ? 'High' : 'Normal'}</p>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* CVE Details Section */}
+        <div className="mt-8">
+          <CVECard cves={cveData || []} />
         </div>
         
         {/* TODO: Add organization-specific node configuration */}

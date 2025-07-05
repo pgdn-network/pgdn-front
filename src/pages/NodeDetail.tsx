@@ -5,6 +5,7 @@ import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
+import { CVECard } from '@/components/ui/custom/CVECard';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -255,39 +256,9 @@ const NodeDetail: React.FC = () => {
         </div>
         
         {/* CVE Details Section */}
-        {cveData && cveData.total_matches > 0 && (
-          <div className="mt-6">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-foreground">CVE Details</h2>
-                <Badge variant="warning">{cveData.total_matches} Matches</Badge>
-              </div>
-              <div className="space-y-4">
-                {cveData.matches.slice(0, 5).map((cve) => (
-                  <div key={cve.id} className="border-l-4 border-orange-500 pl-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-foreground">{cve.cve_id}</h3>
-                      <Badge variant={cve.severity === 'critical' ? 'warning' : 'secondary'}>
-                        {cve.severity.toUpperCase()}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-500-foreground mb-2">{cve.description}</p>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <span>CVSS: {cve.cvss_score}</span>
-                      <span className="mx-2">•</span>
-                      <span>Published: {new Date(cve.published_date).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-                {cveData.matches.length > 5 && (
-                  <p className="text-sm text-gray-500 text-center mt-4">
-                    And {cveData.matches.length - 5} more CVEs...
-                  </p>
-                )}
-              </div>
-            </Card>
-          </div>
-        )}
+        <div className="mt-6">
+          <CVECard cves={cveData || []} />
+        </div>
       </div>
     </div>
   );

@@ -28,11 +28,18 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
 
       try {
         const nodeData = await NodeApiService.getNode(organizationUuid, nodeUuid);
-        // const cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid);
+        
+        let cveData: NodeCveResponse | null = null;
+        try {
+          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid);
+        } catch (cveError) {
+          console.warn('Failed to fetch CVE data:', cveError);
+          cveData = [];
+        }
 
         setState({
           node: nodeData,
-          cveData: null, // Set to null since we're not fetching CVE data
+          cveData: cveData,
           loading: false,
           error: null,
         });
@@ -54,11 +61,18 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
     const fetchNodeData = async () => {
       try {
         const nodeData = await NodeApiService.getNode(organizationUuid, nodeUuid);
-        // const cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid);
+        
+        let cveData: NodeCveResponse | null = null;
+        try {
+          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid);
+        } catch (cveError) {
+          console.warn('Failed to fetch CVE data:', cveError);
+          cveData = [];
+        }
 
         setState({
           node: nodeData,
-          cveData: null, // Set to null since we're not fetching CVE data
+          cveData: cveData,
           loading: false,
           error: null,
         });
