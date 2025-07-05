@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import Breadcrumb from '@/components/common/Breadcrumb';
 
 const OrgNodeCreate: React.FC = () => {
-  const { uid } = useParams<{ uid: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ const OrgNodeCreate: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/organizations/${uid}/nodes`, {
+      const response = await fetch(`http://localhost:8000/api/v1/organizations/${slug}/nodes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ const OrgNodeCreate: React.FC = () => {
       }
 
       await response.json();
-      navigate(`/organizations/${uid}`);
+      navigate(`/organizations/${slug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -56,7 +56,7 @@ const OrgNodeCreate: React.FC = () => {
   const breadcrumbItems = [
     { label: 'Dashboard', href: '/' },
     { label: 'Organizations', href: '/organizations' },
-    { label: 'Nodes', href: `/organizations/${uid}` },
+    { label: 'Nodes', href: `/organizations/${slug}` },
     { label: 'Create Node' }
   ];
 
@@ -113,7 +113,7 @@ const OrgNodeCreate: React.FC = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => navigate(`/organizations/${uid}`)}
+                    onClick={() => navigate(`/organizations/${slug}`)}
                     disabled={isLoading}
                   >
                     Cancel

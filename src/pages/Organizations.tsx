@@ -72,14 +72,14 @@ const Organizations: React.FC = () => {
             <TableBody>
               <TableRow className="hover:bg-surface-hover">
                 <TableCell>
-                  <Link to="/?org=550e8400-e29b-41d4-a716-446655440000" className="hover:underline">
+                  <Link to="/?org=techcorp-inc" className="hover:underline">
                     <div className="text-sm font-medium text-primary">TechCorp Inc.</div>
                     <div className="text-xs text-secondary">Enterprise organization</div>
                   </Link>
                 </TableCell>
                 <TableCell>
                   <Link 
-                    to="/?org=550e8400-e29b-41d4-a716-446655440000" 
+                    to="/?org=techcorp-inc" 
                     className="text-link font-medium hover:text-link-hover hover:underline transition-colors"
                   >
                     23 nodes
@@ -93,14 +93,14 @@ const Organizations: React.FC = () => {
               
               <TableRow className="hover:bg-surface-hover">
                 <TableCell>
-                  <Link to="/?org=6ba7b810-9dad-11d1-80b4-00c04fd430c8" className="hover:underline">
+                  <Link to="/?org=dataflow-systems" className="hover:underline">
                     <div className="text-sm font-medium text-primary">DataFlow Systems</div>
                     <div className="text-xs text-secondary">Startup organization</div>
                   </Link>
                 </TableCell>
                 <TableCell>
                   <Link 
-                    to="/?org=6ba7b810-9dad-11d1-80b4-00c04fd430c8" 
+                    to="/?org=dataflow-systems" 
                     className="text-link font-medium hover:text-link-hover hover:underline transition-colors"
                   >
                     12 nodes
@@ -114,14 +114,14 @@ const Organizations: React.FC = () => {
               
               <TableRow className="hover:bg-surface-hover">
                 <TableCell>
-                  <Link to="/?org=6ba7b811-9dad-11d1-80b4-00c04fd430c8" className="hover:underline">
+                  <Link to="/?org=cloudnet-solutions" className="hover:underline">
                     <div className="text-sm font-medium text-primary">CloudNet Solutions</div>
                     <div className="text-xs text-secondary">Individual organization</div>
                   </Link>
                 </TableCell>
                 <TableCell>
                   <Link 
-                    to="/?org=6ba7b811-9dad-11d1-80b4-00c04fd430c8" 
+                    to="/?org=cloudnet-solutions" 
                     className="text-link font-medium hover:text-link-hover hover:underline transition-colors"
                   >
                     5 nodes

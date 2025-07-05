@@ -2,12 +2,12 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 const OrgNodeDetail: React.FC = () => {
-  const { uid, nodeId } = useParams<{ uid: string; nodeId: string }>();
+  const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   
   // Mock organization data - in real app this would come from API
-  const orgName = uid === '550e8400-e29b-41d4-a716-446655440000' ? 'TechCorp Inc.' :
-                  uid === '6ba7b810-9dad-11d1-80b4-00c04fd430c8' ? 'DataFlow Systems' :
-                  uid === '6ba7b811-9dad-11d1-80b4-00c04fd430c8' ? 'CloudNet Solutions' :
+  const orgName = slug === 'techcorp-inc' ? 'TechCorp Inc.' :
+                  slug === 'dataflow-systems' ? 'DataFlow Systems' :
+                  slug === 'cloudnet-solutions' ? 'CloudNet Solutions' :
                   'Unknown Organization';
   
   return (
@@ -145,7 +145,7 @@ const OrgNodeDetail: React.FC = () => {
                 <h3 className="text-sm font-medium text-gray-700">Organization Details</h3>
                 <div className="mt-2 space-y-1">
                   <p className="text-sm text-gray-600">Name: {orgName}</p>
-                  <p className="text-sm text-gray-600">ID: {uid}</p>
+                  <p className="text-sm text-gray-600">Slug: {slug}</p>
                   <p className="text-sm text-gray-600">Total Nodes: {orgName === 'TechCorp Inc.' ? '23' : orgName === 'DataFlow Systems' ? '15' : '8'}</p>
                 </div>
               </div>

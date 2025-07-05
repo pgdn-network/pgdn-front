@@ -25,7 +25,12 @@ import {
   Clock,
   MapPin,
   Eye,
-  Plus
+  Plus,
+  Lock,
+  LockOpen,
+  AlertTriangle,
+  Loader2,
+  HelpCircle
 } from 'lucide-react';
 
 interface Protocol {
@@ -40,6 +45,7 @@ interface Node {
   name: string;
   address: string;
   active: boolean;
+  current_state: string | null;
   meta: Record<string, unknown>;
   organization_uuid: string;
   protocol_uuid: string | null;
@@ -84,14 +90,12 @@ const Dashboard: React.FC = () => {
         
         let url: string;
         if (selectedOrg && selectedOrg !== 'all') {
-          // Organization-specific API call
+          // Organization-specific API call using slug
           url = `http://localhost:8000/api/v1/organizations/${selectedOrg}/nodes?limit=50&offset=0`;
         } else {
           // General nodes API call
           url = 'http://localhost:8000/api/v1/nodes?limit=50&offset=0';
         }
-
-        console.log('Fetching nodes from:', url);
 
         const response = await fetch(url, {
           headers: {
@@ -108,7 +112,6 @@ const Dashboard: React.FC = () => {
         }
 
         const data = await response.json();
-        console.log('Nodes data received:', data);
         
         // Update state with fetched nodes data
         if (data.nodes && Array.isArray(data.nodes)) {
@@ -183,6 +186,66 @@ const Dashboard: React.FC = () => {
   const getProtocol = (protocolUuid: string | null): Protocol | null => {
     if (!protocolUuid) return null;
     return protocolMap.get(protocolUuid) || null;
+  };
+
+  // Helper function to get organization slug by UUID
+  const getOrgSlug = (orgUuid: string): string => {
+    const org = organizations.find(org => org.uuid === orgUuid);
+    return org?.slug || orgUuid; // Fallback to UUID if slug not found
+  };
+
+  // Helper function to get icon and color based on current_state
+  const getStateIcon = (currentState: string | null | undefined) => {
+    const state = (currentState || 'new').toLowerCase();
+    
+    switch (state) {
+      case 'authorized':
+        return {
+          icon: Lock,
+          color: 'text-green-600',
+          label: 'Authorized'
+        };
+      case 'unauthorized':
+      case 'denied':
+        return {
+          icon: LockOpen,
+          color: 'text-red-500',
+          label: 'Unauthorized'
+        };
+      case 'pending':
+      case 'processing':
+        return {
+          icon: Loader2,
+          color: 'text-yellow-500',
+          label: 'Pending'
+        };
+      case 'error':
+      case 'failed':
+        return {
+          icon: AlertTriangle,
+          color: 'text-red-600',
+          label: 'Error'
+        };
+      case 'inactive':
+      case 'disabled':
+        return {
+          icon: XCircle,
+          color: 'text-gray-500',
+          label: 'Inactive'
+        };
+      case 'new':
+        return {
+          icon: Server,
+          color: 'text-blue-500',
+          label: 'New'
+        };
+      default:
+        return {
+          icon: HelpCircle,
+          color: 'text-gray-400',
+          label: currentState || 'Unknown'
+        };
+    }
   };
   
   // Determine if we should show no nodes page
@@ -337,7 +400,7 @@ const Dashboard: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">All Organizations</SelectItem>
                 {organizations.map((org) => (
-                  <SelectItem key={org.uuid} value={org.uuid}>
+                  <SelectItem key={org.uuid} value={org.slug}>
                     {org.name}
                   </SelectItem>
                 ))}
@@ -361,16 +424,22 @@ const Dashboard: React.FC = () => {
             <TableBody>
               {nodes.map((node) => {
                 const protocol = getProtocol(node.protocol_uuid);
+                const stateInfo = getStateIcon(node.current_state);
+                const StateIcon = stateInfo.icon;
+                
                 return (
                   <TableRow key={node.uuid}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-surface-secondary flex items-center justify-center">
-                          <Server className="w-4 h-4 text-secondary" />
+                        <div 
+                          className="w-8 h-8 bg-surface-secondary flex items-center justify-center cursor-help"
+                          title={`State: ${stateInfo.label}`}
+                        >
+                          <StateIcon className={`w-4 h-4 ${stateInfo.color} ${stateInfo.icon === Loader2 ? 'animate-spin' : ''}`} />
                         </div>
                         <div>
                           <Link 
-                            to={`/organizations/${node.organization_uuid}/nodes/${node.uuid}`}
+                            to={`/organizations/${getOrgSlug(node.organization_uuid)}/nodes/${node.uuid}`}
                             className="font-medium text-primary hover:underline"
                           >
                             {node.name}
@@ -416,7 +485,7 @@ const Dashboard: React.FC = () => {
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => navigate(`/organizations/${node.organization_uuid}/nodes/${node.uuid}`)}
+                        onClick={() => navigate(`/organizations/${getOrgSlug(node.organization_uuid)}/nodes/${node.uuid}`)}
                       >
                         <Eye className="w-4 h-4" />
                       </Button>

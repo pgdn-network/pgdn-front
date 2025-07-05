@@ -3,6 +3,7 @@ import { storage } from '@/utils/storage';
 
 interface Organization {
   uuid: string;
+  slug: string;
   name: string;
   role_name: string;
   membership_active: boolean;

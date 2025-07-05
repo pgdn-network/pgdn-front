@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, Plus, Edit2, Server, Activity, AlertCircle, CheckCircle } from 'lucide-react';
 
 const OrgNodeList: React.FC = () => {
-  const { uid } = useParams<{ uid: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [showAddNodeModal, setShowAddNodeModal] = useState(false);
   const [showEditOrgModal, setShowEditOrgModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,7 +40,7 @@ const OrgNodeList: React.FC = () => {
 
   const handleSaveNode = () => {
     // TODO: Implement API call to add node
-    console.log('Adding node to organization:', uid, formData);
+    console.log('Adding node to organization:', slug, formData);
     alert(`Added node ${formData.nodeId} to organization`);
     setShowAddNodeModal(false);
     setFormData({ nodeId: '', type: 'storage', ipAddress: '', port: '8080' });
@@ -48,7 +48,7 @@ const OrgNodeList: React.FC = () => {
 
   const handleSaveOrg = () => {
     // TODO: Implement API call to update organization
-    console.log('Updating organization:', uid, editFormData);
+    console.log('Updating organization:', slug, editFormData);
     alert(`Updated organization: ${editFormData.name}`);
     setShowEditOrgModal(false);
   };
@@ -63,9 +63,9 @@ const OrgNodeList: React.FC = () => {
   };
   
   // Mock organization data - in real app this would come from API
-  const orgName = uid === '550e8400-e29b-41d4-a716-446655440000' ? 'TechCorp Inc.' :
-                  uid === '6ba7b810-9dad-11d1-80b4-00c04fd430c8' ? 'DataFlow Systems' :
-                  uid === '6ba7b811-9dad-11d1-80b4-00c04fd430c8' ? 'CloudNet Solutions' :
+  const orgName = slug === 'techcorp-inc' ? 'TechCorp Inc.' :
+                  slug === 'dataflow-systems' ? 'DataFlow Systems' :
+                  slug === 'cloudnet-solutions' ? 'CloudNet Solutions' :
                   'Unknown Organization';
   
   // Mock node data for this organization
@@ -251,7 +251,7 @@ const OrgNodeList: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link to={`/organizations/${uid}/nodes/${node.id}`}>
+                      <Link to={`/organizations/${slug}/nodes/${node.id}`}>
                         View
                       </Link>
                     </Button>
