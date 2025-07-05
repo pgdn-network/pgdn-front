@@ -39,7 +39,7 @@ const Navigation: React.FC = () => {
   
   const navigation = [
     { name: 'Dashboard', href: '/', current: location.pathname === '/' },
-    { name: 'Organizations', href: '/organizations', current: location.pathname === '/organizations' || location.pathname.startsWith('/organization/') },
+    { name: 'Organizations', href: '/organizations', current: location.pathname === '/organizations' || location.pathname.startsWith('/organizations/') },
     { name: 'Nodes', href: '/nodes', current: location.pathname === '/nodes' || location.pathname.startsWith('/nodes/') },
     { name: 'Scans', href: '/scans', current: location.pathname === '/scans' },
     { name: 'Orchestrations', href: '/orchestrations', current: location.pathname === '/orchestrations' },

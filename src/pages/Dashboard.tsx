@@ -1,11 +1,19 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/custom/Card';
 import { StatusDot } from '@/components/ui/custom/StatusDot';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { mockUser } from '@/mocks/user';
+import { storage } from '@/utils/storage';
 import { 
   Server, 
   Shield, 
@@ -14,14 +22,81 @@ import {
   Globe,
   Clock,
   MapPin,
-  Cpu,
-  HardDrive,
-  Network,
-  Eye,
-  ArrowUpRight
+  Eye
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedOrg = searchParams.get('org') || 'all';
+  
+  const handleOrgChange = (value: string) => {
+    if (value === 'all') {
+      searchParams.delete('org');
+    } else {
+      searchParams.set('org', value);
+    }
+    setSearchParams(searchParams);
+  };
+
+  // Fetch nodes data from API
+  React.useEffect(() => {
+    const fetchNodes = async () => {
+      try {
+        // Get JWT token using the proper storage utility
+        const token = storage.getAccessToken();
+        
+        if (!token) {
+          console.error('No access token found. User may need to log in.');
+          return;
+        }
+        
+        let url: string;
+        if (selectedOrg && selectedOrg !== 'all') {
+          // Organization-specific API call
+          url = `http://localhost:8000/api/v1/organizations/${selectedOrg}/nodes?limit=50&offset=0`;
+        } else {
+          // General nodes API call
+          url = 'http://localhost:8000/api/v1/nodes?limit=50&offset=0';
+        }
+
+        console.log('Fetching nodes from:', url);
+
+        const response = await fetch(url, {
+          headers: {
+            'Accept': '*/*',
+            'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Nodes data received:', data);
+        
+        // TODO: Update state with fetched data instead of using mock data
+        
+      } catch (error) {
+        console.error('Error fetching nodes:', error);
+      }
+    };
+
+    fetchNodes();
+  }, [selectedOrg]); // Re-fetch when organization filter changes
+  
+  // Mock organizations data
+  const organizations = [
+    { id: '550e8400-e29b-41d4-a716-446655440000', name: 'PGDN Global' },
+    { id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8', name: 'PGDN Europe' },
+    { id: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: 'PGDN Asia' },
+    { id: '6ba7b812-9dad-11d1-80b4-00c04fd430c8', name: 'PGDN Americas' },
+  ];
+  
   // Mock data for stats with enhanced visual indicators
   const stats = [
     {
@@ -165,12 +240,19 @@ const Dashboard: React.FC = () => {
             <Globe className="w-5 h-5 text-secondary" />
             Network Nodes
           </h2>
-          <Button variant="default" asChild>
-            <Link to="/nodes">
-              <Server className="w-4 h-4 mr-2" />
-              Manage Nodes
-            </Link>
-          </Button>
+          <Select value={selectedOrg} onValueChange={handleOrgChange}>
+            <SelectTrigger className="w-[200px] !bg-white dark:!bg-gray-800">
+              <SelectValue placeholder="Select organization" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Organizations</SelectItem>
+              {organizations.map((org) => (
+                <SelectItem key={org.id} value={org.id}>
+                  {org.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <Card className="p-0">
           <Table>
@@ -195,7 +277,12 @@ const Dashboard: React.FC = () => {
                         <Server className="w-4 h-4 text-secondary" />
                       </div>
                       <div>
-                        <p className="font-medium text-primary">{node.name}</p>
+                        <Link 
+                          to={`/organizations/550e8400-e29b-41d4-a716-446655440000/nodes/${node.id}`}
+                          className="font-medium text-primary hover:underline"
+                        >
+                          {node.name}
+                        </Link>
                         <p className="text-xs text-muted">ID: {node.id}</p>
                       </div>
                     </div>
@@ -236,7 +323,11 @@ const Dashboard: React.FC = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => navigate(`/organizations/550e8400-e29b-41d4-a716-446655440000/nodes/${node.id}`)}
+                    >
                       <Eye className="w-4 h-4" />
                     </Button>
                   </TableCell>

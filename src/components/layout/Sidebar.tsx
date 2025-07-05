@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
-  { icon: Server, label: 'Nodes', href: '/nodes' },
+  // { icon: Building2, label: 'Organizations', href: '/organizations' },
   { icon: ScanLine, label: 'Scans', href: '/scans' },
   { icon: GitBranch, label: 'Orchestrations', href: '/orchestrations' },
   { icon: FileText, label: 'Reports', href: '/reports' },
