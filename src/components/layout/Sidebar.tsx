@@ -1,26 +1,23 @@
 import { NavLink } from 'react-router-dom'
 import { 
   LayoutDashboard, 
-  Server, 
   ScanLine, 
   GitBranch, 
   FileText, 
-  Settings,
   Building2,
   User,
   LogOut,
   ChevronRight,
-  Zap,
   Activity,
   Globe
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { useOrganizations } from '@/contexts/OrganizationsContext'
 import { Button } from '@/components/ui/button'
 
-const navItems = [
+const baseNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
-  // { icon: Building2, label: 'Organizations', href: '/organizations' },
   { icon: ScanLine, label: 'Scans', href: '/scans' },
   { icon: GitBranch, label: 'Orchestrations', href: '/orchestrations' },
   { icon: FileText, label: 'Reports', href: '/reports' },
@@ -28,6 +25,13 @@ const navItems = [
 
 export function Sidebar() {
   const { user, logout } = useAuth()
+  const { organizations } = useOrganizations()
+
+  const navItems = [
+    ...baseNavItems.slice(0, 1), // Dashboard
+    ...(organizations.length > 1 ? [{ icon: Building2, label: 'Organizations', href: '/organizations' }] : []),
+    ...baseNavItems.slice(1) // Rest of the items
+  ]
 
   const handleLogout = async () => {
     await logout()

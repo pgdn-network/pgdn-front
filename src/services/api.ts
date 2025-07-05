@@ -88,11 +88,10 @@ class ApiService {
     try {
       const response = await axios.post<RefreshTokenResponse>(
         `${config.apiUrl}${config.apiPrefix}/refresh`,
-        JSON.stringify(refreshToken),
+        { refresh_token: refreshToken },
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${storage.getAccessToken()}`,
           },
         }
       );

@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import Loader from '@/components/ui/custom/Loader';
+import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { mockUser } from '@/mocks/user';
 import { storage } from '@/utils/storage';
 import { 
@@ -22,13 +24,40 @@ import {
   Globe,
   Clock,
   MapPin,
-  Eye
+  Eye,
+  Plus
 } from 'lucide-react';
+
+interface Protocol {
+  uuid: string;
+  name: string;
+  display_name: string;
+  category: string;
+}
+
+interface Node {
+  uuid: string;
+  name: string;
+  address: string;
+  active: boolean;
+  meta: Record<string, unknown>;
+  organization_uuid: string;
+  protocol_uuid: string | null;
+  protocol_name: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedOrg = searchParams.get('org') || 'all';
+  const [protocols, setProtocols] = React.useState<Protocol[]>([]);
+  const [nodes, setNodes] = React.useState<Node[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [nodesLoading, setNodesLoading] = React.useState(true);
+  const { organizations, loading: orgsLoading } = useOrganizations();
   
   const handleOrgChange = (value: string) => {
     if (value === 'all') {
@@ -39,10 +68,12 @@ const Dashboard: React.FC = () => {
     setSearchParams(searchParams);
   };
 
+
   // Fetch nodes data from API
   React.useEffect(() => {
     const fetchNodes = async () => {
       try {
+        setNodesLoading(true);
         // Get JWT token using the proper storage utility
         const token = storage.getAccessToken();
         
@@ -79,23 +110,83 @@ const Dashboard: React.FC = () => {
         const data = await response.json();
         console.log('Nodes data received:', data);
         
-        // TODO: Update state with fetched data instead of using mock data
+        // Update state with fetched nodes data
+        if (data.nodes && Array.isArray(data.nodes)) {
+          setNodes(data.nodes);
+        }
         
       } catch (error) {
         console.error('Error fetching nodes:', error);
+      } finally {
+        setNodesLoading(false);
       }
     };
 
     fetchNodes();
   }, [selectedOrg]); // Re-fetch when organization filter changes
+
+  // Update loading state when both API calls complete
+  React.useEffect(() => {
+    setLoading(nodesLoading || orgsLoading);
+  }, [nodesLoading, orgsLoading]);
+
+  // Fetch protocols data from API
+  React.useEffect(() => {
+    const fetchProtocols = async () => {
+      try {
+        // Get JWT token using the proper storage utility
+        const token = storage.getAccessToken();
+        
+        if (!token) {
+          console.error('No access token found for protocols request. User may need to log in.');
+          return;
+        }
+
+        const url = 'http://localhost:8000/api/v1/protocols';
+        console.log('Fetching protocols from:', url);
+
+        const response = await fetch(url, {
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: Protocol[] = await response.json();
+        console.log('Protocols data received:', data);
+        setProtocols(data);
+        
+      } catch (error) {
+        console.error('Error fetching protocols:', error);
+      }
+    };
+
+    fetchProtocols();
+  }, []); // Fetch protocols once on component mount
+
+  // Create protocol lookup map for efficiency
+  const protocolMap = React.useMemo(() => {
+    const map = new Map<string, Protocol>();
+    protocols.forEach(protocol => {
+      map.set(protocol.uuid, protocol);
+    });
+    return map;
+  }, [protocols]);
+
+  // Helper function to get protocol info by UUID
+  const getProtocol = (protocolUuid: string | null): Protocol | null => {
+    if (!protocolUuid) return null;
+    return protocolMap.get(protocolUuid) || null;
+  };
   
-  // Mock organizations data
-  const organizations = [
-    { id: '550e8400-e29b-41d4-a716-446655440000', name: 'PGDN Global' },
-    { id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8', name: 'PGDN Europe' },
-    { id: '6ba7b811-9dad-11d1-80b4-00c04fd430c8', name: 'PGDN Asia' },
-    { id: '6ba7b812-9dad-11d1-80b4-00c04fd430c8', name: 'PGDN Americas' },
-  ];
+  // Determine if we should show no nodes page
+  const shouldShowNoNodesPage = !loading && nodes.length === 0;
   
   // Mock data for stats with enhanced visual indicators
   const stats = [
@@ -133,64 +224,62 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Enhanced mock data for recent nodes with more details
-  const recentNodes = [
-    {
-      id: 'node-1',
-      name: 'DePIN Node Alpha',
-      type: 'Storage',
-      status: 'online' as const,
-      location: 'New York, NY',
-      uptime: '99.9%',
-      lastSeen: '2 minutes ago',
-      performance: 95,
-      resources: '85% CPU, 67% Memory'
-    },
-    {
-      id: 'node-2',
-      name: 'DePIN Node Beta',
-      type: 'Compute',
-      status: 'online' as const,
-      location: 'San Francisco, CA',
-      uptime: '98.7%',
-      lastSeen: '1 minute ago',
-      performance: 88,
-      resources: '72% CPU, 54% Memory'
-    },
-    {
-      id: 'node-3',
-      name: 'DePIN Node Gamma',
-      type: 'Network',
-      status: 'offline' as const,
-      location: 'Austin, TX',
-      uptime: '95.2%',
-      lastSeen: '2 hours ago',
-      performance: 0,
-      resources: 'N/A'
-    },
-    {
-      id: 'node-4',
-      name: 'DePIN Node Delta',
-      type: 'Storage',
-      status: 'degraded' as const,
-      location: 'Miami, FL',
-      uptime: '99.5%',
-      lastSeen: '30 seconds ago',
-      performance: 67,
-      resources: '92% CPU, 78% Memory'
-    },
-    {
-      id: 'node-5',
-      name: 'DePIN Node Echo',
-      type: 'Compute',
-      status: 'online' as const,
-      location: 'Seattle, WA',
-      uptime: '99.8%',
-      lastSeen: '45 seconds ago',
-      performance: 92,
-      resources: '68% CPU, 45% Memory'
-    }
-  ];
+
+  // Show loading state while data is being fetched
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
+            <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{mockUser.name.split(' ')[0]}</span></p>
+            <p className="text-muted max-w-2xl mt-2">Monitor your DePIN network performance, track node health, and manage your decentralized infrastructure from one central hub.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted">Network Status</span>
+            <StatusDot status="online" />
+            <span className="text-success font-semibold">All Systems Operational</span>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader size="lg" className="mb-4" />
+          <p className="text-lg text-secondary">Loading your dashboard...</p>
+          <p className="text-sm text-muted mt-2">Fetching nodes and organizations</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show no nodes page if no nodes and not filtered
+  if (shouldShowNoNodesPage) {
+    return (
+      <div className="space-y-6">
+        {/* No Nodes State */}
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="w-20 h-20 bg-surface-secondary flex items-center justify-center mb-6">
+            <Server className="w-10 h-10 text-secondary" />
+          </div>
+          <h1 className="text-3xl font-bold text-primary mb-4">Welcome to PGDN</h1>
+          <p className="text-lg text-secondary mb-2 text-center max-w-md">
+            You haven't added any nodes to your network yet. Get started by creating your first node.
+          </p>
+          <p className="text-sm text-muted mb-8 text-center max-w-md">
+            Nodes are the core components of your DePIN network. They help process transactions, store data, and maintain network security.
+          </p>
+          <Button 
+            onClick={() => navigate('/nodes/create')}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Create Your First Node
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -240,99 +329,101 @@ const Dashboard: React.FC = () => {
             <Globe className="w-5 h-5 text-secondary" />
             Network Nodes
           </h2>
-          <Select value={selectedOrg} onValueChange={handleOrgChange}>
-            <SelectTrigger className="w-[200px] !bg-white dark:!bg-gray-800">
-              <SelectValue placeholder="Select organization" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Organizations</SelectItem>
-              {organizations.map((org) => (
-                <SelectItem key={org.id} value={org.id}>
-                  {org.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {organizations.length > 1 && (
+            <Select value={selectedOrg} onValueChange={handleOrgChange}>
+              <SelectTrigger className="w-[200px] !bg-white dark:!bg-gray-800">
+                <SelectValue placeholder="Select organization" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Organizations</SelectItem>
+                {organizations.map((org) => (
+                  <SelectItem key={org.uuid} value={org.uuid}>
+                    {org.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <Card className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Node</TableHead>
-                <TableHead>Type</TableHead>
+                <TableHead>Protocol</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead>Uptime</TableHead>
-                <TableHead>Last Seen</TableHead>
-                <TableHead>Performance</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead>Last Scan</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentNodes.map((node) => (
-                <TableRow key={node.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-surface-secondary flex items-center justify-center">
-                        <Server className="w-4 h-4 text-secondary" />
+              {nodes.map((node) => {
+                const protocol = getProtocol(node.protocol_uuid);
+                return (
+                  <TableRow key={node.uuid}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-surface-secondary flex items-center justify-center">
+                          <Server className="w-4 h-4 text-secondary" />
+                        </div>
+                        <div>
+                          <Link 
+                            to={`/organizations/${node.organization_uuid}/nodes/${node.uuid}`}
+                            className="font-medium text-primary hover:underline"
+                          >
+                            {node.name}
+                          </Link>
+                          <p className="text-xs text-muted">{node.address}</p>
+                        </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
                       <div>
-                        <Link 
-                          to={`/organizations/550e8400-e29b-41d4-a716-446655440000/nodes/${node.id}`}
-                          className="font-medium text-primary hover:underline"
-                        >
-                          {node.name}
-                        </Link>
-                        <p className="text-xs text-muted">ID: {node.id}</p>
+                        {protocol ? (
+                          <>
+                            <div className="font-medium text-sm">{protocol.display_name}</div>
+                            <div className="text-xs text-muted">{protocol.category.replace(/_/g, ' ')}</div>
+                          </>
+                        ) : (
+                          <div className="text-xs text-muted">No protocol assigned</div>
+                        )}
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{node.type}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <StatusDot status={node.status} />
-                      <span className="capitalize text-sm">{node.status}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm">
-                      <MapPin className="w-3 h-3 text-muted" />
-                      {node.location}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm font-medium">{node.uptime}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Clock className="w-3 h-3 text-muted" />
-                      {node.lastSeen}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 bg-surface-secondary h-2">
-                        <div 
-                          className="h-2 bg-secondary"
-                          style={{ width: `${node.performance}%` }}
-                        />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <StatusDot status={node.active ? 'online' : 'offline'} />
+                        <span className="capitalize text-sm">{node.active ? 'Active' : 'Inactive'}</span>
                       </div>
-                      <span className="text-sm font-medium">{node.performance}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => navigate(`/organizations/550e8400-e29b-41d4-a716-446655440000/nodes/${node.id}`)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <MapPin className="w-3 h-3 text-muted" />
+                        <span className="text-muted">Not available</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted">Not available</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Clock className="w-3 h-3 text-muted" />
+                        <span className="text-muted">Not available</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => navigate(`/organizations/${node.organization_uuid}/nodes/${node.uuid}`)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Card>

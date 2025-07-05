@@ -179,7 +179,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Call logout API
         await axios.post(
           `${config.apiUrl}${config.apiPrefix}/logout`,
-          JSON.stringify(refreshTokenValue),
+          { refresh_token: refreshTokenValue },
           {
             headers: {
               'Content-Type': 'application/json',
@@ -209,11 +209,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await axios.post<AuthTokens>(
         `${config.apiUrl}${config.apiPrefix}/refresh`,
-        JSON.stringify(refreshTokenValue),
+        { refresh_token: refreshTokenValue },
         {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${storage.getAccessToken()}`,
           },
         }
       );

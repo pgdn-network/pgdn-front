@@ -7,10 +7,10 @@ export interface StatusDotProps {
 
 export function StatusDot({ status, className }: StatusDotProps) {
   const colors = {
-    online: 'bg-secondary',
-    offline: 'bg-muted',
-    degraded: 'bg-secondary',
-    unknown: 'bg-muted'
+    online: 'bg-green-500',
+    offline: 'bg-red-500',
+    degraded: 'bg-yellow-500',
+    unknown: 'bg-gray-400'
   }
 
   return (
