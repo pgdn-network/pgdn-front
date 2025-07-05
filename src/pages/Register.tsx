@@ -1,74 +1,85 @@
 import React, { useState } from 'react';
 import { UserPlus, Mail, Lock, User, Building } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
+import type { ApiErrorResponse, ApiErrorDetail, ValidationError } from '@/api/auth';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+const registerSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirm_password: z.string(),
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  organization_name: z.string().min(1, 'Organization name is required'),
+  agree_terms: z.boolean().refine(val => val === true, 'You must agree to the terms'),
+}).refine(data => data.password === data.confirm_password, {
+  message: "Passwords don't match",
+  path: ["confirm_password"],
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: '',
-    confirm_password: '',
-    first_name: '',
-    last_name: '',
-    organization_name: '',
-  });
-  const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState('');
-  const { register, isLoading } = useAuth();
+  const { register: registerUser, isLoading } = useAuth();
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: 'onChange',
+  });
 
   const breadcrumbItems = [
     { label: 'PGDN' }
   ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleTermsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAgreeTerms(e.target.checked);
-  };
-
-  // Check if all required fields are filled
-  const isFormValid = () => {
-    const requiredFields = [
-      'email',
-      'username', 
-      'password',
-      'confirm_password',
-      'first_name',
-      'last_name',
-      'organization_name'
-    ];
+  const parseApiError = (errorResponse: ApiErrorResponse): string => {
+    const { detail } = errorResponse;
     
-    const allFieldsFilled = requiredFields.every(field => 
-      formData[field as keyof typeof formData].trim() !== ''
-    );
-    
-    return allFieldsFilled && agreeTerms;
+    if (Array.isArray(detail)) {
+      // Handle validation errors
+      const validationErrors = detail as ValidationError[];
+      const messages = validationErrors.map(error => {
+        const field = error.loc[error.loc.length - 1];
+        return `${field}: ${error.msg}`;
+      });
+      return messages.join(', ');
+    } else {
+      // Handle API error detail
+      const apiError = detail as ApiErrorDetail;
+      return `${apiError.message}. ${apiError.recommendation}`;
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterFormData) => {
     setError('');
     
-    if (formData.password !== formData.confirm_password) {
-      setError('Passwords do not match');
-      return;
-    }
-    
     try {
-      await register(formData);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+      await registerUser({
+        email: data.email,
+        password: data.password,
+        confirm_password: data.confirm_password,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        organization_name: data.organization_name,
+      });
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: ApiErrorResponse } };
+      if (error.response?.data) {
+        setError(parseApiError(error.response.data));
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     }
   };
 
@@ -93,7 +104,7 @@ const Register: React.FC = () => {
           </div>
           
           <Card className="p-6">
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                   {error}
@@ -106,15 +117,15 @@ const Register: React.FC = () => {
                     <User className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                     <Input
                       id="first_name"
-                      name="first_name"
                       type="text"
-                      required
                       className="pl-10"
                       placeholder="First name"
-                      value={formData.first_name}
-                      onChange={handleChange}
+                      {...register('first_name')}
                     />
                   </div>
+                  {errors.first_name && (
+                    <p className="text-sm text-red-600">{errors.first_name.message}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">Last Name</Label>
@@ -122,15 +133,15 @@ const Register: React.FC = () => {
                     <User className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                     <Input
                       id="last_name"
-                      name="last_name"
                       type="text"
-                      required
                       className="pl-10"
                       placeholder="Last name"
-                      value={formData.last_name}
-                      onChange={handleChange}
+                      {...register('last_name')}
                     />
                   </div>
+                  {errors.last_name && (
+                    <p className="text-sm text-red-600">{errors.last_name.message}</p>
+                  )}
                 </div>
               </div>
               
@@ -140,32 +151,15 @@ const Register: React.FC = () => {
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                   <Input
                     id="email"
-                    name="email"
                     type="email"
-                    required
                     className="pl-10"
                     placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    {...register('email')}
                   />
                 </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    required
-                    className="pl-10"
-                    placeholder="Choose a username"
-                    value={formData.username}
-                    onChange={handleChange}
-                  />
-                </div>
+                {errors.email && (
+                  <p className="text-sm text-red-600">{errors.email.message}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -174,15 +168,15 @@ const Register: React.FC = () => {
                   <Building className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                   <Input
                     id="organization_name"
-                    name="organization_name"
                     type="text"
-                    required
                     className="pl-10"
                     placeholder="Enter your organization name"
-                    value={formData.organization_name}
-                    onChange={handleChange}
+                    {...register('organization_name')}
                   />
                 </div>
+                {errors.organization_name && (
+                  <p className="text-sm text-red-600">{errors.organization_name.message}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -191,15 +185,15 @@ const Register: React.FC = () => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                   <Input
                     id="password"
-                    name="password"
                     type="password"
-                    required
                     className="pl-10"
                     placeholder="Choose a password"
-                    value={formData.password}
-                    onChange={handleChange}
+                    {...register('password')}
                   />
                 </div>
+                {errors.password && (
+                  <p className="text-sm text-red-600">{errors.password.message}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -208,39 +202,42 @@ const Register: React.FC = () => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-500-foreground" />
                   <Input
                     id="confirm_password"
-                    name="confirm_password"
                     type="password"
-                    required
                     className="pl-10"
                     placeholder="Confirm your password"
-                    value={formData.confirm_password}
-                    onChange={handleChange}
+                    {...register('confirm_password')}
                   />
                 </div>
+                {errors.confirm_password && (
+                  <p className="text-sm text-red-600">{errors.confirm_password.message}</p>
+                )}
               </div>
               
-              <div className="flex items-center">
-                <input
-                  id="agree-terms"
-                  name="agree-terms"
-                  type="checkbox"
-                  checked={agreeTerms}
-                  onChange={handleTermsChange}
-                  className="h-4 w-4 text-gray-900 focus:ring-primary border-gray-200 rounded"
-                />
-                <label htmlFor="agree-terms" className="ml-2 block text-sm text-foreground">
-                  I agree to the{' '}
-                  <a href="#" className="text-gray-900 hover:text-gray-900/80">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#" className="text-gray-900 hover:text-gray-900/80">
-                    Privacy Policy
-                  </a>
-                </label>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <input
+                    id="agree-terms"
+                    type="checkbox"
+                    className="h-4 w-4 text-gray-900 focus:ring-primary border-gray-200 rounded"
+                    {...register('agree_terms')}
+                  />
+                  <label htmlFor="agree-terms" className="ml-2 block text-sm text-foreground">
+                    I agree to the{' '}
+                    <a href="#" className="text-gray-900 hover:text-gray-900/80">
+                      Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a href="#" className="text-gray-900 hover:text-gray-900/80">
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+                {errors.agree_terms && (
+                  <p className="text-sm text-red-600">{errors.agree_terms.message}</p>
+                )}
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading || !isFormValid()}>
+              <Button type="submit" className="w-full" disabled={isLoading || !isValid}>
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>

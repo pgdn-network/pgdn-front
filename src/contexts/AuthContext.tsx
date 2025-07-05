@@ -140,7 +140,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      const response = await axios.post<AuthTokens>(
+      const response = await axios.post(
         `${config.apiUrl}${config.apiPrefix}/register`,
         data,
         {
@@ -150,19 +150,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       );
 
-      const tokens: AuthTokens = {
-        access_token: response.data.access_token,
-        refresh_token: response.data.refresh_token,
-        token_type: response.data.token_type,
-      };
-
-      storage.setTokens(tokens);
-      
-      const userFromToken = getUserFromToken(tokens.access_token);
-      if (userFromToken) {
-        setUser(userFromToken);
-        navigate('/');
-      }
+      // Registration successful - redirect to login page with API message
+      const successMessage = response.data.message || 'Registration successful! Please log in with your credentials.';
+      navigate('/login', { 
+        state: { 
+          message: successMessage
+        } 
+      });
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
