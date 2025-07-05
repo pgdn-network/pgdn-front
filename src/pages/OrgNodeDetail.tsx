@@ -6,6 +6,7 @@ import { CVECard } from '@/components/ui/custom/CVECard';
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
+import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -24,6 +25,7 @@ const OrgNodeDetail: React.FC = () => {
     tasksData, 
     scanSessionsData, 
     reportsData,
+    statusData,
     loading, 
     error, 
     refetch 
@@ -225,6 +227,11 @@ const OrgNodeDetail: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Node Status Section */}
+        <div className="mt-8">
+          <NodeStatusCard status={statusData} />
         </div>
         
         {/* CVE Details Section */}

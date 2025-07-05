@@ -6,7 +6,8 @@ import type {
   NodeInterventionsResponse, 
   NodeTasksResponse, 
   NodeScanSessionsResponse,
-  NodeReportsResponse 
+  NodeReportsResponse,
+  NodeStatus
 } from '@/types/node';
 
 export class NodeApiService {
@@ -84,6 +85,13 @@ export class NodeApiService {
   static async getNodeReports(organizationUuid: string, nodeUuid: string): Promise<NodeReportsResponse> {
     const response = await apiService.get<NodeReportsResponse>(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/reports`
+    );
+    return response.data;
+  }
+
+  static async getNodeStatus(organizationUuid: string, nodeUuid: string): Promise<NodeStatus> {
+    const response = await apiService.get<NodeStatus>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/status`
     );
     return response.data;
   }

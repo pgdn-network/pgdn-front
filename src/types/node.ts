@@ -211,3 +211,25 @@ export interface NodeReportsResponse {
   organization_uuid: string;
   node_uuid: string;
 }
+
+// Node Status
+export interface NodeStatus {
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
+  operational_status: string;
+  status_message: string;
+  last_checked: string;
+  last_scan_date: string;
+  last_scan_status: string;
+  next_scheduled_scan: string | null;
+  active_tasks_count: number;
+  failed_tasks_count: number;
+  open_interventions_count: number;
+  critical_interventions_count: number;
+  connectivity_status: string;
+  scan_health: string;
+  avg_scan_duration: number;
+  success_rate: number;
+}
