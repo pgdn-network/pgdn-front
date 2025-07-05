@@ -34,7 +34,8 @@ function getConnectivityStatusVariant(status: string): 'success' | 'destructive'
   }
 }
 
-function formatDuration(seconds: number): string {
+function formatDuration(seconds: number | null): string {
+  if (seconds === null || seconds === undefined) return 'N/A'
   if (seconds < 60) return `${seconds.toFixed(1)}s`
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = Math.round(seconds % 60)

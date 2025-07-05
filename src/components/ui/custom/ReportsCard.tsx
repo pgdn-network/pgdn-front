@@ -22,8 +22,6 @@ function getRiskScoreLabel(score: number): string {
 }
 
 export function ReportsCard({ reports }: ReportsCardProps) {
-  console.log('ReportsCard received reports:', reports);
-  
   if (!reports || reports.length === 0) {
     return (
       <Card>
