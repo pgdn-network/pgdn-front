@@ -14,7 +14,18 @@ const NodeDetail: React.FC = () => {
   const { organizations, loading: orgsLoading } = useOrganizations();
   
   const organizationUuid = organizations.length > 0 ? organizations[0].uuid : '';
-  const { node, cveData, loading, error, refetch } = useNodeData(organizationUuid, id || '');
+  const { 
+    node, 
+    cveData, 
+    eventsData, 
+    interventionsData, 
+    tasksData, 
+    scanSessionsData, 
+    reportsData,
+    loading, 
+    error, 
+    refetch 
+  } = useNodeData(organizationUuid, id || '');
   
   
   const breadcrumbItems = [
@@ -258,6 +269,81 @@ const NodeDetail: React.FC = () => {
         {/* CVE Details Section */}
         <div className="mt-6">
           <CVECard cves={cveData || []} />
+        </div>
+
+        {/* Events Section */}
+        <div className="mt-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Events</h2>
+              <span className="text-sm text-muted-foreground">
+                {eventsData?.events?.length || 0} events
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {eventsData ? 'Events data loaded' : 'Loading events...'}
+            </div>
+          </Card>
+        </div>
+
+        {/* Interventions Section */}
+        <div className="mt-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Interventions</h2>
+              <span className="text-sm text-muted-foreground">
+                {interventionsData?.interventions?.length || 0} interventions
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {interventionsData ? 'Interventions data loaded' : 'Loading interventions...'}
+            </div>
+          </Card>
+        </div>
+
+        {/* Tasks Section */}
+        <div className="mt-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Tasks</h2>
+              <span className="text-sm text-muted-foreground">
+                {tasksData?.tasks?.length || 0} tasks
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {tasksData ? 'Tasks data loaded' : 'Loading tasks...'}
+            </div>
+          </Card>
+        </div>
+
+        {/* Scan Sessions Section */}
+        <div className="mt-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Scan Sessions</h2>
+              <span className="text-sm text-muted-foreground">
+                {scanSessionsData?.scan_sessions?.length || 0} sessions
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {scanSessionsData ? 'Scan sessions data loaded' : 'Loading scan sessions...'}
+            </div>
+          </Card>
+        </div>
+
+        {/* Reports Section */}
+        <div className="mt-6">
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Reports</h2>
+              <span className="text-sm text-muted-foreground">
+                {reportsData?.reports?.length || 0} reports
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {reportsData ? 'Reports data loaded' : 'Loading reports...'}
+            </div>
+          </Card>
         </div>
       </div>
     </div>

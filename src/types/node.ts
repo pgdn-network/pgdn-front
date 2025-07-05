@@ -95,3 +95,85 @@ export interface CveMatch {
 }
 
 export type NodeCveResponse = CveMatch[];
+
+// Events
+export interface NodeEvent {
+  id: string;
+  status: string;
+  orchestrator_type: string;
+  created_at: string;
+  updated_at: string;
+  // Will be updated with actual response structure
+}
+
+export interface NodeEventsResponse {
+  events: NodeEvent[];
+  pagination?: {
+    page: number;
+    page_size: number;
+    total: number;
+  };
+  // Will be updated with actual response structure
+}
+
+// Interventions
+export interface NodeIntervention {
+  id: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  // Will be updated with actual response structure
+}
+
+export interface NodeInterventionsResponse {
+  interventions: NodeIntervention[];
+  status_counts?: Record<string, number>;
+  // Will be updated with actual response structure
+}
+
+// Tasks
+export interface NodeTask {
+  id: string;
+  status: string;
+  task_type: string;
+  created_at: string;
+  updated_at: string;
+  // Will be updated with actual response structure
+}
+
+export interface NodeTasksResponse {
+  tasks: NodeTask[];
+  // Will be updated with actual response structure
+}
+
+// Scan Sessions
+export interface NodeScanSession {
+  id: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  results?: unknown;
+  normalized_data?: unknown;
+  scores?: unknown;
+  // Will be updated with actual response structure
+}
+
+export interface NodeScanSessionsResponse {
+  scan_sessions: NodeScanSession[];
+  // Will be updated with actual response structure
+}
+
+// Reports
+export interface NodeReport {
+  id: string;
+  name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  // Will be updated with actual response structure
+}
+
+export interface NodeReportsResponse {
+  reports: NodeReport[];
+  // Will be updated with actual response structure
+}

@@ -13,7 +13,18 @@ const OrgNodeDetail: React.FC = () => {
   // Find organization by slug
   const organization = organizations.find(org => org.slug === slug);
   const organizationUuid = organization?.uuid || '';
-  const { node, cveData, loading, error, refetch } = useNodeData(organizationUuid, nodeId || '');
+  const { 
+    node, 
+    cveData, 
+    eventsData, 
+    interventionsData, 
+    tasksData, 
+    scanSessionsData, 
+    reportsData,
+    loading, 
+    error, 
+    refetch 
+  } = useNodeData(organizationUuid, nodeId || '');
   
 
   if (loading || orgsLoading) {
@@ -216,6 +227,81 @@ const OrgNodeDetail: React.FC = () => {
         {/* CVE Details Section */}
         <div className="mt-8">
           <CVECard cves={cveData || []} />
+        </div>
+
+        {/* Events Section */}
+        <div className="mt-8">
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Events</h2>
+              <span className="text-sm text-gray-500">
+                {eventsData?.events?.length || 0} events
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {eventsData ? 'Events data loaded' : 'Loading events...'}
+            </div>
+          </div>
+        </div>
+
+        {/* Interventions Section */}
+        <div className="mt-8">
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Interventions</h2>
+              <span className="text-sm text-gray-500">
+                {interventionsData?.interventions?.length || 0} interventions
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {interventionsData ? 'Interventions data loaded' : 'Loading interventions...'}
+            </div>
+          </div>
+        </div>
+
+        {/* Tasks Section */}
+        <div className="mt-8">
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Tasks</h2>
+              <span className="text-sm text-gray-500">
+                {tasksData?.tasks?.length || 0} tasks
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {tasksData ? 'Tasks data loaded' : 'Loading tasks...'}
+            </div>
+          </div>
+        </div>
+
+        {/* Scan Sessions Section */}
+        <div className="mt-8">
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Scan Sessions</h2>
+              <span className="text-sm text-gray-500">
+                {scanSessionsData?.scan_sessions?.length || 0} sessions
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {scanSessionsData ? 'Scan sessions data loaded' : 'Loading scan sessions...'}
+            </div>
+          </div>
+        </div>
+
+        {/* Reports Section */}
+        <div className="mt-8">
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Reports</h2>
+              <span className="text-sm text-gray-500">
+                {reportsData?.reports?.length || 0} reports
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {reportsData ? 'Reports data loaded' : 'Loading reports...'}
+            </div>
+          </div>
         </div>
         
         {/* TODO: Add organization-specific node configuration */}

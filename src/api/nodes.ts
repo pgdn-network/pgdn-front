@@ -1,5 +1,13 @@
 import { apiService } from '@/services/api';
-import type { Node, NodeCveResponse } from '@/types/node';
+import type { 
+  Node, 
+  NodeCveResponse, 
+  NodeEventsResponse, 
+  NodeInterventionsResponse, 
+  NodeTasksResponse, 
+  NodeScanSessionsResponse,
+  NodeReportsResponse 
+} from '@/types/node';
 
 export class NodeApiService {
   private static baseUrl = '/organizations';
@@ -43,6 +51,41 @@ export class NodeApiService {
 
   static async deleteNode(organizationUuid: string, nodeUuid: string): Promise<void> {
     await apiService.delete(`${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}`);
+  }
+
+  static async getNodeEvents(organizationUuid: string, nodeUuid: string): Promise<NodeEventsResponse> {
+    const response = await apiService.get<NodeEventsResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/events`
+    );
+    return response.data;
+  }
+
+  static async getNodeInterventions(organizationUuid: string, nodeUuid: string): Promise<NodeInterventionsResponse> {
+    const response = await apiService.get<NodeInterventionsResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/interventions`
+    );
+    return response.data;
+  }
+
+  static async getNodeTasks(organizationUuid: string, nodeUuid: string): Promise<NodeTasksResponse> {
+    const response = await apiService.get<NodeTasksResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/tasks`
+    );
+    return response.data;
+  }
+
+  static async getNodeScanSessions(organizationUuid: string, nodeUuid: string): Promise<NodeScanSessionsResponse> {
+    const response = await apiService.get<NodeScanSessionsResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scan-sessions?include_results=true`
+    );
+    return response.data;
+  }
+
+  static async getNodeReports(organizationUuid: string, nodeUuid: string): Promise<NodeReportsResponse> {
+    const response = await apiService.get<NodeReportsResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/reports`
+    );
+    return response.data;
   }
 }
 
