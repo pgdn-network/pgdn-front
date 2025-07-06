@@ -137,6 +137,15 @@ const Login: React.FC = () => {
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
+            
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-500-foreground">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-gray-900 hover:text-gray-900/80 font-medium">
+                  Sign up
+                </Link>
+              </p>
+            </div>
           </Card>
         </div>
       </div>
