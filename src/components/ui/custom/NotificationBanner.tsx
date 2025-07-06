@@ -1,14 +1,7 @@
 import React from 'react';
 import { CheckCircle, AlertCircle, XCircle, Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-export interface Notification {
-  id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  title: string;
-  message?: string;
-  duration?: number; // in milliseconds, 0 = persistent
-}
+import { type Notification } from '@/contexts/NotificationContext';
 
 interface NotificationBannerProps {
   notification: Notification;
@@ -70,37 +63,3 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({
   );
 };
 
-// Hook for managing notifications
-export const useNotifications = () => {
-  const [notifications, setNotifications] = React.useState<Notification[]>([]);
-
-  const addNotification = React.useCallback((notification: Omit<Notification, 'id'>) => {
-    const id = Date.now().toString();
-    const newNotification: Notification = { ...notification, id };
-    
-    setNotifications(prev => [...prev, newNotification]);
-
-    // Auto-remove after duration (default 5 seconds)
-    if (notification.duration !== 0) {
-      const duration = notification.duration || 5000;
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-      }, duration);
-    }
-  }, []);
-
-  const removeNotification = React.useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
-
-  const clearAll = React.useCallback(() => {
-    setNotifications([]);
-  }, []);
-
-  return {
-    notifications,
-    addNotification,
-    removeNotification,
-    clearAll,
-  };
-};

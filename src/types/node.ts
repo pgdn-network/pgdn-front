@@ -233,3 +233,48 @@ export interface NodeStatus {
   avg_scan_duration: number;
   success_rate: number;
 }
+
+// Scan Session Response Types
+export interface ScanInfo {
+  id: string;
+  scan_type: string;
+  target: string;
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  task_id: string | null;
+  tracking_url: string | null;
+  created_at: string;
+  completed_at?: string;
+  progress?: number;
+}
+
+export interface TrackingUrls {
+  session: string;
+  scans: string[];
+}
+
+export interface ScanSessionResponse {
+  message: string;
+  session_id: string;
+  node_uuid: string;
+  organization_uuid: string;
+  total_scans: number;
+  scan_level: number;
+  scanners: string[];
+  task_ids: string[];
+  tracking_urls: TrackingUrls;
+  scans: ScanInfo[];
+  created_at: string;
+}
+
+export interface ScanSessionStatus {
+  session_id: string;
+  node_uuid: string;
+  organization_uuid: string;
+  status: 'running' | 'completed' | 'failed';
+  total_scans: number;
+  completed_scans: number;
+  failed_scans: number;
+  scans: ScanInfo[];
+  created_at: string;
+  completed_at?: string;
+}

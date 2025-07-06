@@ -7,7 +7,9 @@ import type {
   NodeTasksResponse, 
   NodeScanSessionsResponse,
   NodeReportsResponse,
-  NodeStatus
+  NodeStatus,
+  ScanSessionResponse,
+  ScanSessionStatus
 } from '@/types/node';
 
 export class NodeApiService {
@@ -96,11 +98,16 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async startNodeScan(organizationUuid: string, nodeUuid: string, scanners: string[]): Promise<{ task_queue_link: string }> {
-    const response = await apiService.post<{ task_queue_link: string }>(
+  static async startNodeScan(organizationUuid: string, nodeUuid: string, scanners: string[]): Promise<ScanSessionResponse> {
+    const response = await apiService.post<ScanSessionResponse>(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scan`,
       { scanners }
     );
+    return response.data;
+  }
+
+  static async getScanSession(sessionUrl: string): Promise<ScanSessionStatus> {
+    const response = await apiService.get<ScanSessionStatus>(sessionUrl);
     return response.data;
   }
 }

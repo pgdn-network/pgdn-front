@@ -3,6 +3,7 @@ import { ThemeProvider } from './components/theme/ThemeProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { OrganizationsProvider } from './contexts/OrganizationsContext';
 import { ProtocolsProvider } from './contexts/ProtocolsContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
@@ -31,6 +32,7 @@ function App() {
         <AuthProvider>
           <OrganizationsProvider>
             <ProtocolsProvider>
+              <NotificationProvider>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -58,6 +60,7 @@ function App() {
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
+              </NotificationProvider>
             </ProtocolsProvider>
           </OrganizationsProvider>
         </AuthProvider>

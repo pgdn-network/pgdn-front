@@ -1,5 +1,7 @@
 import React from 'react';
-import { NotificationBanner, type Notification } from './NotificationBanner';
+import { NotificationBanner } from './NotificationBanner';
+import { ScanProgressNotification } from './ScanProgressNotification';
+import type { Notification } from '@/contexts/NotificationContext';
 
 interface NotificationsContainerProps {
   notifications: Notification[];
@@ -21,10 +23,17 @@ export const NotificationsContainer: React.FC<NotificationsContainerProps> = ({
           key={notification.id}
           className="transform transition-all duration-300 ease-in-out"
         >
-          <NotificationBanner
-            notification={notification}
-            onClose={onClose}
-          />
+          {notification.type === 'scan_progress' && notification.scanSessionStatus ? (
+            <ScanProgressNotification
+              sessionStatus={notification.scanSessionStatus}
+              onClose={() => onClose(notification.id)}
+            />
+          ) : (
+            <NotificationBanner
+              notification={notification}
+              onClose={onClose}
+            />
+          )}
         </div>
       ))}
     </div>

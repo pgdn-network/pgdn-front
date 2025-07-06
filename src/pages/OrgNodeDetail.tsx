@@ -8,18 +8,18 @@ import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
-import { useNotifications } from '@/components/ui/custom/NotificationBanner';
-import { NotificationsContainer } from '@/components/ui/custom/NotificationsContainer';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
+import { scanTracker } from '@/services/scanTracker';
 
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
-  const { notifications, addNotification, removeNotification } = useNotifications();
+  const { addNotification, updateNotification } = useNotifications();
   
   // Find organization by slug
   const organization = organizations.find(org => org.slug === slug);
@@ -48,15 +48,62 @@ const OrgNodeDetail: React.FC = () => {
       
       setIsScanModalOpen(false);
       
-      // Show success notification
+      // Show initial success notification
       addNotification({
         type: 'success',
         title: 'Scan Started Successfully',
         message: `Started ${scanners.length} scanner${scanners.length > 1 ? 's' : ''}: ${scanners.join(', ')}`,
-        duration: 5000
+        duration: 3000
       });
+
+      // Create a progress notification that will be updated
+      const progressNotificationId = `scan-progress-${response.session_id}`;
+      addNotification({
+        id: progressNotificationId,
+        type: 'scan_progress',
+        title: 'Scan In Progress',
+        duration: 0, // Persistent until complete
+        scanSessionStatus: {
+          session_id: response.session_id,
+          node_uuid: response.node_uuid,
+          organization_uuid: response.organization_uuid,
+          status: 'running',
+          total_scans: response.total_scans,
+          completed_scans: 0,
+          failed_scans: 0,
+          scans: response.scans,
+          created_at: response.created_at
+        }
+      });
+
+      // Start tracking the scan progress
+      scanTracker.startTracking(
+        response,
+        // On update callback
+        (status) => {
+          updateNotification(progressNotificationId, {
+            scanSessionStatus: status
+          });
+        },
+        // On complete callback
+        (status) => {
+          // Update final status
+          updateNotification(progressNotificationId, {
+            scanSessionStatus: status,
+            duration: 5000 // Auto-dismiss after 5 seconds when complete
+          });
+          
+          // Show completion notification
+          const hasFailedScans = status.failed_scans > 0;
+          addNotification({
+            type: hasFailedScans ? 'warning' : 'success',
+            title: hasFailedScans ? 'Scan Session Completed with Failures' : 'Scan Session Completed',
+            message: `${status.completed_scans} completed, ${status.failed_scans} failed`,
+            duration: 5000
+          });
+        }
+      );
       
-      // TODO: Handle the task queue link from response.task_queue_link for monitoring
     } catch (error) {
       console.error('Failed to start scan:', error);
       
@@ -121,10 +168,6 @@ const OrgNodeDetail: React.FC = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      <NotificationsContainer 
-        notifications={notifications} 
-        onClose={removeNotification} 
-      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex-1 min-w-0">

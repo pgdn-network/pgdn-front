@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { GlobalNotifications } from '@/components/ui/custom/GlobalNotifications';
 
 const Layout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -12,6 +13,8 @@ const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Global Notifications */}
+      <GlobalNotifications />
       {/* Desktop Sidebar - Fixed positioning with exact 240px width */}
       <div className="hidden md:block fixed left-0 top-0 h-full w-60 z-30">
         <Sidebar />
