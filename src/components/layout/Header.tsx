@@ -4,6 +4,7 @@ import { Search, Bell, Menu, Sun, Moon, Settings, User, LogOut, ChevronDown } fr
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
+import { WebSocketStatus } from '@/components/ui/custom/WebSocketStatus'
 
 interface HeaderProps {
   onMobileMenuToggle: () => void
@@ -53,6 +54,9 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
 
         {/* Right Side - Actions & User */}
         <div className="flex items-center gap-3">
+          {/* WebSocket Status */}
+          <WebSocketStatus />
+          
           {/* Theme Toggle */}
           <Button
             variant="ghost"

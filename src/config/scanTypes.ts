@@ -83,12 +83,12 @@ export const scanOrchestrationConfig: ScanOrchestrationConfig = {
   }
 };
 
-// Helper function to get available scanners (enabled, no min_level: 2)
+// Helper function to get available scanners (enabled)
 export const getAvailableScanners = () => {
   const scanTypes = scanOrchestrationConfig.scan_orchestration.available_scan_types;
   
   return Object.entries(scanTypes)
-    .filter(([_, config]) => config.enabled && config.min_level !== 2)
+    .filter(([_, config]) => config.enabled)
     .map(([key, config]) => ({
       id: key,
       label: formatScannerLabel(key),
@@ -101,9 +101,8 @@ export const getAvailableScanners = () => {
 
 // Helper function to get default selected scanners
 export const getDefaultScanners = () => {
-  return getAvailableScanners()
-    .filter(scanner => scanner.default)
-    .map(scanner => scanner.id);
+  // Only return 'web' as the default selected scanner
+  return ['web'];
 };
 
 // Helper function to format scanner labels

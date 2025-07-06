@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import type { ReactNode } from 'react';
 
 import type { ScanSessionStatus } from '@/types/node';
 
@@ -13,7 +14,7 @@ export interface Notification {
 
 interface NotificationContextType {
   notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  addNotification: (notification: Omit<Notification, 'id'> | Notification) => void;
   updateNotification: (id: string, updates: Partial<Notification>) => void;
   removeNotification: (id: string) => void;
   clearAll: () => void;
@@ -35,14 +36,24 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const MAX_NOTIFICATIONS = 5; // Maximum number of notifications to show
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
-    const id = Date.now().toString();
+  const addNotification = useCallback((notification: Omit<Notification, 'id'> | Notification) => {
+    const id = 'id' in notification ? notification.id : Date.now().toString();
     const newNotification: Notification = { ...notification, id };
     
-    setNotifications(prev => [...prev, newNotification]);
+    setNotifications(prev => {
+      const updatedNotifications = [...prev, newNotification];
+      
+      // If we exceed the maximum number of notifications, remove the oldest ones
+      if (updatedNotifications.length > MAX_NOTIFICATIONS) {
+        return updatedNotifications.slice(-MAX_NOTIFICATIONS);
+      }
+      
+      return updatedNotifications;
+    });
 
-    // Auto-remove after duration (default 5 seconds)
+    // Auto-remove after duration (default 5 seconds, scan completion notifications get 15 seconds)
     if (notification.duration !== 0) {
       const duration = notification.duration || 5000;
       setTimeout(() => {

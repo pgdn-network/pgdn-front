@@ -107,7 +107,23 @@ export class NodeApiService {
   }
 
   static async getScanSession(sessionUrl: string): Promise<ScanSessionStatus> {
-    const response = await apiService.get<ScanSessionStatus>(sessionUrl);
+    // Normalize the URL to remove /api/v1 prefix if it exists
+    // This prevents double /api/v1/api/v1 in the URL
+    const normalizedUrl = sessionUrl.startsWith('/api/v1/') 
+      ? sessionUrl.substring(7) // Remove '/api/v1' prefix
+      : sessionUrl;
+    
+    const response = await apiService.get<ScanSessionStatus>(normalizedUrl);
+    return response.data;
+  }
+
+  static async getTaskStatus(taskUrl: string): Promise<any> {
+    // Normalize the URL to remove /api/v1 prefix if it exists
+    const normalizedUrl = taskUrl.startsWith('/api/v1/') 
+      ? taskUrl.substring(7) // Remove '/api/v1' prefix
+      : taskUrl;
+    
+    const response = await apiService.get<any>(normalizedUrl);
     return response.data;
   }
 }

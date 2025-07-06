@@ -53,7 +53,7 @@ const OrgNodeDetail: React.FC = () => {
         type: 'success',
         title: 'Scan Started Successfully',
         message: `Started ${scanners.length} scanner${scanners.length > 1 ? 's' : ''}: ${scanners.join(', ')}`,
-        duration: 3000
+        duration: 8000 // 8 seconds duration
       });
 
       // Create a progress notification that will be updated
@@ -87,19 +87,19 @@ const OrgNodeDetail: React.FC = () => {
         },
         // On complete callback
         (status) => {
-          // Update final status
+          // Update final status - keep progress notification persistent until manually closed
           updateNotification(progressNotificationId, {
             scanSessionStatus: status,
-            duration: 5000 // Auto-dismiss after 5 seconds when complete
+            duration: 0 // Persistent until manually closed
           });
           
-          // Show completion notification
+          // Show completion notification with longer duration
           const hasFailedScans = status.failed_scans > 0;
           addNotification({
             type: hasFailedScans ? 'warning' : 'success',
             title: hasFailedScans ? 'Scan Session Completed with Failures' : 'Scan Session Completed',
             message: `${status.completed_scans} completed, ${status.failed_scans} failed`,
-            duration: 5000
+            duration: 15000 // 15 seconds duration
           });
         }
       );

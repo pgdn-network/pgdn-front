@@ -13,8 +13,10 @@ export const ScanProgressNotification: React.FC<ScanProgressNotificationProps> =
   sessionStatus,
   onClose
 }) => {
-  const completedScans = sessionStatus.scans.filter(scan => scan.status === 'completed').length;
-  const totalScans = sessionStatus.total_scans;
+  // Defensive programming: ensure scans array exists and is valid
+  const scans = Array.isArray(sessionStatus.scans) ? sessionStatus.scans : [];
+  const completedScans = scans.filter(scan => scan && scan.status === 'completed').length;
+  const totalScans = sessionStatus.total_scans || 0;
   const allComplete = completedScans === totalScans;
 
   return (
@@ -40,7 +42,7 @@ export const ScanProgressNotification: React.FC<ScanProgressNotificationProps> =
       </div>
 
       <div className="space-y-2">
-        {sessionStatus.scans.map((scan) => (
+        {scans.map((scan) => (
           <ScanProgressBar
             key={scan.id}
             scanType={scan.scan_type}

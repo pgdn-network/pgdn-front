@@ -15,6 +15,7 @@ import {
 import Loader from '@/components/ui/custom/Loader';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
+import { useWebSocketContext } from '@/contexts/WebSocketContext';
 import { mockUser } from '@/mocks/user';
 import { storage } from '@/utils/storage';
 import { 
@@ -58,6 +59,7 @@ const Dashboard: React.FC = () => {
   const [nodesLoading, setNodesLoading] = React.useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { loading: protocolsLoading, getProtocol } = useProtocols();
+  const { isConnected, lastMessage } = useWebSocketContext();
   
   const handleOrgChange = (value: string) => {
     if (value === 'all') {
@@ -142,6 +144,13 @@ const Dashboard: React.FC = () => {
     const org = organizations.find(org => org.uuid === orgUuid);
     return org?.slug || orgUuid; // Fallback to UUID if slug not found
   };
+
+  // Log WebSocket messages for debugging
+  React.useEffect(() => {
+    if (lastMessage) {
+      console.log('Dashboard received WebSocket message:', lastMessage);
+    }
+  }, [lastMessage]);
 
   // Helper function to get icon and color based on current_state
   const getStateIcon = (currentState: string | null | undefined) => {

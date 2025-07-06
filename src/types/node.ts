@@ -250,6 +250,7 @@ export interface ScanInfo {
 export interface TrackingUrls {
   session: string;
   scans: string[];
+  scan_tasks?: string[];
 }
 
 export interface ScanSessionResponse {
