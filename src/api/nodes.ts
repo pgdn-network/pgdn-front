@@ -95,6 +95,14 @@ export class NodeApiService {
     );
     return response.data;
   }
+
+  static async startNodeScan(organizationUuid: string, nodeUuid: string, scanners: string[]): Promise<{ task_queue_link: string }> {
+    const response = await apiService.post<{ task_queue_link: string }>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scan`,
+      { scanners }
+    );
+    return response.data;
+  }
 }
 
 export default NodeApiService;

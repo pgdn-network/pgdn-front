@@ -1,0 +1,90 @@
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2 } from 'lucide-react';
+
+interface ScanModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (scanners: string[]) => void;
+  isLoading?: boolean;
+}
+
+const scannerOptions = [
+  { id: 'web', label: 'Web Scanner', description: 'Scan web services and HTTP endpoints' },
+  { id: 'geo', label: 'Geo Scanner', description: 'Geographical and location-based analysis' },
+  { id: 'node_scan', label: 'Node Scanner', description: 'Comprehensive node infrastructure scan' },
+  { id: 'ssl', label: 'SSL Scanner', description: 'SSL/TLS certificate and security scan' },
+];
+
+export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onConfirm, isLoading = false }) => {
+  const [selectedScanners, setSelectedScanners] = useState<string[]>(['web']);
+
+  const handleCheckedChange = (scannerId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedScanners([...selectedScanners, scannerId]);
+    } else {
+      setSelectedScanners(selectedScanners.filter(id => id !== scannerId));
+    }
+  };
+
+  const handleConfirm = () => {
+    if (selectedScanners.length > 0) {
+      onConfirm(selectedScanners);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Configure Scan</DialogTitle>
+          <DialogDescription>
+            Select the scanners you want to run on this node.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          {scannerOptions.map((scanner) => (
+            <div key={scanner.id} className="flex items-start space-x-3">
+              <Checkbox
+                id={scanner.id}
+                checked={selectedScanners.includes(scanner.id)}
+                onCheckedChange={(checked) => handleCheckedChange(scanner.id, checked as boolean)}
+                disabled={isLoading}
+              />
+              <div className="space-y-1">
+                <label
+                  htmlFor={scanner.id}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  {scanner.label}
+                </label>
+                <p className="text-sm text-muted-foreground">{scanner.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirm} 
+            disabled={selectedScanners.length === 0 || isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isLoading ? 'Starting Scan...' : 'Start Scan'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

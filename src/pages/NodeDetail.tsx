@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Server, Activity, Shield, Settings, Play, BarChart3, Clock, MapPin, AlertTriangle, Loader2 } from 'lucide-react';
 import Breadcrumb from '../components/common/Breadcrumb';
@@ -8,12 +8,16 @@ import { Button } from '@/components/ui/button';
 import { CVECard } from '@/components/ui/custom/CVECard'
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
+import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
+import { NodeApiService } from '@/api/nodes';
 
 const NodeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isScanLoading, setIsScanLoading] = useState(false);
   
   const organizationUuid = organizations.length > 0 ? organizations[0].uuid : '';
   const { 
@@ -28,6 +32,25 @@ const NodeDetail: React.FC = () => {
     error, 
     refetch 
   } = useNodeData(organizationUuid, id || '');
+
+  const handleStartScan = async (scanners: string[]) => {
+    if (!organizationUuid || !id) return;
+    
+    setIsScanLoading(true);
+    try {
+      const response = await NodeApiService.startNodeScan(organizationUuid, id, scanners);
+      console.log('Scan started successfully:', response);
+      // TODO: Handle the task queue link from response.task_queue_link
+      setIsScanModalOpen(false);
+      // Optionally refresh data after scan starts
+      refetch();
+    } catch (error) {
+      console.error('Failed to start scan:', error);
+      // TODO: Add proper error handling/notification
+    } finally {
+      setIsScanLoading(false);
+    }
+  };
   
   
   const breadcrumbItems = [
@@ -103,7 +126,7 @@ const NodeDetail: React.FC = () => {
               </div>
             </div>
             <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-              <Button variant="default">
+              <Button variant="default" onClick={() => setIsScanModalOpen(true)}>
                 <Play className="h-4 w-4 mr-2" />
                 Start Scan
               </Button>
@@ -314,7 +337,7 @@ const NodeDetail: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Scan Sessions</h2>
               <span className="text-sm text-muted-foreground">
-                {scanSessionsData?.scan_sessions?.length || 0} sessions
+                {scanSessionsData?.scans?.length || 0} sessions
               </span>
             </div>
             <div className="text-sm text-muted-foreground">
@@ -328,6 +351,14 @@ const NodeDetail: React.FC = () => {
           <ReportsCard reports={reportsData?.reports || []} />
         </div>
       </div>
+      
+      {/* Scan Modal */}
+      <ScanModal
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
+        onConfirm={handleStartScan}
+        isLoading={isScanLoading}
+      />
     </div>
   );
 };

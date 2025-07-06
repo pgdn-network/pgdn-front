@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Server, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,16 @@ import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
+import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
+import { NodeApiService } from '@/api/nodes';
 
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isScanLoading, setIsScanLoading] = useState(false);
   
   // Find organization by slug
   const organization = organizations.find(org => org.slug === slug);
@@ -30,6 +34,25 @@ const OrgNodeDetail: React.FC = () => {
     error, 
     refetch 
   } = useNodeData(organizationUuid, nodeId || '');
+
+  const handleStartScan = async (scanners: string[]) => {
+    if (!organizationUuid || !nodeId) return;
+    
+    setIsScanLoading(true);
+    try {
+      const response = await NodeApiService.startNodeScan(organizationUuid, nodeId, scanners);
+      console.log('Scan started successfully:', response);
+      // TODO: Handle the task queue link from response.task_queue_link
+      setIsScanModalOpen(false);
+      // Optionally refresh data after scan starts
+      refetch();
+    } catch (error) {
+      console.error('Failed to start scan:', error);
+      // TODO: Add proper error handling/notification
+    } finally {
+      setIsScanLoading(false);
+    }
+  };
   
 
   if (loading || orgsLoading) {
@@ -89,12 +112,12 @@ const OrgNodeDetail: React.FC = () => {
             </p>
           </div>
           <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            <Button onClick={() => setIsScanModalOpen(true)}>
               Start Scan
-            </button>
-            <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            </Button>
+            <Button variant="outline">
               Settings
-            </button>
+            </Button>
           </div>
         </div>
         
@@ -327,6 +350,14 @@ const OrgNodeDetail: React.FC = () => {
         {/* TODO: Add organization-specific alerts */}
         {/* TODO: Add node role management within organization */}
       </div>
+      
+      {/* Scan Modal */}
+      <ScanModal
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
+        onConfirm={handleStartScan}
+        isLoading={isScanLoading}
+      />
     </div>
   );
 };
