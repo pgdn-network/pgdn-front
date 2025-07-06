@@ -9,6 +9,8 @@ import { CVECard } from '@/components/ui/custom/CVECard'
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
+import { useNotifications } from '@/components/ui/custom/NotificationBanner';
+import { NotificationsContainer } from '@/components/ui/custom/NotificationsContainer';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
@@ -18,6 +20,7 @@ const NodeDetail: React.FC = () => {
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
+  const { notifications, addNotification, removeNotification } = useNotifications();
   
   const organizationUuid = organizations.length > 0 ? organizations[0].uuid : '';
   const { 
@@ -40,13 +43,28 @@ const NodeDetail: React.FC = () => {
     try {
       const response = await NodeApiService.startNodeScan(organizationUuid, id, scanners);
       console.log('Scan started successfully:', response);
-      // TODO: Handle the task queue link from response.task_queue_link
+      
       setIsScanModalOpen(false);
-      // Optionally refresh data after scan starts
-      refetch();
+      
+      // Show success notification
+      addNotification({
+        type: 'success',
+        title: 'Scan Started Successfully',
+        message: `Started ${scanners.length} scanner${scanners.length > 1 ? 's' : ''}: ${scanners.join(', ')}`,
+        duration: 5000
+      });
+      
+      // TODO: Handle the task queue link from response.task_queue_link for monitoring
     } catch (error) {
       console.error('Failed to start scan:', error);
-      // TODO: Add proper error handling/notification
+      
+      // Show error notification
+      addNotification({
+        type: 'error',
+        title: 'Failed to Start Scan',
+        message: 'Please try again or contact support if the problem persists.',
+        duration: 7000
+      });
     } finally {
       setIsScanLoading(false);
     }
@@ -107,6 +125,10 @@ const NodeDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <NotificationsContainer 
+        notifications={notifications} 
+        onClose={removeNotification} 
+      />
       <div className="container mx-auto px-4 py-4">
         <Breadcrumb items={breadcrumbItems} />
         
