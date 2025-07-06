@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
+import { getAvailableScanners, getDefaultScanners } from '@/config/scanTypes';
 
 interface ScanModalProps {
   isOpen: boolean;
@@ -18,15 +19,16 @@ interface ScanModalProps {
   isLoading?: boolean;
 }
 
-const scannerOptions = [
-  { id: 'web', label: 'Web Scanner', description: 'Scan web services and HTTP endpoints' },
-  { id: 'geo', label: 'Geo Scanner', description: 'Geographical and location-based analysis' },
-  { id: 'node_scan', label: 'Node Scanner', description: 'Comprehensive node infrastructure scan' },
-  { id: 'ssl', label: 'SSL Scanner', description: 'SSL/TLS certificate and security scan' },
-];
-
 export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onConfirm, isLoading = false }) => {
-  const [selectedScanners, setSelectedScanners] = useState<string[]>(['web']);
+  const scannerOptions = getAvailableScanners();
+  const [selectedScanners, setSelectedScanners] = useState<string[]>(getDefaultScanners());
+
+  // Reset to defaults when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedScanners(getDefaultScanners());
+    }
+  }, [isOpen]);
 
   const handleCheckedChange = (scannerId: string, checked: boolean) => {
     if (checked) {
