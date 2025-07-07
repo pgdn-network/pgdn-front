@@ -8,11 +8,12 @@ interface BreadcrumbItem {
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
+  progress?: React.ReactNode;
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, progress }) => {
   return (
-    <nav className="flex" aria-label="Breadcrumb">
+    <nav className="flex items-center justify-between" aria-label="Breadcrumb">
       <ol className="inline-flex items-center space-x-1 md:space-x-3">
         {items.map((item, index) => (
           <li key={index} className="inline-flex items-center">
@@ -48,6 +49,11 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
           </li>
         ))}
       </ol>
+      {progress && (
+        <div className="flex items-center">
+          {progress}
+        </div>
+      )}
     </nav>
   );
 };

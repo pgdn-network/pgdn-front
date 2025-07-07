@@ -8,6 +8,7 @@ import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
+import { ValidationModal } from '@/components/ui/custom/ValidationModal';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { NodeOnboardingLayout } from '@/components/ui/custom/NodeOnboardingLayout';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -17,16 +18,11 @@ import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
 import { useBanner } from '@/contexts/BannerContext';
 
-
-
-
-
-
-
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
   const { banner, setBanner } = useBanner();
   const { addNotification, updateNotification } = useNotifications();
@@ -141,7 +137,10 @@ const OrgNodeDetail: React.FC = () => {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => {/* TODO: open validation modal */}}
+            onClick={() => {
+              console.log('Validate Node button clicked!');
+              setIsValidationModalOpen(true);
+            }}
             className="text-yellow-800 border-yellow-400 hover:bg-yellow-100 h-6 px-2"
           >
             Validate Node
@@ -227,12 +226,44 @@ const OrgNodeDetail: React.FC = () => {
           onConfirm={handleStartScan}
           isLoading={isScanLoading}
         />
+
+        {/* Validation Modal - always available */}
+        <ValidationModal
+          isOpen={isValidationModalOpen}
+          onClose={() => setIsValidationModalOpen(false)}
+          node={node}
+        />
       </>
     );
   }
   
   // For all other states, show onboarding layout
-  return <NodeOnboardingLayout node={node} organization={organization} />;
+  if (!organization) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col items-center justify-center h-64">
+            <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">Organization Not Found</h2>
+            <p className="text-gray-500">The requested organization could not be found.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <>
+      <NodeOnboardingLayout node={node} organization={organization} />
+      
+      {/* Validation Modal - always available */}
+      <ValidationModal
+        isOpen={isValidationModalOpen}
+        onClose={() => setIsValidationModalOpen(false)}
+        node={node}
+      />
+    </>
+  );
 };
 
 export default OrgNodeDetail;
