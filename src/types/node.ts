@@ -38,6 +38,10 @@ export interface Node {
   active: boolean;
   status: string;
   current_state: string;
+  simple_state: string;
+  validated: boolean;
+  discovery_status: string;
+  is_ready_for_scan: boolean;
   meta: NodeMeta;
   created_at: string;
   updated_at: string;

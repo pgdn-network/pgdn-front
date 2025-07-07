@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Server, Activity, Shield, Settings, Play, BarChart3, Clock, MapPin, AlertTriangle, Loader2 } from 'lucide-react';
+import { Server, Activity, Shield, Settings, Play, BarChart3, Clock, MapPin, AlertTriangle, Loader2, Rocket, Search, CheckCircle, AlertCircle, X } from 'lucide-react';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
@@ -15,11 +15,317 @@ import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
 
+// Validation Banner Component
+const ValidationBanner: React.FC<{ node: any; onClose: () => void }> = ({ node, onClose }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-yellow-400 mr-3" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">
+                Unvalidated Node
+              </h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                This node has not been validated yet. Validation is required before scanning.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsModalOpen(true)}
+              className="text-yellow-800 border-yellow-400 hover:bg-yellow-100"
+            >
+              Validate Node
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={onClose}
+              className="text-yellow-600 hover:text-yellow-800"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Validation Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Validate Node</h2>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setIsModalOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Node validation ensures that the target is reachable and properly configured for scanning.
+              </p>
+              <div className="bg-gray-50 p-3 rounded">
+                <h4 className="font-medium text-sm mb-2">Validation Process:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>• Network connectivity test</li>
+                  <li>• Protocol verification</li>
+                  <li>• Port accessibility check</li>
+                  <li>• Security policy compliance</li>
+                </ul>
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  className="flex-1"
+                  onClick={() => {
+                    // TODO: Implement validation logic
+                    console.log('Validating node:', node.uuid);
+                    setIsModalOpen(false);
+                  }}
+                >
+                  Start Validation
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// New Node Page Component (with discovery status)
+const NewNodePage: React.FC<{ node: any }> = ({ node }) => {
+  const [showValidationBanner, setShowValidationBanner] = useState(true);
+
+  const isDiscoveryPending = node.discovery_status === 'pending';
+  const isDiscoveryFailed = node.discovery_status !== 'completed' && node.discovery_status !== 'pending';
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-4">
+        <Breadcrumb items={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Nodes', href: '/nodes' },
+          { label: node?.name || 'Node' }
+        ]} />
+        
+        {/* Validation Banner */}
+        {!node.validated && showValidationBanner && (
+          <ValidationBanner 
+            node={node} 
+            onClose={() => setShowValidationBanner(false)} 
+          />
+        )}
+        
+        <div className="mt-8 max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <div className="bg-primary/10 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+              <Rocket className="h-10 w-10 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Node Onboarding</h1>
+            <p className="text-lg text-muted-foreground">
+              Let's get your node {node?.name} set up and ready for scanning
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold">Node Created</h3>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Your node has been successfully created and is ready for the onboarding process.
+              </p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Name:</span>
+                  <span className="font-medium">{node?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Address:</span>
+                  <span className="font-medium">{node?.address}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Protocol:</span>
+                  <span className="font-medium">{node?.protocol_details?.display_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>State:</span>
+                  <Badge variant="secondary">{node?.simple_state}</Badge>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="bg-yellow-100 p-2 rounded-lg mr-3">
+                  <Search className="h-5 w-5 text-yellow-600" />
+                </div>
+                <h3 className="text-lg font-semibold">Discovery Status</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <Badge 
+                    variant={isDiscoveryPending ? 'secondary' : isDiscoveryFailed ? 'warning' : 'success'}
+                  >
+                    {node?.discovery_status}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Validated:</span>
+                  <Badge variant={node?.validated ? 'success' : 'warning'}>
+                    {node?.validated ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Ready for Scan:</span>
+                  <Badge variant={node?.is_ready_for_scan ? 'success' : 'secondary'}>
+                    {node?.is_ready_for_scan ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Discovery Status Specific Content */}
+          {isDiscoveryPending && (
+            <Card className="p-6 mb-6">
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold">Discovery in Progress</h3>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                We're currently discovering and analyzing your node. This process may take a few minutes.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                  <span className="text-sm">Network connectivity established</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+                  <span className="text-sm">Port scanning in progress</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                  <span className="text-sm text-muted-foreground">Service identification</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                  <span className="text-sm text-muted-foreground">Vulnerability assessment</span>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {isDiscoveryFailed && (
+            <Card className="p-6 mb-6">
+              <div className="flex items-center mb-4">
+                <div className="bg-red-100 p-2 rounded-lg mr-3">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold">Discovery Failed</h3>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                The discovery process encountered an error. Please check your node configuration and try again.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
+                  <span className="text-sm text-red-600">Discovery process failed</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                  <span className="text-sm text-muted-foreground">Check network connectivity</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                  <span className="text-sm text-muted-foreground">Verify protocol configuration</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                  <span className="text-sm text-muted-foreground">Review firewall settings</span>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Button variant="outline" className="mr-3">
+                  Retry Discovery
+                </Button>
+                <Button variant="outline">
+                  View Logs
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Onboarding Status</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                  <span>Node Registration</span>
+                </div>
+                <Badge variant="success">Completed</Badge>
+              </div>
+              <div className={`flex items-center justify-between p-3 rounded-lg ${
+                isDiscoveryPending ? 'bg-blue-50' : isDiscoveryFailed ? 'bg-red-50' : 'bg-green-50'
+              }`}>
+                <div className="flex items-center">
+                  <Search className={`h-5 w-5 mr-3 ${
+                    isDiscoveryPending ? 'text-blue-600' : isDiscoveryFailed ? 'text-red-600' : 'text-green-600'
+                  }`} />
+                  <span>Discovery Phase</span>
+                </div>
+                <Badge variant={
+                  isDiscoveryPending ? 'secondary' : isDiscoveryFailed ? 'warning' : 'success'
+                }>
+                  {isDiscoveryPending ? 'In Progress' : isDiscoveryFailed ? 'Failed' : 'Completed'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  <Shield className="h-5 w-5 text-gray-400 mr-3" />
+                  <span>Security Assessment</span>
+                </div>
+                <Badge variant="secondary">Pending</Badge>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const NodeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
+  const [showValidationBanner, setShowValidationBanner] = useState(true);
   const { addNotification, updateNotification } = useNotifications();
   
   const organizationUuid = organizations.length > 0 ? organizations[0].uuid : '';
@@ -28,7 +334,6 @@ const NodeDetail: React.FC = () => {
     cveData, 
     eventsData, 
     interventionsData, 
-    tasksData, 
     scanSessionsData, 
     reportsData,
     loading, 
@@ -170,10 +475,24 @@ const NodeDetail: React.FC = () => {
     );
   }
 
+  // Check node state and render appropriate page
+  if (node.simple_state === 'new' && node.discovery_status !== 'completed') {
+    return <NewNodePage node={node} />;
+  }
+
+  // Default: Show normal node details page
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-4">
         <Breadcrumb items={breadcrumbItems} />
+        
+        {/* Validation Banner */}
+        {!node.validated && showValidationBanner && (
+          <ValidationBanner 
+            node={node} 
+            onClose={() => setShowValidationBanner(false)} 
+          />
+        )}
         
         <div className="mt-4">
           <div className="md:flex md:items-center md:justify-between">
@@ -191,7 +510,11 @@ const NodeDetail: React.FC = () => {
               </div>
             </div>
             <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
-              <Button variant="default" onClick={() => setIsScanModalOpen(true)}>
+              <Button 
+                variant="default" 
+                onClick={() => setIsScanModalOpen(true)}
+                disabled={!node.is_ready_for_scan}
+              >
                 <Play className="h-4 w-4 mr-2" />
                 Start Scan
               </Button>
@@ -219,7 +542,19 @@ const NodeDetail: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500-foreground">State:</span>
-                <span className="text-sm text-foreground">{node.current_state}</span>
+                <Badge variant="secondary">{node.simple_state}</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500-foreground">Validated:</span>
+                <Badge variant={node.validated ? 'success' : 'warning'}>
+                  {node.validated ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500-foreground">Ready for Scan:</span>
+                <Badge variant={node.is_ready_for_scan ? 'success' : 'secondary'}>
+                  {node.is_ready_for_scan ? 'Yes' : 'No'}
+                </Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500-foreground">Protocol:</span>
@@ -387,11 +722,11 @@ const NodeDetail: React.FC = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-foreground">Tasks</h2>
               <span className="text-sm text-muted-foreground">
-                {tasksData?.tasks?.length || 0} tasks
+                0 tasks
               </span>
             </div>
             <div className="text-sm text-muted-foreground">
-              {tasksData ? 'Tasks data loaded' : 'Loading tasks...'}
+              Tasks functionality coming soon...
             </div>
           </Card>
         </div>
