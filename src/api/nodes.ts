@@ -9,7 +9,8 @@ import type {
   NodeReportsResponse,
   NodeStatus,
   ScanSessionResponse,
-  ScanSessionStatus
+  ScanSessionStatus,
+  NodeIpsResponse
 } from '@/types/node';
 
 export class NodeApiService {
@@ -124,6 +125,20 @@ export class NodeApiService {
       : taskUrl;
     
     const response = await apiService.get<any>(normalizedUrl);
+    return response.data;
+  }
+
+  static async getNodeIps(
+    organizationUuid: string, 
+    nodeUuid: string, 
+    activeOnly: boolean = true
+  ): Promise<NodeIpsResponse> {
+    const params = new URLSearchParams();
+    params.append('active_only', activeOnly.toString());
+    
+    const response = await apiService.get<NodeIpsResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/node_ips?${params.toString()}`
+    );
     return response.data;
   }
 }

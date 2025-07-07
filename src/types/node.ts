@@ -279,3 +279,20 @@ export interface ScanSessionStatus {
   created_at: string;
   completed_at?: string;
 }
+
+export interface NodeIp {
+  uuid: string;
+  node_id: number;
+  ip_address: string;
+  resolved_at: string;
+  active: boolean;
+}
+
+export interface NodeIpsResponse {
+  node_ips: NodeIp[];
+  total: number;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
+}

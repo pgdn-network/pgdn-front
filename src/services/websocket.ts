@@ -17,13 +17,16 @@ export interface WebSocketConfig {
 class WebSocketService {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private maxReconnectAttempts = Infinity; // Changed to keep trying indefinitely
   private reconnectDelay = 1000; // Start with 1 second
+  private maxReconnectDelay = 30000; // Max 30 seconds between attempts
   private reconnectTimer: NodeJS.Timeout | null = null;
   private heartbeatInterval: NodeJS.Timeout | null = null;
+  private periodicReconnectInterval: NodeJS.Timeout | null = null;
   private config: WebSocketConfig = {};
   private isConnecting = false;
   private isManualDisconnect = false;
+  private hasBeenConnected = false;
 
   constructor() {
     this.setupEventListeners();
@@ -44,8 +47,17 @@ class WebSocketService {
   private setupEventListeners(): void {
     // Handle page visibility changes
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && this.isConnected()) {
-        // Reconnect if page becomes visible and we're not connected
+      if (document.visibilityState === 'visible' && !this.isConnected() && !this.isManualDisconnect) {
+        // Try to reconnect if page becomes visible and we're not connected
+        console.log('Page became visible, attempting to reconnect WebSocket...');
+        this.reconnect();
+      }
+    });
+
+    // Handle online/offline events
+    window.addEventListener('online', () => {
+      if (!this.isConnected() && !this.isManualDisconnect) {
+        console.log('Network came back online, attempting to reconnect WebSocket...');
         this.reconnect();
       }
     });
@@ -75,9 +87,11 @@ class WebSocketService {
         this.ws.onopen = () => {
           console.log('WebSocket connected successfully');
           this.isConnecting = false;
+          this.hasBeenConnected = true;
           this.reconnectAttempts = 0;
           this.reconnectDelay = 1000;
           this.startHeartbeat();
+          this.startPeriodicReconnectCheck();
           this.config.onConnect?.();
           resolve();
         };
@@ -97,7 +111,8 @@ class WebSocketService {
           this.stopHeartbeat();
           this.config.onDisconnect?.();
           
-          if (!this.isManualDisconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
+          // Always try to reconnect unless it was a manual disconnect
+          if (!this.isManualDisconnect) {
             this.scheduleReconnect();
           }
         };
@@ -106,7 +121,11 @@ class WebSocketService {
           console.error('WebSocket error:', error);
           this.isConnecting = false;
           this.config.onError?.(error);
-          reject(error);
+          
+          // Don't reject on the first connection attempt, just let onclose handle it
+          if (this.reconnectAttempts === 0) {
+            reject(error);
+          }
         };
 
       } catch (error) {
@@ -120,6 +139,7 @@ class WebSocketService {
   disconnect(): void {
     this.isManualDisconnect = true;
     this.stopHeartbeat();
+    this.stopPeriodicReconnectCheck();
     
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
@@ -138,9 +158,13 @@ class WebSocketService {
     }
 
     this.reconnectAttempts++;
-    const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), 30000);
     
-    console.log(`Scheduling WebSocket reconnect attempt ${this.reconnectAttempts} in ${delay}ms`);
+    // Exponential backoff with jitter, capped at maxReconnectDelay
+    const baseDelay = Math.min(this.reconnectDelay * Math.pow(2, Math.min(this.reconnectAttempts - 1, 6)), this.maxReconnectDelay);
+    const jitter = Math.random() * 0.3 * baseDelay; // Add up to 30% jitter
+    const delay = baseDelay + jitter;
+    
+    console.log(`Scheduling WebSocket reconnect attempt ${this.reconnectAttempts} in ${Math.round(delay)}ms`);
     
     this.reconnectTimer = setTimeout(() => {
       this.reconnect();
@@ -152,7 +176,7 @@ class WebSocketService {
       return;
     }
 
-    console.log('Attempting WebSocket reconnection...');
+    console.log(`Attempting WebSocket reconnection (attempt ${this.reconnectAttempts + 1})...`);
     this.connect(this.config)
       .then(() => {
         console.log('WebSocket reconnected successfully');
@@ -160,6 +184,7 @@ class WebSocketService {
       })
       .catch((error) => {
         console.error('WebSocket reconnection failed:', error);
+        // scheduleReconnect will be called by onclose
       });
   }
 
@@ -175,6 +200,23 @@ class WebSocketService {
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;
+    }
+  }
+
+  // Periodic check to ensure we stay connected (fallback mechanism)
+  private startPeriodicReconnectCheck(): void {
+    this.periodicReconnectInterval = setInterval(() => {
+      if (!this.isConnected() && !this.isManualDisconnect && !this.isConnecting) {
+        console.log('Periodic check: WebSocket not connected, attempting to reconnect...');
+        this.reconnect();
+      }
+    }, 60000); // Check every minute
+  }
+
+  private stopPeriodicReconnectCheck(): void {
+    if (this.periodicReconnectInterval) {
+      clearInterval(this.periodicReconnectInterval);
+      this.periodicReconnectInterval = null;
     }
   }
 
@@ -205,6 +247,23 @@ class WebSocketService {
       default:
         return 'unknown';
     }
+  }
+
+  // Public method to manually trigger reconnection
+  forceReconnect(): void {
+    if (this.isConnected()) {
+      this.ws?.close();
+    }
+    this.reconnect();
+  }
+
+  // Get reconnection stats for debugging
+  getReconnectStats(): { attempts: number; hasBeenConnected: boolean; isManualDisconnect: boolean } {
+    return {
+      attempts: this.reconnectAttempts,
+      hasBeenConnected: this.hasBeenConnected,
+      isManualDisconnect: this.isManualDisconnect,
+    };
   }
 }
 

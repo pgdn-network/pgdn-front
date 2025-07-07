@@ -13,6 +13,7 @@ import Register from './pages/Register';
 import NodeList from './pages/NodeList';
 import NodeDetail from './pages/NodeDetail';
 import NodeCreate from './pages/NodeCreate';
+import NodeIps from './pages/NodeIps';
 import Scans from './pages/Scans';
 import Orchestrations from './pages/Orchestrations';
 import Reports from './pages/Reports';
@@ -59,6 +60,7 @@ function App() {
                       {/* <Route path="organizations/:slug" element={<OrgNodeList />} /> */}
                       <Route path="organizations/:slug/nodes/create" element={<OrgNodeCreate />} />
                       <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>
