@@ -47,7 +47,7 @@ const NodeList: React.FC = () => {
             {/* Placeholder rows */}
             <TableRow>
                                 <TableCell>
-                    <Link to="/nodes/sample-node-1" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
+                    <Link to="/organizations/techcorp/nodes/sample-node-1" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
                       node-001
                     </Link>
                   </TableCell>
@@ -63,13 +63,13 @@ const NodeList: React.FC = () => {
               <TableCell>2 minutes ago</TableCell>
               <TableCell>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/nodes/sample-node-1">View</Link>
+                  <Link to="/organizations/techcorp/nodes/sample-node-1">View</Link>
                 </Button>
               </TableCell>
             </TableRow>
             <TableRow>
                                 <TableCell>
-                    <Link to="/nodes/sample-node-2" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
+                    <Link to="/organizations/dataflow/nodes/sample-node-2" className="text-link font-medium underline underline-offset-2 hover:text-link-hover transition-colors">
                       node-002
                     </Link>
                   </TableCell>
@@ -85,7 +85,7 @@ const NodeList: React.FC = () => {
               <TableCell>1 hour ago</TableCell>
               <TableCell>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/nodes/sample-node-2">View</Link>
+                  <Link to="/organizations/dataflow/nodes/sample-node-2">View</Link>
                 </Button>
               </TableCell>
             </TableRow>

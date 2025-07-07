@@ -14,7 +14,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NodeList from './pages/NodeList';
-import NodeDetail from './pages/NodeDetail';
+
 import NodeCreate from './pages/NodeCreate';
 import NodeIps from './pages/NodeIps';
 import Scans from './pages/Scans';
@@ -57,7 +57,7 @@ function App() {
                         <Route index element={<Dashboard />} />
                         <Route path="nodes" element={<NodeList />} />
                         <Route path="nodes/create" element={<NodeCreate />} />
-                        <Route path="nodes/:id" element={<NodeDetail />} />
+
                         <Route path="scans" element={<Scans />} />
                         <Route path="orchestrations" element={<Orchestrations />} />
                         <Route path="reports" element={<Reports />} />

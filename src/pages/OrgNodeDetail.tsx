@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Server, AlertTriangle, Loader2, AlertCircle, X, Rocket, Search, CheckCircle, Activity, Shield, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,12 @@ import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
-import NodeBanner from '@/components/ui/custom/NodeBanner';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
+import { useBanner } from '@/contexts/BannerContext';
 
 // New Node Page Component (with discovery status)
 const NewNodePage: React.FC<{ node: any; organization: any }> = ({ node, organization }) => {
@@ -38,7 +38,7 @@ const NewNodePage: React.FC<{ node: any; organization: any }> = ({ node, organiz
             <div className="bg-primary/10 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
               <Rocket className="h-10 w-10 text-primary" />
             </div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Welcome to Node Onboarding</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Welcssssme to Node Onboarding</h2>
             <p className="text-lg text-muted-foreground">
               Let's get your node {node?.name} set up and ready for scanning
             </p>
@@ -385,14 +385,6 @@ const ValidationBanner: React.FC<{ node: any; onClose: () => void }> = ({ node, 
 
   return (
     <>
-      <NodeBanner
-        type="warning"
-        title="Unvalidated Node"
-        message="This node has not been validated yet. Validation is required before scanning."
-        onClose={onClose}
-        actions={validateAction}
-      />
-
       {/* Validation Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -452,7 +444,7 @@ const OrgNodeDetail: React.FC = () => {
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
-  const [showValidationBanner, setShowValidationBanner] = useState(true);
+  const { banner, setBanner } = useBanner();
   const { addNotification, updateNotification } = useNotifications();
   
   // Find organization by slug
@@ -554,6 +546,30 @@ const OrgNodeDetail: React.FC = () => {
     }
   };
   
+  // Set/clear banner for unvalidated node
+  useEffect(() => {
+    if (node && !node.validated) {
+      setBanner({
+        type: 'warning',
+        title: 'Unvalidated Node',
+        message: 'This node has not been validated yet. Validation is required before scanning.',
+        actions: (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {/* TODO: open validation modal */}}
+            className="text-yellow-800 border-yellow-400 hover:bg-yellow-100 h-6 px-2"
+          >
+            Validate Node
+          </Button>
+        ),
+        onClose: () => setBanner(null),
+      });
+    } else {
+      setBanner(null);
+    }
+    // Only run when node changes
+  }, [node, setBanner]);
 
   if (loading || orgsLoading) {
     return (
@@ -632,14 +648,6 @@ const OrgNodeDetail: React.FC = () => {
             </Button>
           </div>
         </div>
-        
-        {/* Validation Banner */}
-        {!node.validated && showValidationBanner && (
-          <ValidationBanner 
-            node={node} 
-            onClose={() => setShowValidationBanner(false)} 
-          />
-        )}
         
         {/* Node Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

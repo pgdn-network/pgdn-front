@@ -38,7 +38,8 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
     );
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined | null) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
     switch (status.toLowerCase()) {
       case 'healthy':
         return 'bg-green-100 text-green-800';
@@ -51,7 +52,8 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
     }
   };
 
-  const getScanStatusColor = (status: string) => {
+  const getScanStatusColor = (status: string | undefined | null) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
     switch (status.toLowerCase()) {
       case 'completed':
         return 'bg-green-100 text-green-800';
@@ -72,7 +74,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           Node Snapshot
         </h2>
         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(snapshot.operational_status)}`}>
-          {snapshot.operational_status.charAt(0).toUpperCase() + snapshot.operational_status.slice(1)}
+          {(snapshot.operational_status ? snapshot.operational_status.charAt(0).toUpperCase() + snapshot.operational_status.slice(1) : 'Unknown')}
         </span>
       </div>
       
@@ -100,7 +102,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400">Scan Status:</span>
             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getScanStatusColor(snapshot.scan_status)}`}>
-              {snapshot.scan_status.charAt(0).toUpperCase() + snapshot.scan_status.slice(1)}
+              {(snapshot.scan_status ? snapshot.scan_status.charAt(0).toUpperCase() + snapshot.scan_status.slice(1) : 'Unknown')}
             </span>
           </div>
           
