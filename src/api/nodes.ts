@@ -10,7 +10,8 @@ import type {
   NodeStatus,
   ScanSessionResponse,
   ScanSessionStatus,
-  NodeIpsResponse
+  NodeIpsResponse,
+  NodeReport
 } from '@/types/node';
 
 export class NodeApiService {
@@ -23,16 +24,16 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async getNodeCveMatches(organizationUuid: string, nodeUuid: string): Promise<NodeCveResponse> {
+  static async getNodeCveMatches(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeCveResponse> {
     const response = await apiService.get<NodeCveResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/cve-matches?fixed_status=open`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/cve-matches?fixed_status=open&limit=${limit}`
     );
     return response.data;
   }
 
-  static async getNodes(organizationUuid: string): Promise<Node[]> {
+  static async getNodes(organizationUuid: string, limit: number = 50): Promise<Node[]> {
     const response = await apiService.get<Node[]>(
-      `${this.baseUrl}/${organizationUuid}/nodes`
+      `${this.baseUrl}/${organizationUuid}/nodes?limit=${limit}`
     );
     return response.data;
   }
@@ -57,37 +58,44 @@ export class NodeApiService {
     await apiService.delete(`${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}`);
   }
 
-  static async getNodeEvents(organizationUuid: string, nodeUuid: string): Promise<NodeEventsResponse> {
+  static async getNodeEvents(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeEventsResponse> {
     const response = await apiService.get<NodeEventsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/events`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/events?limit=${limit}`
     );
     return response.data;
   }
 
-  static async getNodeInterventions(organizationUuid: string, nodeUuid: string): Promise<NodeInterventionsResponse> {
+  static async getNodeInterventions(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeInterventionsResponse> {
     const response = await apiService.get<NodeInterventionsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/interventions`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/interventions?limit=${limit}`
     );
     return response.data;
   }
 
-  static async getNodeTasks(organizationUuid: string, nodeUuid: string): Promise<NodeTasksResponse> {
+  static async getNodeTasks(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeTasksResponse> {
     const response = await apiService.get<NodeTasksResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/tasks`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/tasks?limit=${limit}`
     );
     return response.data;
   }
 
-  static async getNodeScanSessions(organizationUuid: string, nodeUuid: string): Promise<NodeScanSessionsResponse> {
+  static async getNodeScanSessions(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeScanSessionsResponse> {
     const response = await apiService.get<NodeScanSessionsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scans`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scans?limit=${limit}`
     );
     return response.data;
   }
 
-  static async getNodeReports(organizationUuid: string, nodeUuid: string): Promise<NodeReportsResponse> {
+  static async getNodeReports(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeReportsResponse> {
     const response = await apiService.get<NodeReportsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/reports`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/reports?limit=${limit}`
+    );
+    return response.data;
+  }
+
+  static async getNodeReport(organizationUuid: string, nodeUuid: string, reportUuid: string): Promise<NodeReport> {
+    const response = await apiService.get<NodeReport>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/reports/${reportUuid}`
     );
     return response.data;
   }

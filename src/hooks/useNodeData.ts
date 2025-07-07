@@ -60,42 +60,42 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
         let statusData: NodeStatus | null = null;
 
         try {
-          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid);
+          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
         } catch (cveError) {
           console.warn('Failed to fetch CVE data:', cveError);
           cveData = [];
         }
 
         try {
-          eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid);
+          eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
         } catch (eventsError) {
           console.warn('Failed to fetch events data:', eventsError);
           eventsData = null;
         }
 
         try {
-          interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid);
+          interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
         } catch (interventionsError) {
           console.warn('Failed to fetch interventions data:', interventionsError);
           interventionsData = null;
         }
 
         try {
-          tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid);
+          tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
         } catch (tasksError) {
           console.warn('Failed to fetch tasks data:', tasksError);
           tasksData = null;
         }
 
         try {
-          scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid);
+          scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
         } catch (scanSessionsError) {
           console.warn('Failed to fetch scan sessions data:', scanSessionsError);
           scanSessionsData = null;
         }
 
         try {
-          reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid);
+          reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid, 5);
         } catch (reportsError) {
           console.warn('Failed to fetch reports data:', reportsError);
           reportsData = null;
@@ -149,42 +149,42 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
         let statusData: NodeStatus | null = null;
 
         try {
-          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid);
+          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
         } catch (cveError) {
           console.warn('Failed to fetch CVE data:', cveError);
           cveData = [];
         }
 
         try {
-          eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid);
+          eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
         } catch (eventsError) {
           console.warn('Failed to fetch events data:', eventsError);
           eventsData = null;
         }
 
         try {
-          interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid);
+          interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
         } catch (interventionsError) {
           console.warn('Failed to fetch interventions data:', interventionsError);
           interventionsData = null;
         }
 
         try {
-          tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid);
+          tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
         } catch (tasksError) {
           console.warn('Failed to fetch tasks data:', tasksError);
           tasksData = null;
         }
 
         try {
-          scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid);
+          scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
         } catch (scanSessionsError) {
           console.warn('Failed to fetch scan sessions data:', scanSessionsError);
           scanSessionsData = null;
         }
 
         try {
-          reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid);
+          reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid, 5);
         } catch (reportsError) {
           console.warn('Failed to fetch reports data:', reportsError);
           reportsData = null;

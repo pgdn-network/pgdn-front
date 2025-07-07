@@ -7,11 +7,11 @@ interface ScanSessionsCardProps {
   scanSessions: NodeScanSession[]
 }
 
-function getStatusVariant(status: string): 'success' | 'destructive' | 'secondary' | 'outline' {
+function getStatusVariant(status: string): 'default' | 'destructive' | 'secondary' | 'outline' {
   switch (status.toLowerCase()) {
     case 'done':
     case 'complete':
-      return 'success'
+      return 'default'
     case 'failed':
     case 'error':
       return 'destructive'

@@ -23,8 +23,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Organizations from './pages/Organizations';
 import OrgNodeDetail from './pages/OrgNodeDetail';
-import OrgNodeList from './pages/OrgNodeList';
 import OrgNodeCreate from './pages/OrgNodeCreate';
+import OrgNodeReports from './pages/OrgNodeReports';
+import OrgNodeReportDetail from './pages/OrgNodeReportDetail';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -61,6 +62,8 @@ function App() {
                       <Route path="organizations/:slug/nodes/create" element={<OrgNodeCreate />} />
                       <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
                       <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/reports" element={<OrgNodeReports />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />
                     </Route>
                     <Route path="*" element={<NotFound />} />
                   </Routes>

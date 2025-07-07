@@ -404,7 +404,11 @@ const OrgNodeDetail: React.FC = () => {
 
         {/* Reports Section */}
         <div className="mt-8">
-          <ReportsCard reports={reportsData?.reports || []} />
+          <ReportsCard 
+            reports={reportsData?.reports || []} 
+            organizationSlug={slug}
+            nodeId={nodeId}
+          />
         </div>
         
         {/* TODO: Add organization-specific node configuration */}

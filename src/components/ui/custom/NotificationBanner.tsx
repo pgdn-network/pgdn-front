@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, AlertCircle, XCircle, Info, X } from 'lucide-react';
+import { CheckCircle, AlertCircle, XCircle, Info, X, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type Notification } from '@/contexts/NotificationContext';
 
@@ -13,6 +13,7 @@ const iconMap = {
   error: XCircle,
   warning: AlertCircle,
   info: Info,
+  scan_progress: Activity,
 };
 
 const colorMap = {
@@ -20,6 +21,7 @@ const colorMap = {
   error: 'bg-red-50 border-red-200 text-red-800',
   warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
   info: 'bg-blue-50 border-blue-200 text-blue-800',
+  scan_progress: 'bg-blue-50 border-blue-200 text-blue-800',
 };
 
 const iconColorMap = {
@@ -27,6 +29,7 @@ const iconColorMap = {
   error: 'text-red-400',
   warning: 'text-yellow-400',
   info: 'text-blue-400',
+  scan_progress: 'text-blue-400',
 };
 
 export const NotificationBanner: React.FC<NotificationBannerProps> = ({ 

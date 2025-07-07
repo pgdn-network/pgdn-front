@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
   const [nodesLoading, setNodesLoading] = React.useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { loading: protocolsLoading, getProtocol } = useProtocols();
-  const { isConnected } = useWebSocketContext();
+  // const { isConnected } = useWebSocketContext();
   
   const handleOrgChange = (value: string) => {
     if (value === 'all') {

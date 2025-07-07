@@ -19,7 +19,7 @@ export interface UseWebSocketReturn {
 export const useWebSocket = (options: UseWebSocketOptions = {}): UseWebSocketReturn => {
   const {
     autoConnect = true,
-    autoReconnect = true,
+    // autoReconnect = true,
     onMessage,
     onConnect,
     onDisconnect,

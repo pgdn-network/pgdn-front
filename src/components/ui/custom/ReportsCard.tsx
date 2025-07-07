@@ -1,17 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, FileText, Shield, Clock } from 'lucide-react'
+import { AlertTriangle, FileText, Shield, Clock, Eye } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Link } from 'react-router-dom'
 import type { NodeReport } from '@/types/node'
 
 interface ReportsCardProps {
   reports: NodeReport[]
+  organizationSlug?: string
+  nodeId?: string
 }
 
-function getRiskScoreVariant(score: number): 'destructive' | 'warning' | 'secondary' | 'success' {
+function getRiskScoreVariant(score: number): 'destructive' | 'secondary' | 'default' {
   if (score >= 15) return 'destructive'
-  if (score >= 10) return 'warning'
-  if (score >= 5) return 'secondary'
-  return 'success'
+  if (score >= 10) return 'secondary'
+  return 'default'
 }
 
 function getRiskScoreLabel(score: number): string {
@@ -21,7 +24,7 @@ function getRiskScoreLabel(score: number): string {
   return 'Low'
 }
 
-export function ReportsCard({ reports }: ReportsCardProps) {
+export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardProps) {
   if (!reports || reports.length === 0) {
     return (
       <Card>
@@ -54,9 +57,19 @@ export function ReportsCard({ reports }: ReportsCardProps) {
             <FileText className="h-5 w-5" />
             Security Reports
           </div>
-          <span className="text-sm font-normal text-muted-foreground">
-            {reports.length} report{reports.length !== 1 ? 's' : ''}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-normal text-muted-foreground">
+              {reports.length} report{reports.length !== 1 ? 's' : ''}
+            </span>
+            {organizationSlug && nodeId && (
+              <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/reports`}>
+                <Button variant="ghost" size="sm">
+                  <Eye className="h-4 w-4 mr-1" />
+                  View All
+                </Button>
+              </Link>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -69,10 +82,10 @@ export function ReportsCard({ reports }: ReportsCardProps) {
         </div>
         
         <div className="space-y-4">
-          {reports.map((report) => (
+          {reports.slice(0, 3).map((report) => (
             <div key={report.uuid} className="border rounded-lg p-4 space-y-3">
               <div className="flex items-start justify-between">
-                <div className="space-y-1">
+                <div className="space-y-1 flex-1">
                   <h3 className="font-medium text-sm leading-none">{report.title}</h3>
                   <p className="text-sm text-muted-foreground">{report.summary}</p>
                 </div>
@@ -85,22 +98,41 @@ export function ReportsCard({ reports }: ReportsCardProps) {
                 </Badge>
               </div>
               
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Shield className="h-3 w-3" />
-                  {report.report_type.replace(/_/g, ' ')}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    {report.report_type.replace(/_/g, ' ')}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    {new Date(report.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="font-mono">
+                    Session: {report.scan_session_id}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  {new Date(report.created_at).toLocaleDateString()}
-                </div>
-                <div className="font-mono">
-                  Session: {report.scan_session_id}
-                </div>
+                {organizationSlug && nodeId && (
+                  <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/reports/${report.uuid}`}>
+                    <Button variant="ghost" size="sm">
+                      <Eye className="h-3 w-3" />
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           ))}
         </div>
+        
+        {reports.length > 3 && organizationSlug && nodeId && (
+          <div className="text-center pt-2">
+            <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/reports`}>
+              <Button variant="outline" size="sm">
+                View {reports.length - 3} more reports
+              </Button>
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

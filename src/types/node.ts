@@ -191,6 +191,29 @@ export interface NodeScanSessionsResponse {
 }
 
 // Reports
+export interface ReportFinding {
+  issue: string;
+  evidence: string;
+  maya_analysis: string;
+  exploitation_ease: string;
+}
+
+export interface ReportFindings {
+  urgent_fixes: ReportFinding[];
+  critical_risks: ReportFinding[];
+  convenient_fixes: ReportFinding[];
+  documentation_items: ReportFinding[];
+}
+
+export interface ReportMetadata {
+  persona: string;
+  scan_id: string;
+  report_type: string;
+  api_provider: string;
+  generated_at: string;
+  analyzer_version: string;
+}
+
 export interface NodeReport {
   uuid: string;
   scan_session_id: number;
@@ -200,7 +223,9 @@ export interface NodeReport {
   report_type: string;
   title: string;
   summary: string;
+  findings?: ReportFindings;
   risk_score: number;
+  report_metadata?: ReportMetadata;
   created_at: string;
   updated_at: string | null;
 }

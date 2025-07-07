@@ -7,25 +7,25 @@ interface NodeStatusCardProps {
   status: NodeStatus | null
 }
 
-function getOperationalStatusVariant(status: string): 'success' | 'destructive' | 'warning' | 'secondary' {
+function getOperationalStatusVariant(status: string): 'default' | 'destructive' | 'secondary' {
   switch (status.toLowerCase()) {
     case 'healthy':
-      return 'success'
+      return 'default'
     case 'critical':
     case 'error':
       return 'destructive'
     case 'warning':
     case 'degraded':
-      return 'warning'
+      return 'secondary'
     default:
       return 'secondary'
   }
 }
 
-function getConnectivityStatusVariant(status: string): 'success' | 'destructive' | 'secondary' {
+function getConnectivityStatusVariant(status: string): 'default' | 'destructive' | 'secondary' {
   switch (status.toLowerCase()) {
     case 'connected':
-      return 'success'
+      return 'default'
     case 'disconnected':
     case 'offline':
       return 'destructive'
@@ -136,7 +136,7 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Open:</span>
-              <Badge variant={status.open_interventions_count > 0 ? 'warning' : 'secondary'} className="text-xs">
+              <Badge variant={status.open_interventions_count > 0 ? 'secondary' : 'outline'} className="text-xs">
                 {status.open_interventions_count}
               </Badge>
             </div>
@@ -161,7 +161,7 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
                 <span className="text-sm text-foreground">
                   {new Date(status.last_scan_date).toLocaleDateString()}
                 </span>
-                <Badge variant={status.last_scan_status === 'done' ? 'success' : 'secondary'} className="text-xs">
+                <Badge variant={status.last_scan_status === 'done' ? 'default' : 'secondary'} className="text-xs">
                   {status.last_scan_status}
                 </Badge>
               </div>
