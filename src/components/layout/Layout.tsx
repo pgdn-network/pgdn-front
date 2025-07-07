@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { GlobalNotifications } from '@/components/ui/custom/GlobalNotifications';
 
 const Layout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  // Check if current page needs full-width layout (for banners)
+  const needsFullWidth = location.pathname.includes('/nodes/') || location.pathname.includes('/organizations/');
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -36,13 +40,10 @@ const Layout: React.FC = () => {
       {/* Main Content Area - Fluid with proper spacing */}
       <div className="md:ml-60 flex flex-col min-h-screen relative">
         <Header onMobileMenuToggle={toggleMobileMenu} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background relative mt-8">
-          {/* Content container */}
-          <div className="max-w-7xl mx-auto space-y-12">
-            {/* Content wrapper */}
-            <div className="animation-fade-in">
-              <Outlet />
-            </div>
+        <main className={`flex-1 bg-background relative ${!needsFullWidth ? 'p-4 sm:p-6 lg:p-8' : ''}`}>
+          {/* Content wrapper */}
+          <div className={`animation-fade-in ${!needsFullWidth ? 'max-w-7xl mx-auto space-y-12' : ''}`}>
+            <Outlet />
           </div>
         </main>
       </div>

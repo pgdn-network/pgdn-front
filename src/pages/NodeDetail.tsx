@@ -9,6 +9,7 @@ import { CVECard } from '@/components/ui/custom/CVECard'
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
+import NodeBanner from '@/components/ui/custom/NodeBanner';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
@@ -19,41 +20,26 @@ import { scanTracker } from '@/services/scanTracker';
 const ValidationBanner: React.FC<{ node: any; onClose: () => void }> = ({ node, onClose }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const validateAction = (
+    <Button 
+      variant="outline" 
+      size="sm"
+      onClick={() => setIsModalOpen(true)}
+      className="text-yellow-800 border-yellow-400 hover:bg-yellow-100 h-6 px-2"
+    >
+      Validate Node
+    </Button>
+  );
+
   return (
     <>
-      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 text-yellow-400 mr-3" />
-            <div>
-              <h3 className="text-sm font-medium text-yellow-800">
-                Unvalidated Node
-              </h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                This node has not been validated yet. Validation is required before scanning.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setIsModalOpen(true)}
-              className="text-yellow-800 border-yellow-400 hover:bg-yellow-100"
-            >
-              Validate Node
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={onClose}
-              className="text-yellow-600 hover:text-yellow-800"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      <NodeBanner
+        type="warning"
+        title="Unvalidated Node"
+        message="This node has not been validated yet. Validation is required before scanning."
+        onClose={onClose}
+        actions={validateAction}
+      />
 
       {/* Validation Modal */}
       {isModalOpen && (
@@ -109,6 +95,138 @@ const ValidationBanner: React.FC<{ node: any; onClose: () => void }> = ({ node, 
   );
 };
 
+// Discovery Confirmation Page Component
+const DiscoveryConfirmationPage: React.FC<{ node: any }> = ({ node }) => {
+  const [showValidationBanner, setShowValidationBanner] = useState(true);
+
+  return (
+    <>
+      {/* Validation Banner - Full Width */}
+      {!node.validated && showValidationBanner && (
+        <ValidationBanner 
+          node={node} 
+          onClose={() => setShowValidationBanner(false)} 
+        />
+      )}
+      
+      <div className="min-h-screen bg-background">
+        <Breadcrumb items={[
+          { label: 'Dashboard', href: '/' },
+          { label: 'Nodes', href: '/nodes' },
+          { label: node?.name || 'Node' }
+        ]} />
+        
+        <div className="text-center mb-8">
+          <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Discovery Complete</h1>
+          <p className="text-lg text-muted-foreground">
+            We've successfully discovered your node {node?.name}. Please review the findings below.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="bg-green-100 p-2 rounded-lg mr-3">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <h3 className="text-lg font-semibold">Discovery Results</h3>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              The discovery process has completed successfully. Here's what we found:
+            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <Badge variant="success">Completed</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Endpoints Found:</span>
+                <span className="font-medium">{node?.protocol_details?.endpoints?.length || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Ports Scanned:</span>
+                <span className="font-medium">{node?.protocol_details?.ports?.join(', ') || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Protocol:</span>
+                <span className="font-medium">{node?.protocol_details?.display_name}</span>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                <Search className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold">Next Steps</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-sm">Discovery completed successfully</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                <span className="text-sm">Review discovery results</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                <span className="text-sm">Confirm or modify findings</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                <span className="text-sm text-muted-foreground">Proceed to security scanning</span>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <Card className="p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Discovery Details</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                <span>Node Registration</span>
+              </div>
+              <Badge variant="success">Completed</Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center">
+                <Search className="h-5 w-5 text-green-600 mr-3" />
+                <span>Discovery Phase</span>
+              </div>
+              <Badge variant="success">Completed</Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+              <div className="flex items-center">
+                <Shield className="h-5 w-5 text-yellow-600 mr-3" />
+                <span>Confirmation Required</span>
+              </div>
+              <Badge variant="warning">Pending</Badge>
+            </div>
+          </div>
+        </Card>
+
+        <div className="flex justify-center space-x-4">
+          <Button variant="outline" size="lg">
+            <Settings className="h-4 w-4 mr-2" />
+            Modify Discovery
+          </Button>
+          <Button size="lg">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Confirm Discovery
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+};
+
 // New Node Page Component (with discovery status)
 const NewNodePage: React.FC<{ node: any }> = ({ node }) => {
   const [showValidationBanner, setShowValidationBanner] = useState(true);
@@ -117,206 +235,204 @@ const NewNodePage: React.FC<{ node: any }> = ({ node }) => {
   const isDiscoveryFailed = node.discovery_status !== 'completed' && node.discovery_status !== 'pending';
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
+    <>
+      {/* Validation Banner - Full Width */}
+      {!node.validated && showValidationBanner && (
+        <ValidationBanner 
+          node={node} 
+          onClose={() => setShowValidationBanner(false)} 
+        />
+      )}
+      
+      <div className="min-h-screen bg-background">
         <Breadcrumb items={[
           { label: 'Dashboard', href: '/' },
           { label: 'Nodes', href: '/nodes' },
           { label: node?.name || 'Node' }
         ]} />
         
-        {/* Validation Banner */}
-        {!node.validated && showValidationBanner && (
-          <ValidationBanner 
-            node={node} 
-            onClose={() => setShowValidationBanner(false)} 
-          />
-        )}
-        
-        <div className="mt-8 max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="bg-primary/10 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-              <Rocket className="h-10 w-10 text-primary" />
+        <div className="text-center mb-8">
+          <div className="bg-primary/10 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+            <Rocket className="h-10 w-10 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Node Onboarding</h1>
+          <p className="text-lg text-muted-foreground">
+            Let's get your node {node?.name} set up and ready for scanning
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <Card className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                <CheckCircle className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold">Node Created</h3>
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Node Onboarding</h1>
-            <p className="text-lg text-muted-foreground">
-              Let's get your node {node?.name} set up and ready for scanning
+            <p className="text-muted-foreground mb-4">
+              Your node has been successfully created and is ready for the onboarding process.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <Card className="p-6">
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                  <CheckCircle className="h-5 w-5 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold">Node Created</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Name:</span>
+                <span className="font-medium">{node?.name}</span>
               </div>
-              <p className="text-muted-foreground mb-4">
-                Your node has been successfully created and is ready for the onboarding process.
-              </p>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Name:</span>
-                  <span className="font-medium">{node?.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Address:</span>
-                  <span className="font-medium">{node?.address}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Protocol:</span>
-                  <span className="font-medium">{node?.protocol_details?.display_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>State:</span>
-                  <Badge variant="secondary">{node?.simple_state}</Badge>
-                </div>
+              <div className="flex justify-between">
+                <span>Address:</span>
+                <span className="font-medium">{node?.address}</span>
               </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="flex items-center mb-4">
-                <div className="bg-yellow-100 p-2 rounded-lg mr-3">
-                  <Search className="h-5 w-5 text-yellow-600" />
-                </div>
-                <h3 className="text-lg font-semibold">Discovery Status</h3>
+              <div className="flex justify-between">
+                <span>Protocol:</span>
+                <span className="font-medium">{node?.protocol_details?.display_name}</span>
               </div>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Status:</span>
-                  <Badge 
-                    variant={isDiscoveryPending ? 'secondary' : isDiscoveryFailed ? 'warning' : 'success'}
-                  >
-                    {node?.discovery_status}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Validated:</span>
-                  <Badge variant={node?.validated ? 'success' : 'warning'}>
-                    {node?.validated ? 'Yes' : 'No'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Ready for Scan:</span>
-                  <Badge variant={node?.is_ready_for_scan ? 'success' : 'secondary'}>
-                    {node?.is_ready_for_scan ? 'Yes' : 'No'}
-                  </Badge>
-                </div>
+              <div className="flex justify-between">
+                <span>State:</span>
+                <Badge variant="secondary">{node?.simple_state}</Badge>
               </div>
-            </Card>
-          </div>
-
-          {/* Discovery Status Specific Content */}
-          {isDiscoveryPending && (
-            <Card className="p-6 mb-6">
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                  <Activity className="h-5 w-5 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold">Discovery in Progress</h3>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                We're currently discovering and analyzing your node. This process may take a few minutes.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-sm">Network connectivity established</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
-                  <span className="text-sm">Port scanning in progress</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
-                  <span className="text-sm text-muted-foreground">Service identification</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
-                  <span className="text-sm text-muted-foreground">Vulnerability assessment</span>
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {isDiscoveryFailed && (
-            <Card className="p-6 mb-6">
-              <div className="flex items-center mb-4">
-                <div className="bg-red-100 p-2 rounded-lg mr-3">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <h3 className="text-lg font-semibold">Discovery Failed</h3>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                The discovery process encountered an error. Please check your node configuration and try again.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
-                  <span className="text-sm text-red-600">Discovery process failed</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
-                  <span className="text-sm text-muted-foreground">Check network connectivity</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
-                  <span className="text-sm text-muted-foreground">Verify protocol configuration</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
-                  <span className="text-sm text-muted-foreground">Review firewall settings</span>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Button variant="outline" className="mr-3">
-                  Retry Discovery
-                </Button>
-                <Button variant="outline">
-                  View Logs
-                </Button>
-              </div>
-            </Card>
-          )}
+            </div>
+          </Card>
 
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Onboarding Status</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center">
-                  <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
-                  <span>Node Registration</span>
-                </div>
-                <Badge variant="success">Completed</Badge>
+            <div className="flex items-center mb-4">
+              <div className="bg-yellow-100 p-2 rounded-lg mr-3">
+                <Search className="h-5 w-5 text-yellow-600" />
               </div>
-              <div className={`flex items-center justify-between p-3 rounded-lg ${
-                isDiscoveryPending ? 'bg-blue-50' : isDiscoveryFailed ? 'bg-red-50' : 'bg-green-50'
-              }`}>
-                <div className="flex items-center">
-                  <Search className={`h-5 w-5 mr-3 ${
-                    isDiscoveryPending ? 'text-blue-600' : isDiscoveryFailed ? 'text-red-600' : 'text-green-600'
-                  }`} />
-                  <span>Discovery Phase</span>
-                </div>
-                <Badge variant={
-                  isDiscoveryPending ? 'secondary' : isDiscoveryFailed ? 'warning' : 'success'
-                }>
-                  {isDiscoveryPending ? 'In Progress' : isDiscoveryFailed ? 'Failed' : 'Completed'}
+              <h3 className="text-lg font-semibold">Discovery Status</h3>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                <Badge 
+                  variant={isDiscoveryPending ? 'secondary' : isDiscoveryFailed ? 'warning' : 'success'}
+                >
+                  {node?.discovery_status}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center">
-                  <Shield className="h-5 w-5 text-gray-400 mr-3" />
-                  <span>Security Assessment</span>
-                </div>
-                <Badge variant="secondary">Pending</Badge>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Validated:</span>
+                <Badge variant={node?.validated ? 'success' : 'warning'}>
+                  {node?.validated ? 'Yes' : 'No'}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Ready for Scan:</span>
+                <Badge variant={node?.is_ready_for_scan ? 'success' : 'secondary'}>
+                  {node?.is_ready_for_scan ? 'Yes' : 'No'}
+                </Badge>
               </div>
             </div>
           </Card>
         </div>
+
+        {/* Discovery Status Specific Content */}
+        {isDiscoveryPending && (
+          <Card className="p-6 mb-6">
+            <div className="flex items-center mb-4">
+              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                <Activity className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold">Discovery in Progress</h3>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              We're currently discovering and analyzing your node. This process may take a few minutes.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-sm">Network connectivity established</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3 animate-pulse"></div>
+                <span className="text-sm">Port scanning in progress</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                <span className="text-sm text-muted-foreground">Service identification</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                <span className="text-sm text-muted-foreground">Vulnerability assessment</span>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {isDiscoveryFailed && (
+          <Card className="p-6 mb-6">
+            <div className="flex items-center mb-4">
+              <div className="bg-red-100 p-2 rounded-lg mr-3">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold">Discovery Failed</h3>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              The discovery process encountered an error. Please check your node configuration and try again.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
+                <span className="text-sm text-red-600">Discovery process failed</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                <span className="text-sm text-muted-foreground">Check network connectivity</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                <span className="text-sm text-muted-foreground">Verify protocol configuration</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
+                <span className="text-sm text-muted-foreground">Review firewall settings</span>
+              </div>
+            </div>
+            <div className="mt-4">
+              <Button variant="outline" className="mr-3">
+                Retry Discovery
+              </Button>
+              <Button variant="outline">
+                View Logs
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Onboarding Status</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
+                <span>Node Registration</span>
+              </div>
+              <Badge variant="success">Completed</Badge>
+            </div>
+            <div className={`flex items-center justify-between p-3 rounded-lg ${
+              isDiscoveryPending ? 'bg-blue-50' : isDiscoveryFailed ? 'bg-red-50' : 'bg-green-50'
+            }`}>
+              <div className="flex items-center">
+                <Search className={`h-5 w-5 mr-3 ${
+                  isDiscoveryPending ? 'text-blue-600' : isDiscoveryFailed ? 'text-red-600' : 'text-green-600'
+                }`} />
+                <span>Discovery Phase</span>
+              </div>
+              <Badge variant={
+                isDiscoveryPending ? 'secondary' : isDiscoveryFailed ? 'warning' : 'success'
+              }>
+                {isDiscoveryPending ? 'In Progress' : isDiscoveryFailed ? 'Failed' : 'Completed'}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center">
+                <Shield className="h-5 w-5 text-gray-400 mr-3" />
+                <span>Security Assessment</span>
+              </div>
+              <Badge variant="secondary">Pending</Badge>
+            </div>
+          </div>
+        </Card>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -429,22 +545,36 @@ const NodeDetail: React.FC = () => {
     { label: node?.name || id || 'Node' }
   ];
 
+  // Helper for full-width banner
+  const renderBanner = () => (
+    !node?.validated && showValidationBanner && (
+      <div className="w-full"> {/* Ensure full width */}
+        <ValidationBanner 
+          node={node} 
+          onClose={() => setShowValidationBanner(false)} 
+        />
+      </div>
+    )
+  );
+
   if (loading || orgsLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <>
+        {renderBanner()}
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2 text-lg">Loading node data...</span>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error || (!orgsLoading && organizations.length === 0)) {
     return (
-      <div className="min-h-screen bg-background">
+      <>
+        {renderBanner()}
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col items-center justify-center h-64">
             <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
@@ -457,13 +587,14 @@ const NodeDetail: React.FC = () => {
             </Button>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!node) {
     return (
-      <div className="min-h-screen bg-background">
+      <>
+        {renderBanner()}
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col items-center justify-center h-64">
             <Server className="h-12 w-12 text-gray-400 mb-4" />
@@ -471,28 +602,39 @@ const NodeDetail: React.FC = () => {
             <p className="text-gray-500">The requested node could not be found.</p>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // Check node state and render appropriate page
+  if (node.simple_state === 'new' && node.discovery_status === 'completed') {
+    return (
+      <>
+        {renderBanner()}
+        <div className="container mx-auto px-4 py-4 max-w-4xl">
+          <DiscoveryConfirmationPage node={node} />
+        </div>
+      </>
+    );
+  }
+  
   if (node.simple_state === 'new' && node.discovery_status !== 'completed') {
-    return <NewNodePage node={node} />;
+    return (
+      <>
+        {renderBanner()}
+        <div className="container mx-auto px-4 py-4 max-w-4xl">
+          <NewNodePage node={node} />
+        </div>
+      </>
+    );
   }
 
   // Default: Show normal node details page
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      {renderBanner()}
       <div className="container mx-auto px-4 py-4">
         <Breadcrumb items={breadcrumbItems} />
-        
-        {/* Validation Banner */}
-        {!node.validated && showValidationBanner && (
-          <ValidationBanner 
-            node={node} 
-            onClose={() => setShowValidationBanner(false)} 
-          />
-        )}
         
         <div className="mt-4">
           <div className="md:flex md:items-center md:justify-between">
@@ -759,7 +901,7 @@ const NodeDetail: React.FC = () => {
         onConfirm={handleStartScan}
         isLoading={isScanLoading}
       />
-    </div>
+    </>
   );
 };
 
