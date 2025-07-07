@@ -1,9 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Link } from 'react-router-dom'
+import { ExternalLink, AlertTriangle } from 'lucide-react'
 import type { CveMatch } from '@/types/node'
 
 interface CVECardProps {
   cves: CveMatch[] | null | undefined
+  organizationSlug?: string
+  nodeId?: string
 }
 
 function getSeverityVariant(severity: string) {
@@ -21,15 +26,19 @@ function getSeverityVariant(severity: string) {
   }
 }
 
-export function CVECard({ cves }: CVECardProps) {
+export function CVECard({ cves, organizationSlug, nodeId }: CVECardProps) {
   // Ensure cves is an array and handle null/undefined cases
   const safeCves = Array.isArray(cves) ? cves : []
   
-  if (!safeCves || safeCves.length === 0) {
+  // Filter for only unfixed CVEs
+  const openCVEs = safeCves.filter(cve => !cve.fixed)
+  
+  if (!openCVEs || openCVEs.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
             Vulnerabilities
             <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
               All good
@@ -43,10 +52,7 @@ export function CVECard({ cves }: CVECardProps) {
     )
   }
 
-  // Show all CVE matches, not just unique ones
-  const allCVEs = safeCves
-
-  const severityCounts = safeCves.reduce((acc, cve) => {
+  const severityCounts = openCVEs.reduce((acc, cve) => {
     acc[cve.severity.toLowerCase()] = (acc[cve.severity.toLowerCase()] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -55,10 +61,23 @@ export function CVECard({ cves }: CVECardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Vulnerabilities
-          <span className="text-sm font-normal text-muted-foreground">
-            {safeCves.length} matches
-          </span>
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            Vulnerabilities
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-normal text-muted-foreground">
+              {openCVEs.length} open
+            </span>
+            {organizationSlug && nodeId && (
+              <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/cves`}>
+                <Button variant="ghost" size="sm">
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  View All
+                </Button>
+              </Link>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -71,8 +90,8 @@ export function CVECard({ cves }: CVECardProps) {
         </div>
         
         <div className="space-y-3">
-          {allCVEs.map((cve, index) => (
-            <div key={`${cve.cve_id}-${index}`} className="border-l-2 border-muted pl-3 space-y-1">
+          {openCVEs.slice(0, 5).map((cve, index) => (
+            <div key={`${cve.match_uuid}-${index}`} className="border-l-2 border-muted pl-3 space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-sm font-medium">{cve.cve_id}</span>
                 <Badge variant={getSeverityVariant(cve.severity)} className="text-xs">
@@ -84,19 +103,30 @@ export function CVECard({ cves }: CVECardProps) {
                 <span className="text-xs text-muted-foreground">
                   {new Date(cve.matched_at).toLocaleDateString()}
                 </span>
+                {organizationSlug && nodeId && (
+                  <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/cves/${cve.match_uuid}`}>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </Link>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {cve.cve_description}
-              </p>
-              {Array.isArray(cve.affected_products) && cve.affected_products.length > 0 && (
-                <p className="text-xs text-muted-foreground font-mono">
-                  {cve.affected_products[0]}
-                  {cve.affected_products.length > 1 && ` +${cve.affected_products.length - 1} more`}
-                </p>
-              )}
+              <div className="text-xs text-muted-foreground">
+                <span>Confidence: {(cve.confidence_score * 100).toFixed(1)}%</span>
+              </div>
             </div>
           ))}
         </div>
+        
+        {openCVEs.length > 5 && organizationSlug && nodeId && (
+          <div className="text-center pt-2">
+            <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/cves`}>
+              <Button variant="outline" size="sm">
+                View {openCVEs.length - 5} more CVEs
+              </Button>
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

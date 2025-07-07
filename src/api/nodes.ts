@@ -11,7 +11,9 @@ import type {
   ScanSessionResponse,
   ScanSessionStatus,
   NodeIpsResponse,
-  NodeReport
+  NodeReport,
+  CveMatch,
+  NodeSnapshot
 } from '@/types/node';
 
 export class NodeApiService {
@@ -27,6 +29,13 @@ export class NodeApiService {
   static async getNodeCveMatches(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeCveResponse> {
     const response = await apiService.get<NodeCveResponse>(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/cve-matches?fixed_status=open&limit=${limit}`
+    );
+    return response.data;
+  }
+
+  static async getNodeCveMatch(organizationUuid: string, nodeUuid: string, cveUuid: string): Promise<CveMatch> {
+    const response = await apiService.get<CveMatch>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/cve-matches/${cveUuid}`
     );
     return response.data;
   }
@@ -146,6 +155,13 @@ export class NodeApiService {
     
     const response = await apiService.get<NodeIpsResponse>(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/node_ips?${params.toString()}`
+    );
+    return response.data;
+  }
+
+  static async getNodeSnapshot(organizationUuid: string, nodeUuid: string): Promise<NodeSnapshot> {
+    const response = await apiService.get<NodeSnapshot>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/snapshot`
     );
     return response.data;
   }

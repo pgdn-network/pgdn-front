@@ -6,7 +6,7 @@ import { CVECard } from '@/components/ui/custom/CVECard';
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
-import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
+import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useNodeData } from '@/hooks/useNodeData';
@@ -29,10 +29,11 @@ const OrgNodeDetail: React.FC = () => {
     cveData, 
     eventsData, 
     interventionsData, 
-    tasksData, 
+    // tasksData, // Commented out for now
     scanSessionsData, 
     reportsData,
     statusData,
+    snapshotData,
     loading, 
     error, 
     refetch 
@@ -314,14 +315,14 @@ const OrgNodeDetail: React.FC = () => {
           </div>
         </div>
         
-        {/* Node Status Section */}
+        {/* Node Snapshot Section */}
         <div className="mt-8">
-          <NodeStatusCard status={statusData} />
+          <NodeSnapshotCard snapshot={snapshotData} loading={loading} />
         </div>
         
         {/* CVE Details Section */}
         <div className="mt-8">
-                        <CVECard cves={cveData} />
+                        <CVECard cves={cveData} organizationSlug={slug} nodeId={nodeId} />
         </div>
 
         {/* Events Section */}
@@ -382,8 +383,8 @@ const OrgNodeDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Tasks Section */}
-        <div className="mt-8">
+        {/* Tasks Section - Hidden for now */}
+        {/* <div className="mt-8">
           <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-gray-900 dark:text-white">Tasks</h2>
@@ -395,7 +396,7 @@ const OrgNodeDetail: React.FC = () => {
               {tasksData ? 'Tasks data loaded' : 'Loading tasks...'}
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Scan Sessions Section */}
         <div className="mt-8">

@@ -358,7 +358,7 @@ const NodeDetail: React.FC = () => {
         
         {/* CVE Details Section */}
         <div className="mt-6">
-                        <CVECard cves={cveData} />
+                        <CVECard cves={cveData} organizationSlug={organizations.find(org => org.uuid === organizationUuid)?.slug} nodeId={id} />
         </div>
 
         {/* Events Section */}

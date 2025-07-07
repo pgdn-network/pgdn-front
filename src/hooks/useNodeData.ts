@@ -8,7 +8,8 @@ import type {
   NodeTasksResponse, 
   NodeScanSessionsResponse,
   NodeReportsResponse,
-  NodeStatus
+  NodeStatus,
+  NodeSnapshot
 } from '@/types/node';
 
 interface UseNodeDataState {
@@ -16,10 +17,11 @@ interface UseNodeDataState {
   cveData: NodeCveResponse | null;
   eventsData: NodeEventsResponse | null;
   interventionsData: NodeInterventionsResponse | null;
-  tasksData: NodeTasksResponse | null;
+  // tasksData: NodeTasksResponse | null; // Commented out for now
   scanSessionsData: NodeScanSessionsResponse | null;
   reportsData: NodeReportsResponse | null;
   statusData: NodeStatus | null;
+  snapshotData: NodeSnapshot | null;
   loading: boolean;
   error: string | null;
 }
@@ -30,10 +32,11 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
     cveData: null,
     eventsData: null,
     interventionsData: null,
-    tasksData: null,
+    // tasksData: null, // Commented out for now
     scanSessionsData: null,
     reportsData: null,
     statusData: null,
+    snapshotData: null,
     loading: true,
     error: null,
   });
@@ -54,10 +57,11 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
         let cveData: NodeCveResponse | null = null;
         let eventsData: NodeEventsResponse | null = null;
         let interventionsData: NodeInterventionsResponse | null = null;
-        let tasksData: NodeTasksResponse | null = null;
+        // let tasksData: NodeTasksResponse | null = null; // Commented out for now
         let scanSessionsData: NodeScanSessionsResponse | null = null;
         let reportsData: NodeReportsResponse | null = null;
         let statusData: NodeStatus | null = null;
+        let snapshotData: NodeSnapshot | null = null;
 
         try {
           cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
@@ -80,12 +84,13 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           interventionsData = null;
         }
 
-        try {
-          tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
-        } catch (tasksError) {
-          console.warn('Failed to fetch tasks data:', tasksError);
-          tasksData = null;
-        }
+        // Tasks fetching commented out for now
+        // try {
+        //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
+        // } catch (tasksError) {
+        //   console.warn('Failed to fetch tasks data:', tasksError);
+        //   tasksData = null;
+        // }
 
         try {
           scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
@@ -108,15 +113,23 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           statusData = null;
         }
 
+        try {
+          snapshotData = await NodeApiService.getNodeSnapshot(organizationUuid, nodeUuid);
+        } catch (snapshotError) {
+          console.warn('Failed to fetch snapshot data:', snapshotError);
+          snapshotData = null;
+        }
+
         setState({
           node: nodeData,
           cveData: cveData,
           eventsData: eventsData,
           interventionsData: interventionsData,
-          tasksData: tasksData,
+          // tasksData: tasksData, // Commented out for now
           scanSessionsData: scanSessionsData,
           reportsData: reportsData,
           statusData: statusData,
+          snapshotData: snapshotData,
           loading: false,
           error: null,
         });
@@ -143,10 +156,11 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
         let cveData: NodeCveResponse | null = null;
         let eventsData: NodeEventsResponse | null = null;
         let interventionsData: NodeInterventionsResponse | null = null;
-        let tasksData: NodeTasksResponse | null = null;
+        // let tasksData: NodeTasksResponse | null = null; // Commented out for now
         let scanSessionsData: NodeScanSessionsResponse | null = null;
         let reportsData: NodeReportsResponse | null = null;
         let statusData: NodeStatus | null = null;
+        let snapshotData: NodeSnapshot | null = null;
 
         try {
           cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
@@ -169,12 +183,13 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           interventionsData = null;
         }
 
-        try {
-          tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
-        } catch (tasksError) {
-          console.warn('Failed to fetch tasks data:', tasksError);
-          tasksData = null;
-        }
+        // Tasks fetching commented out for now
+        // try {
+        //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
+        // } catch (tasksError) {
+        //   console.warn('Failed to fetch tasks data:', tasksError);
+        //   tasksData = null;
+        // }
 
         try {
           scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
@@ -197,15 +212,23 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           statusData = null;
         }
 
+        try {
+          snapshotData = await NodeApiService.getNodeSnapshot(organizationUuid, nodeUuid);
+        } catch (snapshotError) {
+          console.warn('Failed to fetch snapshot data:', snapshotError);
+          snapshotData = null;
+        }
+
         setState({
           node: nodeData,
           cveData: cveData,
           eventsData: eventsData,
           interventionsData: interventionsData,
-          tasksData: tasksData,
+          // tasksData: tasksData, // Commented out for now
           scanSessionsData: scanSessionsData,
           reportsData: reportsData,
           statusData: statusData,
+          snapshotData: snapshotData,
           loading: false,
           error: null,
         });

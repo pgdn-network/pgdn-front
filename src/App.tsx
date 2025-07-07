@@ -6,6 +6,8 @@ import { ProtocolsProvider } from './contexts/ProtocolsContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { WebSocketProvider } from './contexts/WebSocketContext';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { ScrollRestoration } from './components/common/ScrollRestoration';
+import { ScrollToTopButton } from './components/common/ScrollToTopButton';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
@@ -27,6 +29,8 @@ import OrgNodeDetail from './pages/OrgNodeDetail';
 import OrgNodeCreate from './pages/OrgNodeCreate';
 import OrgNodeReports from './pages/OrgNodeReports';
 import OrgNodeReportDetail from './pages/OrgNodeReportDetail';
+import OrgNodeCves from './pages/OrgNodeCves';
+import OrgNodeCveDetail from './pages/OrgNodeCveDetail';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -34,6 +38,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <Router>
+          <ScrollRestoration />
           <AuthProvider>
             <OrganizationsProvider>
               <ProtocolsProvider>
@@ -63,20 +68,23 @@ function App() {
                         {/* <Route path="organizations/:slug" element={<OrgNodeList />} /> */}
                         <Route path="organizations/:slug/nodes/create" element={<OrgNodeCreate />} />
                         <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
-                        <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
-                        <Route path="organizations/:slug/nodes/:nodeId/reports" element={<OrgNodeReports />} />
-                        <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />
+                                              <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/reports" element={<OrgNodeReports />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/cves" element={<OrgNodeCves />} />
+                      <Route path="organizations/:slug/nodes/:nodeId/cves/:cveUuid" element={<OrgNodeCveDetail />} />
                       </Route>
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </WebSocketProvider>
-                </NotificationProvider>
-              </ProtocolsProvider>
-            </OrganizationsProvider>
-          </AuthProvider>
-        </Router>
-      </ThemeProvider>
-    </ErrorBoundary>
+                                          <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <ScrollToTopButton />
+                </WebSocketProvider>
+              </NotificationProvider>
+            </ProtocolsProvider>
+          </OrganizationsProvider>
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
+  </ErrorBoundary>
   );
 }
 

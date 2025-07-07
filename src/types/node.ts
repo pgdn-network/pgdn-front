@@ -321,3 +321,33 @@ export interface NodeIpsResponse {
   node_address: string;
   organization_uuid: string;
 }
+
+export interface NodeSnapshot {
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  node_ip: string | null;
+  operational_status: string;
+  status_message: string;
+  latest_score: number | null;
+  latest_scan_date: string;
+  scan_status: string;
+  scan_completeness_rate: number | null;
+  total_cves: number;
+  critical_severity_cves: number;
+  high_severity_cves: number;
+  total_open_ports: number;
+  open_ports: number[];
+  web_server_detected: boolean;
+  has_ssl_issues: boolean;
+  geo_city: string | null;
+  geo_country: string | null;
+  geo_location: string | null;
+  active_tasks_count: number;
+  failed_tasks_count: number;
+  open_interventions_count: number;
+  critical_interventions_count: number;
+  last_activity: string;
+  last_updated: string;
+  organization_uuid: string;
+}
