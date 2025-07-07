@@ -358,12 +358,12 @@ const NodeDetail: React.FC = () => {
         
         {/* CVE Details Section */}
         <div className="mt-6">
-          <CVECard cves={cveData || []} />
+                        <CVECard cves={cveData} />
         </div>
 
         {/* Events Section */}
         <div className="mt-6">
-          <EventCard events={eventsData?.events || []} />
+                        <EventCard events={eventsData?.events} />
         </div>
 
         {/* Interventions Section */}
@@ -413,7 +413,7 @@ const NodeDetail: React.FC = () => {
 
         {/* Reports Section */}
         <div className="mt-6">
-          <ReportsCard reports={reportsData?.reports || []} />
+                        <ReportsCard reports={reportsData?.reports} />
         </div>
       </div>
       

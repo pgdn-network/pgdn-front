@@ -4,7 +4,7 @@ import { Activity, Clock, Target, AlertCircle, CheckCircle2 } from 'lucide-react
 import type { NodeScanSession } from '@/types/node'
 
 interface ScanSessionsCardProps {
-  scanSessions: NodeScanSession[]
+  scanSessions: NodeScanSession[] | null | undefined
 }
 
 function getStatusVariant(status: string): 'default' | 'destructive' | 'secondary' | 'outline' {
@@ -20,6 +20,22 @@ function getStatusVariant(status: string): 'default' | 'destructive' | 'secondar
       return 'secondary'
     default:
       return 'outline'
+  }
+}
+
+function getStatusBadgeClass(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'done':
+    case 'complete':
+      return '!bg-green-600 !text-white !border-green-600'
+    case 'failed':
+    case 'error':
+      return '!bg-red-600 !text-white !border-red-600'
+    case 'running':
+    case 'in_progress':
+      return '!bg-blue-600 !text-white !border-blue-600'
+    default:
+      return '!bg-gray-800 !text-white !border-gray-800'
   }
 }
 
@@ -39,8 +55,8 @@ function calculateDuration(started: string, completed: string | null): string {
 }
 
 export function ScanSessionsCard({ scanSessions }: ScanSessionsCardProps) {
-  // Ensure scanSessions is an array
-  const sessions = Array.isArray(scanSessions) ? scanSessions : [];
+  // Ensure scanSessions is an array and handle null/undefined cases
+  const sessions = Array.isArray(scanSessions) ? scanSessions : []
   
   if (!sessions || sessions.length === 0) {
     return (
@@ -87,7 +103,7 @@ export function ScanSessionsCard({ scanSessions }: ScanSessionsCardProps) {
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
           {Object.entries(statusCounts).map(([status, count]) => (
-            <Badge key={status} variant={getStatusVariant(status)}>
+            <Badge key={status} className={getStatusBadgeClass(status)}>
               {count} {status.toUpperCase()}
             </Badge>
           ))}
@@ -113,7 +129,7 @@ export function ScanSessionsCard({ scanSessions }: ScanSessionsCardProps) {
                     Scan ID: {session.scan_id}
                   </p>
                 </div>
-                <Badge variant={getStatusVariant(session.status)}>
+                <Badge className={getStatusBadgeClass(session.status)}>
                   {session.status === 'complete' && <CheckCircle2 className="h-3 w-3 mr-1" />}
                   {session.error_message && <AlertCircle className="h-3 w-3 mr-1" />}
                   {session.status}

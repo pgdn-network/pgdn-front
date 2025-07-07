@@ -7,32 +7,24 @@ interface NodeStatusCardProps {
   status: NodeStatus | null
 }
 
-function getOperationalStatusVariant(status: string): 'default' | 'destructive' | 'secondary' {
+function getStatusBadgeClass(status: string) {
   switch (status.toLowerCase()) {
+    case 'connected':
+      return '!bg-blue-600 !text-white !border-blue-600';
     case 'healthy':
-      return 'default'
+      return '!bg-green-600 !text-white !border-green-600';
     case 'critical':
     case 'error':
-      return 'destructive'
+      return '!bg-red-600 !text-white !border-red-600';
     case 'warning':
     case 'degraded':
-      return 'secondary'
+      return '!bg-yellow-500 !text-white !border-yellow-500';
     default:
-      return 'secondary'
+      return '!bg-gray-800 !text-white !border-gray-800';
   }
 }
 
-function getConnectivityStatusVariant(status: string): 'default' | 'destructive' | 'secondary' {
-  switch (status.toLowerCase()) {
-    case 'connected':
-      return 'default'
-    case 'disconnected':
-    case 'offline':
-      return 'destructive'
-    default:
-      return 'secondary'
-  }
-}
+
 
 function formatDuration(seconds: number | null): string {
   if (seconds === null || seconds === undefined) return 'N/A'
@@ -68,7 +60,7 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
             <Activity className="h-5 w-5" />
             Node Status
           </div>
-          <Badge variant={getOperationalStatusVariant(status.operational_status)}>
+          <Badge className={getStatusBadgeClass(status.operational_status) + ' text-xs'}>
             {status.operational_status === 'healthy' && <CheckCircle className="h-3 w-3 mr-1" />}
             {status.operational_status === 'critical' && <AlertTriangle className="h-3 w-3 mr-1" />}
             {status.operational_status}
@@ -77,7 +69,7 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Status Message */}
-        <div className="bg-muted/50 p-3 rounded-lg">
+        <div className="bg-gray-100 dark:bg-muted/50 p-3 rounded-lg">
           <p className="text-sm text-foreground">{status.status_message}</p>
           <p className="text-xs text-muted-foreground mt-1">
             Last checked: {new Date(status.last_checked).toLocaleString()}
@@ -88,40 +80,40 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Connectivity:</span>
-              <Badge variant={getConnectivityStatusVariant(status.connectivity_status)} className="text-xs">
+              <span className="text-sm text-foreground">Connectivity:</span>
+              <Badge className={getStatusBadgeClass(status.connectivity_status) + ' text-xs'}>
                 {status.connectivity_status}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Scan Health:</span>
-              <Badge variant={getOperationalStatusVariant(status.scan_health)} className="text-xs">
+              <span className="text-sm text-foreground">Scan Health:</span>
+              <Badge className={getStatusBadgeClass(status.scan_health) + ' text-xs'}>
                 {status.scan_health}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Success Rate:</span>
+              <span className="text-sm text-foreground">Success Rate:</span>
               <span className="text-sm font-medium text-foreground">{status.success_rate}%</span>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Active Tasks:</span>
-              <Badge variant="outline" className="text-xs">
+              <span className="text-sm text-foreground">Active Tasks:</span>
+              <Badge className="!bg-blue-600 !text-white !border-blue-600 text-xs">
                 <Zap className="h-3 w-3 mr-1" />
                 {status.active_tasks_count}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Failed Tasks:</span>
-              <Badge variant={status.failed_tasks_count > 0 ? 'destructive' : 'secondary'} className="text-xs">
+              <span className="text-sm text-foreground">Failed Tasks:</span>
+              <Badge className={status.failed_tasks_count > 0 ? '!bg-red-600 !text-white !border-red-600 text-xs' : '!bg-gray-800 !text-white !border-gray-800 text-xs'}>
                 {status.failed_tasks_count > 0 && <AlertCircle className="h-3 w-3 mr-1" />}
                 {status.failed_tasks_count}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Avg Duration:</span>
+              <span className="text-sm text-foreground">Avg Duration:</span>
               <span className="text-sm font-medium text-foreground">
                 <TrendingUp className="h-3 w-3 inline mr-1" />
                 {formatDuration(status.avg_scan_duration)}
@@ -135,14 +127,14 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
           <h4 className="text-sm font-medium text-foreground mb-2">Interventions</h4>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Open:</span>
-              <Badge variant={status.open_interventions_count > 0 ? 'secondary' : 'outline'} className="text-xs">
+              <span className="text-sm text-foreground">Open:</span>
+              <Badge className={status.open_interventions_count > 0 ? '!bg-yellow-500 !text-white !border-yellow-500 text-xs' : '!bg-gray-800 !text-white !border-gray-800 text-xs'}>
                 {status.open_interventions_count}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Critical:</span>
-              <Badge variant={status.critical_interventions_count > 0 ? 'destructive' : 'secondary'} className="text-xs">
+              <span className="text-sm text-foreground">Critical:</span>
+              <Badge className={status.critical_interventions_count > 0 ? '!bg-red-600 !text-white !border-red-600 text-xs' : '!bg-gray-800 !text-white !border-gray-800 text-xs'}>
                 {status.critical_interventions_count > 0 && <AlertTriangle className="h-3 w-3 mr-1" />}
                 {status.critical_interventions_count}
               </Badge>
@@ -155,20 +147,20 @@ export function NodeStatusCard({ status }: NodeStatusCardProps) {
           <h4 className="text-sm font-medium text-foreground mb-2">Scan Information</h4>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last Scan:</span>
+              <span className="text-sm text-foreground">Last Scan:</span>
               <div className="flex items-center gap-2">
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-sm text-foreground">
                   {new Date(status.last_scan_date).toLocaleDateString()}
                 </span>
-                <Badge variant={status.last_scan_status === 'done' ? 'default' : 'secondary'} className="text-xs">
+                <Badge className={status.last_scan_status === 'done' ? '!bg-green-600 !text-white !border-green-600 text-xs' : '!bg-gray-800 !text-white !border-gray-800 text-xs'}>
                   {status.last_scan_status}
                 </Badge>
               </div>
             </div>
             {status.next_scheduled_scan && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Next Scan:</span>
+                <span className="text-sm text-foreground">Next Scan:</span>
                 <span className="text-sm text-foreground">
                   {new Date(status.next_scheduled_scan).toLocaleDateString()}
                 </span>

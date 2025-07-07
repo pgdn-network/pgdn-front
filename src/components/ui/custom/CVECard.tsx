@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import type { CveMatch } from '@/types/node'
 
 interface CVECardProps {
-  cves: CveMatch[]
+  cves: CveMatch[] | null | undefined
 }
 
 function getSeverityVariant(severity: string) {
@@ -22,7 +22,10 @@ function getSeverityVariant(severity: string) {
 }
 
 export function CVECard({ cves }: CVECardProps) {
-  if (!cves || cves.length === 0) {
+  // Ensure cves is an array and handle null/undefined cases
+  const safeCves = Array.isArray(cves) ? cves : []
+  
+  if (!safeCves || safeCves.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -41,9 +44,9 @@ export function CVECard({ cves }: CVECardProps) {
   }
 
   // Show all CVE matches, not just unique ones
-  const allCVEs = cves
+  const allCVEs = safeCves
 
-  const severityCounts = cves.reduce((acc, cve) => {
+  const severityCounts = safeCves.reduce((acc, cve) => {
     acc[cve.severity.toLowerCase()] = (acc[cve.severity.toLowerCase()] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -54,7 +57,7 @@ export function CVECard({ cves }: CVECardProps) {
         <CardTitle className="flex items-center justify-between">
           Vulnerabilities
           <span className="text-sm font-normal text-muted-foreground">
-            {cves.length} matches
+            {safeCves.length} matches
           </span>
         </CardTitle>
       </CardHeader>
@@ -85,7 +88,7 @@ export function CVECard({ cves }: CVECardProps) {
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {cve.cve_description}
               </p>
-              {cve.affected_products.length > 0 && (
+              {Array.isArray(cve.affected_products) && cve.affected_products.length > 0 && (
                 <p className="text-xs text-muted-foreground font-mono">
                   {cve.affected_products[0]}
                   {cve.affected_products.length > 1 && ` +${cve.affected_products.length - 1} more`}

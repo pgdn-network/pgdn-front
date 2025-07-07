@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import type { NodeReport } from '@/types/node'
 
 interface ReportsCardProps {
-  reports: NodeReport[]
+  reports: NodeReport[] | null | undefined
   organizationSlug?: string
   nodeId?: string
 }
@@ -25,7 +25,10 @@ function getRiskScoreLabel(score: number): string {
 }
 
 export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardProps) {
-  if (!reports || reports.length === 0) {
+  // Ensure reports is an array and handle null/undefined cases
+  const safeReports = Array.isArray(reports) ? reports : []
+  
+  if (!safeReports || safeReports.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -44,7 +47,7 @@ export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardPr
     )
   }
 
-  const reportTypeCount = reports.reduce((acc, report) => {
+  const reportTypeCount = safeReports.reduce((acc, report) => {
     acc[report.report_type] = (acc[report.report_type] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -59,7 +62,7 @@ export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardPr
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-normal text-muted-foreground">
-              {reports.length} report{reports.length !== 1 ? 's' : ''}
+              {safeReports.length} report{safeReports.length !== 1 ? 's' : ''}
             </span>
             {organizationSlug && nodeId && (
               <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/reports`}>
@@ -82,7 +85,7 @@ export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardPr
         </div>
         
         <div className="space-y-4">
-          {reports.slice(0, 3).map((report) => (
+          {safeReports.slice(0, 3).map((report) => (
             <div key={report.uuid} className="border rounded-lg p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1 flex-1">
@@ -124,11 +127,11 @@ export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardPr
           ))}
         </div>
         
-        {reports.length > 3 && organizationSlug && nodeId && (
+        {safeReports.length > 3 && organizationSlug && nodeId && (
           <div className="text-center pt-2">
             <Link to={`/organizations/${organizationSlug}/nodes/${nodeId}/reports`}>
               <Button variant="outline" size="sm">
-                View {reports.length - 3} more reports
+                View {safeReports.length - 3} more reports
               </Button>
             </Link>
           </div>

@@ -321,12 +321,12 @@ const OrgNodeDetail: React.FC = () => {
         
         {/* CVE Details Section */}
         <div className="mt-8">
-          <CVECard cves={cveData || []} />
+                        <CVECard cves={cveData} />
         </div>
 
         {/* Events Section */}
         <div className="mt-8">
-          <EventCard events={eventsData?.events || []} />
+                        <EventCard events={eventsData?.events} />
         </div>
 
         {/* Interventions Section */}
@@ -399,7 +399,7 @@ const OrgNodeDetail: React.FC = () => {
 
         {/* Scan Sessions Section */}
         <div className="mt-8">
-          <ScanSessionsCard scanSessions={scanSessionsData?.scans || []} />
+                        <ScanSessionsCard scanSessions={scanSessionsData?.scans} />
         </div>
 
         {/* Reports Section */}

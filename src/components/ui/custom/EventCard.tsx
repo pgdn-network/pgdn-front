@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import type { NodeEvent } from '@/types/node'
 
 interface EventCardProps {
-  events: NodeEvent[]
+  events: NodeEvent[] | null | undefined
 }
 
 function getActionStatusVariant(status: string) {
@@ -33,7 +33,10 @@ function getOrchestratorTypeVariant(type: string) {
 }
 
 export function EventCard({ events }: EventCardProps) {
-  if (!events || events.length === 0) {
+  // Ensure events is an array and handle null/undefined cases
+  const safeEvents = Array.isArray(events) ? events : []
+  
+  if (!safeEvents || safeEvents.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -51,7 +54,7 @@ export function EventCard({ events }: EventCardProps) {
     )
   }
 
-  const statusCounts = events.reduce((acc, event) => {
+  const statusCounts = safeEvents.reduce((acc, event) => {
     acc[event.action_status.toLowerCase()] = (acc[event.action_status.toLowerCase()] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -62,7 +65,7 @@ export function EventCard({ events }: EventCardProps) {
         <CardTitle className="flex items-center justify-between">
           Events
           <span className="text-sm font-normal text-muted-foreground">
-            {events.length} events
+            {safeEvents.length} events
           </span>
         </CardTitle>
       </CardHeader>
@@ -80,7 +83,7 @@ export function EventCard({ events }: EventCardProps) {
         </div>
         
         <div className="space-y-3">
-          {events.map((event, index) => (
+          {safeEvents.map((event, index) => (
             <div key={`${event.uuid}-${index}`} className="border-l-2 border-muted pl-3 space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-sm font-medium">{event.executed_action}</span>
