@@ -34,32 +34,64 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  // Handle WebSocket messages
+  // Handle WebSocket messages and notifications
   const handleMessage = (message: WebSocketMessage) => {
+    console.log('WebSocket message received:', message);
     setLastMessage(message);
     setError(null);
     
     // Handle different message types
     switch (message.type) {
-      case 'scan_update':
-        // Handle scan progress updates
-        console.log('Scan update received:', message.data);
-        break;
-      case 'notification':
-        // Handle notifications
+      case 'scan_started':
         addNotification({
-          type: message.data.type || 'info',
-          title: message.data.title || 'Notification',
-          message: message.data.message,
-          duration: message.data.duration || 5000,
+          type: 'info',
+          title: 'Scan Started',
+          message: `Scan started for node ${message.payload?.node_id || 'unknown'}`,
+          duration: 8000,
         });
         break;
+      
+      case 'scan_progress':
+        // Update progress in UI - this will be handled by scan tracker
+        console.log('Scan progress received:', message.payload);
+        break;
+      
+      case 'scan_completed':
+        addNotification({
+          type: 'success',
+          title: 'Scan Completed',
+          message: 'Scan completed successfully!',
+          duration: 15000,
+        });
+        break;
+      
+      case 'scan_failed':
+        addNotification({
+          type: 'error',
+          title: 'Scan Failed',
+          message: `Scan failed: ${message.payload?.error || 'Unknown error'}`,
+          duration: 15000,
+        });
+        break;
+      
+      case 'notification':
+      case 'info':
+        // Handle general notifications and info messages
+        addNotification({
+          type: message.payload?.type || 'info',
+          title: message.payload?.title || 'Notification',
+          message: message.payload?.message || 'New notification',
+          duration: message.payload?.duration || 5000,
+        });
+        break;
+      
       case 'pong':
         // Handle heartbeat response
         console.log('Heartbeat response received');
         break;
+      
       default:
-        console.log('Unknown WebSocket message type:', message.type);
+        console.log('Unknown WebSocket message type:', message.type, message);
     }
   };
 
@@ -75,14 +107,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           setIsConnected(true);
           setConnectionState('connected');
           setError(null);
-          
-          // Show connection notification
-          addNotification({
-            type: 'success',
-            title: 'Real-time Updates Connected',
-            message: 'You will now receive live updates for scans and notifications.',
-            duration: 3000,
-          });
         },
         onDisconnect: () => {
           console.log('WebSocket disconnected');
@@ -105,13 +129,6 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
           setIsConnected(true);
           setConnectionState('connected');
           setError(null);
-          
-          addNotification({
-            type: 'success',
-            title: 'Connection Restored',
-            message: 'Real-time updates have been restored.',
-            duration: 3000,
-          });
         },
       }).catch((err) => {
         console.error('Failed to connect to WebSocket:', err);

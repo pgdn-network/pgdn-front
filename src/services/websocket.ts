@@ -2,8 +2,8 @@ import { storage } from '@/utils/storage';
 
 export interface WebSocketMessage {
   type: string;
-  data: any;
-  timestamp: string;
+  payload: any;
+  timestamp?: string;
 }
 
 export interface WebSocketConfig {
@@ -38,7 +38,7 @@ class WebSocketService {
       throw new Error('No access token available for WebSocket connection');
     }
     
-    return `${wsUrl}/notifications?token=${token}`;
+    return `${wsUrl}/ws?token=${token}`;
   }
 
   private setupEventListeners(): void {
@@ -85,7 +85,6 @@ class WebSocketService {
         this.ws.onmessage = (event) => {
           try {
             const message: WebSocketMessage = JSON.parse(event.data);
-            console.log('WebSocket message received:', message);
             this.config.onMessage?.(message);
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);
@@ -167,7 +166,7 @@ class WebSocketService {
   private startHeartbeat(): void {
     this.heartbeatInterval = setInterval(() => {
       if (this.isConnected()) {
-        this.send({ type: 'ping', data: {}, timestamp: new Date().toISOString() });
+        this.send({ type: 'ping', payload: {}, timestamp: new Date().toISOString() });
       }
     }, 30000); // Send ping every 30 seconds
   }

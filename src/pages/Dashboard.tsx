@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
   const [nodesLoading, setNodesLoading] = React.useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { loading: protocolsLoading, getProtocol } = useProtocols();
-  const { isConnected, lastMessage } = useWebSocketContext();
+  const { isConnected } = useWebSocketContext();
   
   const handleOrgChange = (value: string) => {
     if (value === 'all') {
@@ -145,12 +145,7 @@ const Dashboard: React.FC = () => {
     return org?.slug || orgUuid; // Fallback to UUID if slug not found
   };
 
-  // Log WebSocket messages for debugging
-  React.useEffect(() => {
-    if (lastMessage) {
-      console.log('Dashboard received WebSocket message:', lastMessage);
-    }
-  }, [lastMessage]);
+  // WebSocket notifications are automatically handled by the WebSocketProvider
 
   // Helper function to get icon and color based on current_state
   const getStateIcon = (currentState: string | null | undefined) => {
