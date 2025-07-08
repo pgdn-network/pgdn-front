@@ -92,8 +92,8 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
       );
 
       console.log('✅ Node updated successfully with protocols:', detectedProtocols);
-      // TODO: Redirect to main node page or dashboard
-      window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
+      // Redirect to main node page using organization slug
+      window.location.href = `/organizations/${organization.slug}/nodes/${node.uuid}`;
     } catch (error) {
       console.error('Failed to update node:', error);
       // TODO: Show error notification
@@ -129,8 +129,8 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
       );
 
       console.log('✅ Node updated successfully with protocols:', protocols.map(p => p.id));
-      // TODO: Redirect to main node page or dashboard
-      window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
+      // Redirect to main node page using organization slug
+      window.location.href = `/organizations/${organization.slug}/nodes/${node.uuid}`;
     } catch (error) {
       console.error('Failed to update node with protocols:', error);
       // TODO: Show error notification
