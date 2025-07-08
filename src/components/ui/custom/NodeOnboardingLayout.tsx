@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NewNodeOnboarding } from '@/components/ui/custom/NewNodeOnboarding';
 import { DiscoveryConfirmation } from '@/components/ui/custom/DiscoveryConfirmation';
 import { DiscoveryFailure } from '@/components/ui/custom/DiscoveryFailure';
 import { NodeOnboardingStepper } from './NodeOnboardingStepper';
 import type { OnboardingStep } from './NodeOnboardingStepper';
-import { DiscoveryProgress } from '@/components/ui/custom/DiscoveryProgress';
-import { useWebSocketContext } from '@/contexts/WebSocketContext';
+import { DiscoveryProgressCard } from '@/components/ui/custom/DiscoveryProgressCard';
+import { useNodeDiscoverySubscription } from '@/hooks/useWebSocketSubscription';
 import { useSearchParams } from 'react-router-dom';
 import type { Node as ApiNode } from '@/types/node';
 
@@ -34,42 +34,82 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
   node, 
   organization 
 }) => {
-  const [discoveryStatus, setDiscoveryStatus] = useState<'pending' | 'in_progress' | 'completed' | 'failed'>('pending');
-  const [currentStep, setCurrentStep] = useState(0);
-  const [totalSteps] = useState(4);
-
-  const { lastMessage } = useWebSocketContext();
+  const discoveryMessage = useNodeDiscoverySubscription(node.uuid);
   const [searchParams] = useSearchParams();
+  const [showingProgress, setShowingProgress] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  // Listen for discovery messages and reload when complete
+  useEffect(() => {
+    // Only process discovery messages if status is pending
+    if (node.discovery_status !== 'pending' || !discoveryMessage) {
+      return;
+    }
+
+    console.log(`🎯 Discovery WebSocket message received for node ${node.uuid}, type: ${discoveryMessage.type}`);
+    console.log(`⏰ Starting 10-second reload timer`);
+    
+    // Hide progress display since we got the result
+    setShowingProgress(false);
+    
+    setTimeout(() => {
+      console.log(`🚀 RELOADING PAGE NOW! Message type: ${discoveryMessage.type}`);
+      window.location.reload();
+    }, 10000); // 10 seconds
+    
+  }, [discoveryMessage, node.uuid, node.discovery_status]);
+
+  // Auto-start discovery for new nodes and show progress
+  useEffect(() => {
+    if (node.simple_state === 'new' && node.discovery_status === 'pending' && !showingProgress) {
+      console.log(`🚀 Starting discovery progress display for new node ${node.uuid}`);
+      setShowingProgress(true);
+    }
+  }, [node.simple_state, node.discovery_status, showingProgress]);
+
+  // Animate progress bar when showing progress
+  useEffect(() => {
+    if (!showingProgress) {
+      setProgress(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        // Gradually increase progress, slowing down as it approaches 90%
+        if (prev < 30) return prev + 2;
+        if (prev < 60) return prev + 1;
+        if (prev < 85) return prev + 0.5;
+        if (prev < 90) return prev + 0.2;
+        return prev; // Stop at 90% until we get actual result
+      });
+    }, 200); // Update every 200ms
+
+    return () => clearInterval(interval);
+  }, [showingProgress]);
+
+  // Fallback refresh after 30 seconds in case WebSocket doesn't fire
+  useEffect(() => {
+    if (!showingProgress) {
+      return;
+    }
+
+    console.log(`⏰ Setting 30-second fallback refresh timer for node ${node.uuid}`);
+    
+    const fallbackTimeout = setTimeout(() => {
+      console.log(`🔄 30-second fallback triggered - refreshing page for node ${node.uuid}`);
+      window.location.reload();
+    }, 30000); // 30 seconds
+
+    return () => {
+      console.log(`🚫 Clearing 30-second fallback timer for node ${node.uuid}`);
+      clearTimeout(fallbackTimeout);
+    };
+  }, [showingProgress, node.uuid]);
 
   // Check for test discovery state from query params
   const discoveryState = searchParams.get('discovery');
-
-  // Listen for WebSocket discovery progress messages
-  useEffect(() => {
-    if (lastMessage?.type === 'discovery_progress' && lastMessage.payload?.node_id === node.uuid) {
-      const { progress, status } = lastMessage.payload;
-      
-      if (status === 'completed') {
-        setCurrentStep(Math.round((progress / 100) * totalSteps));
-      }
-      
-      if (progress >= 100) {
-        setDiscoveryStatus('completed');
-      }
-    }
-  }, [lastMessage, node.uuid, totalSteps]);
-
-  // Determine discovery status from node state
-  useEffect(() => {
-    if (node.discovery_status === 'completed') {
-      setDiscoveryStatus('completed');
-    } else if (node.discovery_status === 'failed') {
-      setDiscoveryStatus('failed');
-    } else if (node.discovery_status === 'pending') {
-      setDiscoveryStatus('pending');
-    }
-  }, [node.discovery_status]);
-
+  
   // Stepper logic
   const stepperStep = getCurrentStep(node);
 
@@ -88,7 +128,7 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
       </div>
     );
   }
-
+  
   if (discoveryState === 'failed') {
     return (
       <div className="min-h-screen bg-background">
@@ -103,14 +143,29 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
       </div>
     );
   }
-
-  // Determine which onboarding component to show based on discovery status
-  if (node.simple_state === 'new' && node.discovery_status === 'completed') {
+  
+  // Show appropriate UI based on actual node status
+  if (node.discovery_status === 'failed') {
     return (
       <div className="min-h-screen bg-background">
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
-            <NodeOnboardingStepper currentStep={stepperStep} />
+            <NodeOnboardingStepper currentStep="discover" />
+            <div className="mt-6">
+              <DiscoveryFailure node={node} organization={organization} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (node.discovery_status === 'completed') {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            <NodeOnboardingStepper currentStep="validate" />
             <div className="mt-6">
               <DiscoveryConfirmation node={node} organization={organization} />
             </div>
@@ -120,7 +175,43 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
     );
   }
   
-  // For all other cases (new nodes with pending/failed discovery, or any other state)
+  // For pending nodes, show progress if discovery is happening, otherwise show onboarding
+  if (node.discovery_status === 'pending') {
+    if (showingProgress) {
+      return (
+        <div className="min-h-screen bg-background">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto">
+              <NodeOnboardingStepper currentStep="discover" />
+              <div className="mt-6">
+                <DiscoveryProgressCard
+                  nodeName={node.name}
+                  progress={progress}
+                  discoveryResult={null}
+                  isRunning={true}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="min-h-screen bg-background">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto">
+              <NodeOnboardingStepper currentStep={stepperStep} />
+              <div className="mt-6">
+                <NewNodeOnboarding node={node} organization={organization} />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // Default fallback
   return (
     <div className="min-h-screen bg-background">
       <div className="p-4 sm:p-6 lg:p-8">

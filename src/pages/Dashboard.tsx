@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
   };
   
   // Determine if we should show no nodes page
-  const shouldShowNoNodesPage = !loading && nodes.length === 0;
+  const shouldShowNoNodesPage = !loading && !orgsLoading && nodes.length === 0;
   
   // Mock data for stats with enhanced visual indicators
   const stats = [
@@ -242,7 +242,7 @@ const Dashboard: React.FC = () => {
 
 
   // Show loading state while data is being fetched
-  if (loading) {
+  if (loading || orgsLoading) {
     return (
       <div className="space-y-6">
         {/* Page Header */}

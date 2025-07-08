@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Rocket, Search, Info, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DiscoveryModal } from './DiscoveryModal';
 import { useWebSocketContext } from '@/contexts/WebSocketContext';
 import type { Node as ApiNode } from '@/types/node';
 
@@ -19,9 +18,7 @@ interface NewNodeOnboardingProps {
   organization: Organization;
 }
 
-export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node }) => {
-  const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
-
+export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, organization }) => {
   const { lastMessage } = useWebSocketContext();
 
   // Listen for WebSocket discovery progress messages
@@ -91,10 +88,6 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node }) =>
                 <ArrowRight className="h-4 w-4 mr-2 text-blue-500" />
                 Protocol configurations and versions
               </li>
-              <li className="flex items-center">
-                <ArrowRight className="h-4 w-4 mr-2 text-blue-500" />
-                Initial security assessment
-              </li>
             </ul>
           </div>
         </div>
@@ -130,28 +123,12 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node }) =>
       {/* Action Card */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Ready to Start Discovery?</h3>
-          <p className="text-muted-foreground mb-6">
-            Click the button below to begin the discovery process. This will analyze your node and prepare it for scanning.
+          <h3 className="text-lg font-semibold mb-2">Discovery Will Start Automatically</h3>
+          <p className="text-muted-foreground">
+            Your node has been created successfully. Discovery will begin automatically to analyze your node and prepare it for scanning.
           </p>
-          <Button 
-            size="lg"
-            onClick={() => setIsDiscoveryModalOpen(true)}
-            className="px-8"
-          >
-            <Search className="h-5 w-5 mr-2" />
-            Start Discovery
-          </Button>
         </div>
       </div>
-
-      {/* Discovery Modal */}
-      <DiscoveryModal
-        isOpen={isDiscoveryModalOpen}
-        onClose={() => setIsDiscoveryModalOpen(false)}
-        node={node}
-        onDiscoveryComplete={handleDiscoveryComplete}
-      />
     </>
   );
 }; 

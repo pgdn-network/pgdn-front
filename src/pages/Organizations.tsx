@@ -7,13 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
-import { CreateNodeModal } from '@/components/ui/custom/CreateNodeModal';
 
 const Organizations: React.FC = () => {
   const { organizations, loading, error, refetch, clearCache } = useOrganizations();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showCreateNodeModal, setShowCreateNodeModal] = useState(false);
-  const [selectedOrgSlug, setSelectedOrgSlug] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -31,16 +28,6 @@ const Organizations: React.FC = () => {
     setShowCreateModal(true);
   };
 
-  const handleCreateNode = () => {
-    setSelectedOrgSlug('');
-    setShowCreateNodeModal(true);
-  };
-
-  const handleCreateNodeForOrg = (orgSlug: string) => {
-    setSelectedOrgSlug(orgSlug);
-    setShowCreateNodeModal(true);
-  };
-
   const handleSaveOrg = () => {
     // TODO: Implement API call to save organization
     console.log('Saving organization:', formData);
@@ -52,9 +39,7 @@ const Organizations: React.FC = () => {
     setShowCreateModal(false);
   };
 
-  const handleCloseNodeModal = () => {
-    setShowCreateNodeModal(false);
-  };
+
 
 
 
@@ -74,9 +59,11 @@ const Organizations: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={handleCreateNode}>
-            <Server className="h-4 w-4 mr-2" />
-            Create Node
+          <Button variant="outline" asChild>
+            <Link to="/nodes/create">
+              <Server className="h-4 w-4 mr-2" />
+              Create Node
+            </Link>
           </Button>
           <Button variant="default" onClick={handleCreateOrg}>
             <Plus className="h-4 w-4 mr-2" />
@@ -144,14 +131,14 @@ const Organizations: React.FC = () => {
                           <Eye className="h-3 w-3 mr-1" />
                           Nodes
                         </Link>
-                        <button
-                          onClick={() => handleCreateNodeForOrg(org.slug)}
+                        <Link
+                          to={`/organizations/${org.slug}/nodes/create`}
                           className="inline-flex items-center px-2 py-1 text-xs font-medium text-secondary hover:text-primary border border-border rounded hover:bg-surface-hover transition-colors"
                           title="Create Node"
                         >
                           <Server className="h-3 w-3 mr-1" />
                           Add Node
-                        </button>
+                        </Link>
                         {/* TODO: Create organization settings page */}
                         {/* <Link 
                           to={`/organizations/${org.slug}/settings`}
@@ -241,16 +228,6 @@ const Organizations: React.FC = () => {
           </div>
         )}
       
-      {/* Create Node Modal */}
-      <CreateNodeModal
-        isOpen={showCreateNodeModal}
-        onClose={handleCloseNodeModal}
-        organizationSlug={selectedOrgSlug}
-        onSuccess={() => {
-          // Optionally refresh data or show success message
-          console.log('Node created successfully');
-        }}
-      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { websocketService, type WebSocketMessage } from '@/services/websocket';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { useWebSocketStore } from '@/stores/webSocketStore';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -29,15 +30,22 @@ interface WebSocketProviderProps {
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const { addNotification } = useNotifications();
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionState, setConnectionState] = useState('disconnected');
-  const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
-  const [error, setError] = useState<Error | null>(null);
+  
+  // Use the new WebSocket store
+  const { 
+    isConnected, 
+    connectionState, 
+    lastMessage, 
+    error,
+    setConnection,
+    setError,
+    addMessage 
+  } = useWebSocketStore();
 
   // Handle WebSocket messages and notifications
-  const handleMessage = (message: WebSocketMessage) => {
+  const handleMessage = useCallback((message: WebSocketMessage) => {
     console.log('WebSocket message received:', message);
-    setLastMessage(message);
+    addMessage(message);
     setError(null);
     
     // Handle different message types
@@ -90,10 +98,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         console.log('Heartbeat response received');
         break;
       
+      case 'connection':
+        // Handle connection status messages
+        console.log('Connection status received:', message.payload);
+        break;
+      
       default:
         console.log('Unknown WebSocket message type:', message.type, message);
     }
-  };
+  }, [addNotification]);
 
   // Connect to WebSocket when authenticated
   useEffect(() => {
@@ -104,14 +117,11 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         onMessage: handleMessage,
         onConnect: () => {
           console.log('WebSocket connected');
-          setIsConnected(true);
-          setConnectionState('connected');
-          setError(null);
+          setConnection(true, 'connected');
         },
         onDisconnect: () => {
           console.log('WebSocket disconnected');
-          setIsConnected(false);
-          setConnectionState('disconnected');
+          setConnection(false, 'disconnected');
         },
         onError: (error) => {
           console.error('WebSocket error:', error);
@@ -126,9 +136,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         },
         onReconnect: () => {
           console.log('WebSocket reconnected');
-          setIsConnected(true);
-          setConnectionState('connected');
-          setError(null);
+          setConnection(true, 'connected');
         },
       }).catch((err) => {
         console.error('Failed to connect to WebSocket:', err);
@@ -137,8 +145,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
     } else {
       // Disconnect when not authenticated
       websocketService.disconnect();
-      setIsConnected(false);
-      setConnectionState('disconnected');
+      setConnection(false, 'disconnected');
     }
 
     // Cleanup on unmount
@@ -150,12 +157,13 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
   // Update connection state periodically
   useEffect(() => {
     const interval = setInterval(() => {
-      setConnectionState(websocketService.getConnectionState());
-      setIsConnected(websocketService.isConnected());
+      const state = websocketService.getConnectionState();
+      const connected = websocketService.isConnected();
+      setConnection(connected, state);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [setConnection]);
 
   const send = (message: WebSocketMessage) => {
     websocketService.send(message);
