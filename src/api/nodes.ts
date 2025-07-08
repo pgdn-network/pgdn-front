@@ -13,7 +13,8 @@ import type {
   NodeIpsResponse,
   NodeReport,
   CveMatch,
-  NodeSnapshot
+  NodeSnapshot,
+  CreateNodeResponse
 } from '@/types/node';
 
 export class NodeApiService {
@@ -47,8 +48,8 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async createNode(organizationUuid: string, nodeData: Partial<Node>): Promise<Node> {
-    const response = await apiService.post<Node>(
+  static async createNode(organizationUuid: string, nodeData: Partial<Node>): Promise<CreateNodeResponse> {
+    const response = await apiService.post<CreateNodeResponse>(
       `${this.baseUrl}/${organizationUuid}/nodes`,
       nodeData
     );

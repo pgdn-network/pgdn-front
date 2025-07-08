@@ -56,8 +56,8 @@ const OrgNodeCreate: React.FC = () => {
       const data = await NodeApiService.createNode(organizationUuid, formData);
       
       // Navigate to the newly created node page
-      if (data && data.uuid) {
-        navigate(`/organizations/${slug}/nodes/${data.uuid}`);
+      if (data && data.node && data.node.uuid) {
+        navigate(`/organizations/${slug}/nodes/${data.node.uuid}`);
       } else {
         navigate(`/organizations/${slug}`);
       }

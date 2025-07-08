@@ -356,3 +356,10 @@ export interface NodeSnapshot {
   last_updated: string;
   organization_uuid: string;
 }
+
+// Node Creation Response
+export interface CreateNodeResponse {
+  node: Node;
+  background_task_id: string;
+  message: string;
+}
