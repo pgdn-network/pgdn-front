@@ -26,59 +26,48 @@ export function useWebSocketSubscription<T = WebSocketMessage>(
     setData(message);
   }, []);
 
+  // Memoize the filter function to prevent unnecessary re-subscriptions
+  const combinedFilter = useCallback((message: WebSocketMessage): boolean => {
+    // Apply node filter if provided
+    if (options?.nodeId) {
+      // Try multiple possible field names for node UUID
+      const messageNodeId = message.payload?.node_id || 
+                           message.payload?.node_uuid || 
+                           message.payload?.uuid ||
+                           message.payload?.nodeId ||
+                           message.payload?.nodeId;
+      
+      if (!messageNodeId) {
+        // For discovery messages, if no node UUID is found, let it through
+        // as it might be a broadcast message
+        if (message.type.startsWith('discovery_')) {
+          return true;
+        }
+        return false;
+      }
+      
+      if (messageNodeId !== options.nodeId) {
+        return false;
+      }
+    }
+
+    // Apply custom filter if provided
+    if (options?.filter) {
+      return options.filter(message);
+    }
+
+    return true;
+  }, [options?.nodeId, options?.filter]);
+
   useEffect(() => {
+    console.log(`📡 Setting up WebSocket subscriptions for: ${eventTypes.join(', ')} (nodeId: ${options?.nodeId})`);
+
     // Clear previous subscriptions
     unsubscribeRefs.current.forEach(unsub => unsub());
     unsubscribeRefs.current = [];
 
-    // Create combined filter
-    const combinedFilter = (message: WebSocketMessage): boolean => {
-      // Apply node filter if provided
-      if (options?.nodeId) {
-        // Try multiple possible field names for node UUID
-        const messageNodeId = message.payload?.node_id || 
-                             message.payload?.node_uuid || 
-                             message.payload?.uuid ||
-                             message.payload?.nodeId ||
-                             message.payload?.nodeId;
-        
-        // Log for debugging UUID matching
-        console.log(`🔍 Filtering message type: ${message.type}`);
-        console.log(`   Expected node UUID: ${options.nodeId}`);
-        console.log(`   Message node UUID: ${messageNodeId}`);
-        console.log(`   Full message payload:`, message.payload);
-        console.log(`   Available payload keys:`, Object.keys(message.payload || {}));
-        
-        if (!messageNodeId) {
-          console.log(`   ❌ No node UUID found in message payload`);
-          // For discovery messages, if no node UUID is found, let it through
-          // as it might be a broadcast message
-          if (message.type.startsWith('discovery_')) {
-            console.log(`   ⚠️  Allowing discovery message without node UUID (broadcast)`);
-            return true;
-          }
-          return false;
-        }
-        
-        if (messageNodeId !== options.nodeId) {
-          console.log(`   ❌ Node UUID mismatch - filtering out message`);
-          return false;
-        }
-        
-        console.log(`   ✅ Node UUID matches - processing message`);
-      }
-
-      // Apply custom filter if provided
-      if (options?.filter) {
-        return options.filter(message);
-      }
-
-      return true;
-    };
-
     // Subscribe to each event type
     eventTypes.forEach(type => {
-      console.log(`📡 Subscribing to event type: ${type}`);
       const unsubscribe = eventBus.subscribe(type, handleMessage, {
         filter: combinedFilter,
         transform: options?.transform,
@@ -87,10 +76,11 @@ export function useWebSocketSubscription<T = WebSocketMessage>(
     });
 
     return () => {
+      console.log(`🧹 Cleaning up WebSocket subscriptions for: ${eventTypes.join(', ')}`);
       unsubscribeRefs.current.forEach(unsub => unsub());
       unsubscribeRefs.current = [];
     };
-  }, [eventTypes.join(','), options?.nodeId, options?.filter, options?.transform, handleMessage]);
+  }, [eventTypes.join(','), options?.nodeId]);
 
   return data;
 }
