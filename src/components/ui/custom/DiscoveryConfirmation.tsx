@@ -76,17 +76,22 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
 
     setIsUpdating(true);
     try {
+      const updateData = {
+        simple_state: 'active',
+        node_protocols: detectedProtocols
+      };
+      
+      console.log('🔄 Updating node with data:', updateData);
+      console.log('📍 API URL:', `/organizations/${user.org_uuid}/nodes/${node.uuid}`);
+      
       // Update the node to active state with detected protocols
-      await NodeApiService.patchNode(
+      await NodeApiService.updateNode(
         user.org_uuid,
         node.uuid,
-        {
-          simple_state: 'active',
-          node_protocols: detectedProtocols
-        }
+        updateData
       );
 
-      console.log('Node updated successfully with protocols:', detectedProtocols);
+      console.log('✅ Node updated successfully with protocols:', detectedProtocols);
       // TODO: Redirect to main node page or dashboard
       window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
     } catch (error) {
@@ -108,17 +113,22 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
 
     setIsUpdating(true);
     try {
+      const updateData = {
+        simple_state: 'active',
+        node_protocols: protocols.map(p => p.id)
+      };
+      
+      console.log('🔄 Updating node with selected protocols:', updateData);
+      console.log('📍 API URL:', `/organizations/${user.org_uuid}/nodes/${node.uuid}`);
+      
       // Update the node with selected protocols and set to active state
-      await NodeApiService.patchNode(
+      await NodeApiService.updateNode(
         user.org_uuid,
         node.uuid,
-        {
-          simple_state: 'active',
-          node_protocols: protocols.map(p => p.id)
-        }
+        updateData
       );
 
-      console.log('Node updated successfully with protocols:', protocols.map(p => p.id));
+      console.log('✅ Node updated successfully with protocols:', protocols.map(p => p.id));
       // TODO: Redirect to main node page or dashboard
       window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
     } catch (error) {
