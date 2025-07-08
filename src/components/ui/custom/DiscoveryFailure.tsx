@@ -61,6 +61,9 @@ const mockProtocols = [
 export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organization }) => {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
 
+  // Extract detected protocols from node data (likely empty in failure cases)
+  const detectedProtocols = node?.protocol_details?.uuid ? [node.protocol_details.uuid] : [];
+
   const handleProtocolSelect = (protocols: any[]) => {
     console.log('Selected protocols:', protocols);
     setIsProtocolModalOpen(false);
@@ -152,6 +155,7 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
         onClose={() => setIsProtocolModalOpen(false)}
         onSelect={handleProtocolSelect}
         protocols={mockProtocols}
+        detectedProtocols={detectedProtocols}
       />
     </>
   );

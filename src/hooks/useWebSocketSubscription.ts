@@ -22,6 +22,7 @@ export function useWebSocketSubscription<T = WebSocketMessage>(
   const eventTypes = Array.isArray(eventType) ? eventType : [eventType];
 
   const handleMessage = useCallback((message: T) => {
+    console.log(`🔔 Subscription received message:`, message);
     setData(message);
   }, []);
 
@@ -34,15 +35,28 @@ export function useWebSocketSubscription<T = WebSocketMessage>(
     const combinedFilter = (message: WebSocketMessage): boolean => {
       // Apply node filter if provided
       if (options?.nodeId) {
-        const messageNodeId = message.payload?.node_id || message.payload?.node_uuid || message.payload?.uuid;
+        // Try multiple possible field names for node UUID
+        const messageNodeId = message.payload?.node_id || 
+                             message.payload?.node_uuid || 
+                             message.payload?.uuid ||
+                             message.payload?.nodeId ||
+                             message.payload?.nodeId;
         
         // Log for debugging UUID matching
         console.log(`🔍 Filtering message type: ${message.type}`);
         console.log(`   Expected node UUID: ${options.nodeId}`);
         console.log(`   Message node UUID: ${messageNodeId}`);
+        console.log(`   Full message payload:`, message.payload);
+        console.log(`   Available payload keys:`, Object.keys(message.payload || {}));
         
         if (!messageNodeId) {
           console.log(`   ❌ No node UUID found in message payload`);
+          // For discovery messages, if no node UUID is found, let it through
+          // as it might be a broadcast message
+          if (message.type.startsWith('discovery_')) {
+            console.log(`   ⚠️  Allowing discovery message without node UUID (broadcast)`);
+            return true;
+          }
           return false;
         }
         
@@ -64,6 +78,7 @@ export function useWebSocketSubscription<T = WebSocketMessage>(
 
     // Subscribe to each event type
     eventTypes.forEach(type => {
+      console.log(`📡 Subscribing to event type: ${type}`);
       const unsubscribe = eventBus.subscribe(type, handleMessage, {
         filter: combinedFilter,
         transform: options?.transform,
@@ -85,7 +100,7 @@ export function useWebSocketSubscription<T = WebSocketMessage>(
  */
 export function useNodeDiscoverySubscription(nodeId: string) {
   return useWebSocketSubscription(
-    ['discovery_progress', 'discovery_success', 'discovery_failed'],
+    ['discovery_progress', 'discovery_success', 'discovery_failed', 'discovery_completed'],
     {
       nodeId,
       transform: (message) => ({

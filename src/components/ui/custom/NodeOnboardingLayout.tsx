@@ -47,6 +47,7 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
     }
 
     console.log(`🎯 Discovery WebSocket message received for node ${node.uuid}, type: ${discoveryMessage.type}`);
+    console.log(`📦 Full discovery message:`, discoveryMessage);
     console.log(`⏰ Starting 10-second reload timer`);
     
     // Hide progress display since we got the result

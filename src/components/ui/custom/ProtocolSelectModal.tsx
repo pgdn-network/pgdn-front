@@ -16,6 +16,7 @@ interface ProtocolSelectModalProps {
   onSelect: (protocols: Protocol[]) => void;
   protocols: Protocol[];
   maxSelection?: number;
+  detectedProtocols?: string[]; // Array of protocol IDs that were detected during discovery
 }
 
 // Protocol icons mapping
@@ -84,9 +85,17 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
   onClose, 
   onSelect, 
   protocols, 
-  maxSelection = 3 
+  maxSelection = 3,
+  detectedProtocols = []
 }) => {
   const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
+
+  // Pre-select detected protocols when modal opens
+  React.useEffect(() => {
+    if (isOpen && detectedProtocols.length > 0) {
+      setSelectedProtocols(detectedProtocols);
+    }
+  }, [isOpen, detectedProtocols]);
 
   if (!isOpen) return null;
 
@@ -154,20 +163,41 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
             </div>
           )}
 
+          {/* Detected Protocols Info */}
+          {detectedProtocols.length > 0 && (
+            <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="flex items-center space-x-2 mb-2">
+                <Shield className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-green-900 dark:text-green-100">
+                  Discovery Results
+                </span>
+              </div>
+              <p className="text-sm text-green-800 dark:text-green-200">
+                We detected {detectedProtocols.length} protocol{detectedProtocols.length !== 1 ? 's' : ''} during discovery. 
+                These are pre-selected for you.
+              </p>
+            </div>
+          )}
+
           {/* Protocols Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {protocols.map((protocol) => {
               const isSelected = selectedProtocols.includes(protocol.id);
               const isDisabled = !isSelected && selectedProtocols.length >= maxSelection;
+              const isDetected = detectedProtocols.includes(protocol.id);
               
               return (
                 <Card
                   key={protocol.id}
                   className={`relative cursor-pointer transition-all duration-200 hover:shadow-md ${
                     isSelected 
-                      ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' 
+                      ? isDetected
+                        ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                        : 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                       : isDisabled
                       ? 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-800'
+                      : isDetected
+                      ? 'ring-1 ring-green-300 bg-green-25 dark:bg-green-900/10 border-green-200 dark:border-green-800'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}
                   onClick={() => !isDisabled && handleProtocolToggle(protocol.id)}
@@ -176,7 +206,11 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
                     <div className="flex items-start space-x-3">
                       <div className={`p-2 rounded-lg ${
                         isSelected 
-                          ? 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400' 
+                          ? isDetected
+                            ? 'bg-green-100 dark:bg-green-800 text-green-600 dark:text-green-400'
+                            : 'bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-400' 
+                          : isDetected
+                          ? 'bg-green-50 dark:bg-green-700 text-green-600 dark:text-green-400'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                       }`}>
                         {getProtocolIcon(protocol.id)}
@@ -186,13 +220,22 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
                           <h3 className="font-medium text-gray-900 dark:text-white truncate">
                             {protocol.name}
                           </h3>
-                          {isSelected && (
-                            <div className="flex-shrink-0 ml-2">
-                              <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                <Check className="h-3 w-3 text-white" />
+                          <div className="flex items-center space-x-1">
+                            {isDetected && (
+                              <Badge variant="secondary" className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-xs">
+                                Detected
+                              </Badge>
+                            )}
+                            {isSelected && (
+                              <div className="flex-shrink-0 ml-2">
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                                  isDetected ? 'bg-green-500' : 'bg-blue-500'
+                                }`}>
+                                  <Check className="h-3 w-3 text-white" />
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                         {protocol.description && (
                           <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">

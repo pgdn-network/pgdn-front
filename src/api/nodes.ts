@@ -63,6 +63,14 @@ export class NodeApiService {
     return response.data;
   }
 
+  static async patchNode(organizationUuid: string, nodeUuid: string, nodeData: Partial<Node>): Promise<Node> {
+    const response = await apiService.patch<Node>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}`,
+      nodeData
+    );
+    return response.data;
+  }
+
   static async deleteNode(organizationUuid: string, nodeUuid: string): Promise<void> {
     await apiService.delete(`${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}`);
   }

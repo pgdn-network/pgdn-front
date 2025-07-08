@@ -103,6 +103,14 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
         console.log('Connection status received:', message.payload);
         break;
       
+      case 'discovery_completed':
+      case 'discovery_success':
+      case 'discovery_failed':
+      case 'discovery_progress':
+        // Handle discovery messages - these will be handled by specific subscriptions
+        console.log('Discovery message received:', message.type, message.payload);
+        break;
+      
       default:
         console.log('Unknown WebSocket message type:', message.type, message);
     }

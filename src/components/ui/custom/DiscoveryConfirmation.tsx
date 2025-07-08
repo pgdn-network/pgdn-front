@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { CheckCircle, Search, Shield, Settings, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProtocolSelectModal } from './ProtocolSelectModal';
+import { NodeApiService } from '@/api/nodes';
+import { useAuth } from '@/hooks/useAuth';
 
 interface DiscoveryConfirmationProps {
   node: any;
@@ -60,26 +62,78 @@ const mockProtocols = [
 
 export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ node, organization }) => {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { user } = useAuth();
 
-  const handleAcceptAndContinue = () => {
-    console.log('Accept and continue clicked');
-    // TODO: Update node status and redirect to main node page
-    // For now, just log the action
+  // Extract detected protocols from node data
+  const detectedProtocols = node?.protocol_details?.uuid ? [node.protocol_details.uuid] : [];
+
+  const handleAcceptAndContinue = async () => {
+    if (!user?.org_uuid) {
+      console.error('No organization UUID available');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      // Update the node to active state
+      await NodeApiService.patchNode(
+        user.org_uuid,
+        node.uuid,
+        {
+          simple_state: 'active',
+          validated: true
+        }
+      );
+
+      console.log('Node updated successfully');
+      // TODO: Redirect to main node page or dashboard
+      window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
+    } catch (error) {
+      console.error('Failed to update node:', error);
+      // TODO: Show error notification
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleProtocolSelect = (protocols: any[]) => {
+  const handleProtocolSelect = async (protocols: any[]) => {
     console.log('Selected protocols:', protocols);
     setIsProtocolModalOpen(false);
-    // TODO: Update node with selected protocols and redirect to main node page
-    // For now, just log the selection
+    
+    if (!user?.org_uuid) {
+      console.error('No organization UUID available');
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      // Update the node with selected protocols and set to active state
+      await NodeApiService.patchNode(
+        user.org_uuid,
+        node.uuid,
+        {
+          simple_state: 'active',
+          validated: true,
+          // TODO: Add node_protocols field when API supports it
+          // node_protocols: protocols.map(p => p.id)
+        }
+      );
+
+      console.log('Node updated successfully with protocols');
+      // TODO: Redirect to main node page or dashboard
+      window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
+    } catch (error) {
+      console.error('Failed to update node with protocols:', error);
+      // TODO: Show error notification
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
     <>
       <div className="text-center mb-8">
-        <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-          <CheckCircle className="h-10 w-10 text-green-600" />
-        </div>
         <h1 className="text-2xl font-semibold text-foreground mb-2">Discovery Complete</h1>
         <p className="text-base text-muted-foreground">
           We've successfully discovered your node {node?.name} in {organization?.name}. Please review the findings below.
@@ -154,9 +208,9 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
           <Settings className="h-4 w-4 mr-2" />
           Edit Discovery
         </Button>
-        <Button size="lg" onClick={handleAcceptAndContinue}>
+        <Button size="lg" onClick={handleAcceptAndContinue} disabled={isUpdating}>
           <ArrowRight className="h-4 w-4 mr-2" />
-          Accept & Continue
+          {isUpdating ? 'Updating...' : 'Accept & Continue'}
         </Button>
       </div>
 
@@ -165,6 +219,7 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
         onClose={() => setIsProtocolModalOpen(false)}
         onSelect={handleProtocolSelect}
         protocols={mockProtocols}
+        detectedProtocols={detectedProtocols}
       />
     </>
   );
