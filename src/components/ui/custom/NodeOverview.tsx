@@ -28,7 +28,7 @@ export const NodeOverview: React.FC<NodeOverviewProps> = ({
         <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3">
           <Button 
             onClick={onStartScan}
-            disabled={!node.is_ready_for_scan}
+            disabled={!(node.simple_state === 'active' && node.discovery_status === 'completed')}
           >
             Start Scan
           </Button>
@@ -67,9 +67,9 @@ export const NodeOverview: React.FC<NodeOverviewProps> = ({
             <div className="flex justify-between">
               <span className="text-sm text-gray-500 dark:text-gray-400">Ready for Scan:</span>
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                node.is_ready_for_scan ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                (node.simple_state === 'active' && node.discovery_status === 'completed') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
               }`}>
-                {node.is_ready_for_scan ? 'Yes' : 'No'}
+                {(node.simple_state === 'active' && node.discovery_status === 'completed') ? 'Yes' : 'No'}
               </span>
             </div>
             <div className="flex justify-between">
