@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
-import { storage } from '@/utils/storage';
+import { apiService } from '@/services/api';
 
 interface Organization {
   uuid: string;
@@ -104,29 +104,9 @@ export const OrganizationsProvider: React.FC<OrganizationsProviderProps> = ({ ch
       isFetching.current = true;
       setLoading(true);
       setError(null);
-      const token = storage.getAccessToken();
-      
-      if (!token) {
-        console.error('No access token found. User may need to log in.');
-        setError('No access token found');
-        return;
-      }
 
-      const url = 'http://localhost:8000/api/v1/organizations';
-      const response = await fetch(url, {
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Origin': 'http://localhost:5173',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get('/organizations');
+      const data = response.data;
       
       if (data.organizations && Array.isArray(data.organizations)) {
         setOrganizations(data.organizations);

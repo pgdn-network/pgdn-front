@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { storage } from '@/utils/storage';
 import { NodeOnboardingStepper } from '@/components/ui/custom/NodeOnboardingStepper';
 import { UserPlus, Server, Info, ArrowRight } from 'lucide-react';
+import { NodeApiService } from '@/api/nodes';
 
 const OrgNodeCreate: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -52,33 +53,11 @@ const OrgNodeCreate: React.FC = () => {
     }
 
     try {
-      const token = storage.getAccessToken();
-      if (!token) {
-        throw new Error('No access token found');
-      }
-
-      const response = await fetch(`http://localhost:8000/api/v1/organizations/${organizationUuid}/nodes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle specific error messages from the API
-        if (data.detail) {
-          throw new Error(data.detail);
-        }
-        throw new Error(`Failed to create node: ${response.status}`);
-      }
+      const data = await NodeApiService.createNode(organizationUuid, formData);
       
       // Navigate to the newly created node page
-      if (data.node && data.node.uuid) {
-        navigate(`/organizations/${slug}/nodes/${data.node.uuid}`);
+      if (data && data.uuid) {
+        navigate(`/organizations/${slug}/nodes/${data.uuid}`);
       } else {
         navigate(`/organizations/${slug}`);
       }

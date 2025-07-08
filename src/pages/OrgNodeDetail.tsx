@@ -12,7 +12,7 @@ import { ValidationModal } from '@/components/ui/custom/ValidationModal';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { NodeOnboardingLayout } from '@/components/ui/custom/NodeOnboardingLayout';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { useNodeData } from '@/hooks/useNodeData';
+import { useBasicNodeData, useNodeData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
@@ -30,8 +30,20 @@ const OrgNodeDetail: React.FC = () => {
   // Find organization by slug
   const organization = organizations.find(org => org.slug === slug);
   const organizationUuid = organization?.uuid || '';
+  
+  // Use basic node data first to determine node state
   const { 
-    node, 
+    node: basicNode, 
+    loading: basicLoading, 
+    error: basicError,
+    refetch: basicRefetch 
+  } = useBasicNodeData(organizationUuid, nodeId || '');
+
+  // Only use full node data if node is active and discovery is completed
+  const shouldUseFullData = basicNode?.simple_state === 'active' && basicNode?.discovery_status === 'completed';
+  
+  const { 
+    node: fullNode, 
     cveData, 
     eventsData, 
     interventionsData, 
@@ -40,10 +52,16 @@ const OrgNodeDetail: React.FC = () => {
     reportsData,
     statusData,
     snapshotData,
-    loading, 
-    error, 
-    refetch 
-  } = useNodeData(organizationUuid, nodeId || '');
+    loading: fullLoading, 
+    error: fullError, 
+    refetch: fullRefetch 
+  } = useNodeData(shouldUseFullData ? organizationUuid : '', shouldUseFullData ? nodeId || '' : '');
+
+  // Use the appropriate node data based on state
+  const node = shouldUseFullData ? fullNode : basicNode;
+  const loading = basicLoading || (shouldUseFullData && fullLoading);
+  const error = basicError || fullError;
+  const refetch = shouldUseFullData ? fullRefetch : basicRefetch;
 
   const handleStartScan = async (scanners: string[]) => {
     if (!organizationUuid || !nodeId) return;

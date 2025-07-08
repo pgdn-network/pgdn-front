@@ -12,6 +12,12 @@ import type {
   NodeSnapshot
 } from '@/types/node';
 
+interface UseBasicNodeDataState {
+  node: Node | null;
+  loading: boolean;
+  error: string | null;
+}
+
 interface UseNodeDataState {
   node: Node | null;
   cveData: NodeCveResponse | null;
@@ -26,6 +32,74 @@ interface UseNodeDataState {
   error: string | null;
 }
 
+// Hook for fetching only basic node data (used during discovery)
+export const useBasicNodeData = (organizationUuid: string, nodeUuid: string) => {
+  const [state, setState] = useState<UseBasicNodeDataState>({
+    node: null,
+    loading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    const fetchNodeData = async () => {
+      if (!organizationUuid || !nodeUuid) {
+        setState(prev => ({ ...prev, loading: false }));
+        return;
+      }
+
+      setState(prev => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const nodeData = await NodeApiService.getNode(organizationUuid, nodeUuid);
+        
+        setState({
+          node: nodeData,
+          loading: false,
+          error: null,
+        });
+      } catch (error) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : 'Failed to fetch node data',
+        }));
+      }
+    };
+
+    fetchNodeData();
+  }, [organizationUuid, nodeUuid]);
+
+  const refetch = () => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    
+    const fetchNodeData = async () => {
+      try {
+        const nodeData = await NodeApiService.getNode(organizationUuid, nodeUuid);
+        
+        setState({
+          node: nodeData,
+          loading: false,
+          error: null,
+        });
+      } catch (error) {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : 'Failed to fetch node data',
+        }));
+      }
+    };
+
+    fetchNodeData();
+  };
+
+  return {
+    ...state,
+    refetch,
+  };
+};
+
+// Hook for fetching full node data including all additional data (used when node is active and discovered)
 export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
   const [state, setState] = useState<UseNodeDataState>({
     node: null,
@@ -53,86 +127,104 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
       try {
         const nodeData = await NodeApiService.getNode(organizationUuid, nodeUuid);
         
-        // Fetch all additional data with individual error handling
-        let cveData: NodeCveResponse | null = null;
-        let eventsData: NodeEventsResponse | null = null;
-        let interventionsData: NodeInterventionsResponse | null = null;
-        // let tasksData: NodeTasksResponse | null = null; // Commented out for now
-        let scanSessionsData: NodeScanSessionsResponse | null = null;
-        let reportsData: NodeReportsResponse | null = null;
-        let statusData: NodeStatus | null = null;
-        let snapshotData: NodeSnapshot | null = null;
+        // Only fetch additional data if node is active and discovery is completed
+        if (nodeData.simple_state === 'active' && nodeData.discovery_status === 'completed') {
+          // Fetch all additional data with individual error handling
+          let cveData: NodeCveResponse | null = null;
+          let eventsData: NodeEventsResponse | null = null;
+          let interventionsData: NodeInterventionsResponse | null = null;
+          // let tasksData: NodeTasksResponse | null = null; // Commented out for now
+          let scanSessionsData: NodeScanSessionsResponse | null = null;
+          let reportsData: NodeReportsResponse | null = null;
+          let statusData: NodeStatus | null = null;
+          let snapshotData: NodeSnapshot | null = null;
 
-        try {
-          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
-        } catch (cveError) {
-          console.warn('Failed to fetch CVE data:', cveError);
-          cveData = [];
+          try {
+            cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
+          } catch (cveError) {
+            console.warn('Failed to fetch CVE data:', cveError);
+            cveData = [];
+          }
+
+          try {
+            eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
+          } catch (eventsError) {
+            console.warn('Failed to fetch events data:', eventsError);
+            eventsData = null;
+          }
+
+          try {
+            interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
+          } catch (interventionsError) {
+            console.warn('Failed to fetch interventions data:', interventionsError);
+            interventionsData = null;
+          }
+
+          // Tasks fetching commented out for now
+          // try {
+          //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
+          // } catch (tasksError) {
+          //   console.warn('Failed to fetch tasks data:', tasksError);
+          //   tasksData = null;
+          // }
+
+          try {
+            scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
+          } catch (scanSessionsError) {
+            console.warn('Failed to fetch scan sessions data:', scanSessionsError);
+            scanSessionsData = null;
+          }
+
+          try {
+            reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid, 5);
+          } catch (reportsError) {
+            console.warn('Failed to fetch reports data:', reportsError);
+            reportsData = null;
+          }
+
+          try {
+            statusData = await NodeApiService.getNodeStatus(organizationUuid, nodeUuid);
+          } catch (statusError) {
+            console.warn('Failed to fetch status data:', statusError);
+            statusData = null;
+          }
+
+          try {
+            snapshotData = await NodeApiService.getNodeSnapshot(organizationUuid, nodeUuid);
+          } catch (snapshotError) {
+            console.warn('Failed to fetch snapshot data:', snapshotError);
+            snapshotData = null;
+          }
+
+          setState({
+            node: nodeData,
+            cveData: cveData,
+            eventsData: eventsData,
+            interventionsData: interventionsData,
+            // tasksData: tasksData, // Commented out for now
+            scanSessionsData: scanSessionsData,
+            reportsData: reportsData,
+            statusData: statusData,
+            snapshotData: snapshotData,
+            loading: false,
+            error: null,
+          });
+        } else {
+          // For nodes not active or discovery not completed, only set basic node data
+          setState({
+            node: nodeData,
+            cveData: null,
+            eventsData: null,
+            interventionsData: null,
+            // tasksData: null, // Commented out for now
+            scanSessionsData: null,
+            reportsData: null,
+            statusData: null,
+            snapshotData: null,
+            loading: false,
+            error: null,
+          });
         }
-
-        try {
-          eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
-        } catch (eventsError) {
-          console.warn('Failed to fetch events data:', eventsError);
-          eventsData = null;
-        }
-
-        try {
-          interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
-        } catch (interventionsError) {
-          console.warn('Failed to fetch interventions data:', interventionsError);
-          interventionsData = null;
-        }
-
-        // Tasks fetching commented out for now
-        // try {
-        //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
-        // } catch (tasksError) {
-        //   console.warn('Failed to fetch tasks data:', tasksError);
-        //   tasksData = null;
-        // }
-
-        try {
-          scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
-        } catch (scanSessionsError) {
-          console.warn('Failed to fetch scan sessions data:', scanSessionsError);
-          scanSessionsData = null;
-        }
-
-        try {
-          reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid, 5);
-        } catch (reportsError) {
-          console.warn('Failed to fetch reports data:', reportsError);
-          reportsData = null;
-        }
-
-        try {
-          statusData = await NodeApiService.getNodeStatus(organizationUuid, nodeUuid);
-        } catch (statusError) {
-          console.warn('Failed to fetch status data:', statusError);
-          statusData = null;
-        }
-
-        try {
-          snapshotData = await NodeApiService.getNodeSnapshot(organizationUuid, nodeUuid);
-        } catch (snapshotError) {
-          console.warn('Failed to fetch snapshot data:', snapshotError);
-          snapshotData = null;
-        }
-
-        setState({
-          node: nodeData,
-          cveData: cveData,
-          eventsData: eventsData,
-          interventionsData: interventionsData,
-          // tasksData: tasksData, // Commented out for now
-          scanSessionsData: scanSessionsData,
-          reportsData: reportsData,
-          statusData: statusData,
-          snapshotData: snapshotData,
-          loading: false,
-          error: null,
-        });
       } catch (error) {
         setState(prev => ({
           ...prev,
@@ -152,86 +244,104 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
       try {
         const nodeData = await NodeApiService.getNode(organizationUuid, nodeUuid);
         
-        // Fetch all additional data with individual error handling
-        let cveData: NodeCveResponse | null = null;
-        let eventsData: NodeEventsResponse | null = null;
-        let interventionsData: NodeInterventionsResponse | null = null;
-        // let tasksData: NodeTasksResponse | null = null; // Commented out for now
-        let scanSessionsData: NodeScanSessionsResponse | null = null;
-        let reportsData: NodeReportsResponse | null = null;
-        let statusData: NodeStatus | null = null;
-        let snapshotData: NodeSnapshot | null = null;
+        // Only fetch additional data if node is active and discovery is completed
+        if (nodeData.simple_state === 'active' && nodeData.discovery_status === 'completed') {
+          // Fetch all additional data with individual error handling
+          let cveData: NodeCveResponse | null = null;
+          let eventsData: NodeEventsResponse | null = null;
+          let interventionsData: NodeInterventionsResponse | null = null;
+          // let tasksData: NodeTasksResponse | null = null; // Commented out for now
+          let scanSessionsData: NodeScanSessionsResponse | null = null;
+          let reportsData: NodeReportsResponse | null = null;
+          let statusData: NodeStatus | null = null;
+          let snapshotData: NodeSnapshot | null = null;
 
-        try {
-          cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
-        } catch (cveError) {
-          console.warn('Failed to fetch CVE data:', cveError);
-          cveData = [];
+          try {
+            cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
+          } catch (cveError) {
+            console.warn('Failed to fetch CVE data:', cveError);
+            cveData = [];
+          }
+
+          try {
+            eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
+          } catch (eventsError) {
+            console.warn('Failed to fetch events data:', eventsError);
+            eventsData = null;
+          }
+
+          try {
+            interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
+          } catch (interventionsError) {
+            console.warn('Failed to fetch interventions data:', interventionsError);
+            interventionsData = null;
+          }
+
+          // Tasks fetching commented out for now
+          // try {
+          //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
+          // } catch (tasksError) {
+          //   console.warn('Failed to fetch tasks data:', tasksError);
+          //   tasksData = null;
+          // }
+
+          try {
+            scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
+          } catch (scanSessionsError) {
+            console.warn('Failed to fetch scan sessions data:', scanSessionsError);
+            scanSessionsData = null;
+          }
+
+          try {
+            reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid, 5);
+          } catch (reportsError) {
+            console.warn('Failed to fetch reports data:', reportsError);
+            reportsData = null;
+          }
+
+          try {
+            statusData = await NodeApiService.getNodeStatus(organizationUuid, nodeUuid);
+          } catch (statusError) {
+            console.warn('Failed to fetch status data:', statusError);
+            statusData = null;
+          }
+
+          try {
+            snapshotData = await NodeApiService.getNodeSnapshot(organizationUuid, nodeUuid);
+          } catch (snapshotError) {
+            console.warn('Failed to fetch snapshot data:', snapshotError);
+            snapshotData = null;
+          }
+
+          setState({
+            node: nodeData,
+            cveData: cveData,
+            eventsData: eventsData,
+            interventionsData: interventionsData,
+            // tasksData: tasksData, // Commented out for now
+            scanSessionsData: scanSessionsData,
+            reportsData: reportsData,
+            statusData: statusData,
+            snapshotData: snapshotData,
+            loading: false,
+            error: null,
+          });
+        } else {
+          // For nodes not active or discovery not completed, only set basic node data
+          setState({
+            node: nodeData,
+            cveData: null,
+            eventsData: null,
+            interventionsData: null,
+            // tasksData: null, // Commented out for now
+            scanSessionsData: null,
+            reportsData: null,
+            statusData: null,
+            snapshotData: null,
+            loading: false,
+            error: null,
+          });
         }
-
-        try {
-          eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
-        } catch (eventsError) {
-          console.warn('Failed to fetch events data:', eventsError);
-          eventsData = null;
-        }
-
-        try {
-          interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
-        } catch (interventionsError) {
-          console.warn('Failed to fetch interventions data:', interventionsError);
-          interventionsData = null;
-        }
-
-        // Tasks fetching commented out for now
-        // try {
-        //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
-        // } catch (tasksError) {
-        //   console.warn('Failed to fetch tasks data:', tasksError);
-        //   tasksData = null;
-        // }
-
-        try {
-          scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
-        } catch (scanSessionsError) {
-          console.warn('Failed to fetch scan sessions data:', scanSessionsError);
-          scanSessionsData = null;
-        }
-
-        try {
-          reportsData = await NodeApiService.getNodeReports(organizationUuid, nodeUuid, 5);
-        } catch (reportsError) {
-          console.warn('Failed to fetch reports data:', reportsError);
-          reportsData = null;
-        }
-
-        try {
-          statusData = await NodeApiService.getNodeStatus(organizationUuid, nodeUuid);
-        } catch (statusError) {
-          console.warn('Failed to fetch status data:', statusError);
-          statusData = null;
-        }
-
-        try {
-          snapshotData = await NodeApiService.getNodeSnapshot(organizationUuid, nodeUuid);
-        } catch (snapshotError) {
-          console.warn('Failed to fetch snapshot data:', snapshotError);
-          snapshotData = null;
-        }
-
-        setState({
-          node: nodeData,
-          cveData: cveData,
-          eventsData: eventsData,
-          interventionsData: interventionsData,
-          // tasksData: tasksData, // Commented out for now
-          scanSessionsData: scanSessionsData,
-          reportsData: reportsData,
-          statusData: statusData,
-          snapshotData: snapshotData,
-          loading: false,
-          error: null,
-        });
       } catch (error) {
         setState(prev => ({
           ...prev,

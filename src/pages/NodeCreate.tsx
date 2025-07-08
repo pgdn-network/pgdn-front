@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
-import { storage } from '@/utils/storage';
+import { NodeApiService } from '@/api/nodes';
 
 const NodeCreate: React.FC = () => {
   const navigate = useNavigate();
@@ -51,28 +51,11 @@ const NodeCreate: React.FC = () => {
     setError(null);
 
     try {
-      const token = storage.getAccessToken();
-      if (!token) {
-        throw new Error('No access token found');
-      }
-
-      const response = await fetch(`http://localhost:8000/api/v1/organizations/${formData.organization_uuid}/nodes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          address: formData.address
-        })
+      await NodeApiService.createNode(formData.organization_uuid, {
+        name: formData.name,
+        address: formData.address
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to create node: ${response.status}`);
-      }
-
-      await response.json();
       navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
-import { storage } from '@/utils/storage';
+import { apiService } from '@/services/api';
 
 export interface Protocol {
   uuid: string;
@@ -103,29 +103,9 @@ export const ProtocolsProvider: React.FC<ProtocolsProviderProps> = ({ children }
       isFetching.current = true;
       setLoading(true);
       setError(null);
-      const token = storage.getAccessToken();
-      
-      if (!token) {
-        console.error('No access token found for protocols request. User may need to log in.');
-        setError('No access token found');
-        return;
-      }
 
-      const url = 'http://localhost:8000/api/v1/protocols';
-      const response = await fetch(url, {
-        headers: {
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Origin': 'http://localhost:5173',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await apiService.get('/protocols');
+      const data = response.data;
       
       if (data && Array.isArray(data)) {
         setProtocols(data);

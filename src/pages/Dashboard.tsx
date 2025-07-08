@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Card } from '@/components/ui/custom/Card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusDot } from '@/components/ui/custom/StatusDot';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
@@ -32,94 +32,56 @@ import {
   LockOpen,
   AlertTriangle,
   Loader2,
-  HelpCircle
+  HelpCircle,
+  ExternalLink,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
-
-interface Node {
-  uuid: string;
-  name: string;
-  address: string;
-  active: boolean;
-  current_state: string | null;
-  meta: Record<string, unknown>;
-  organization_uuid: string;
-  protocol_uuid: string | null;
-  protocol_name: string | null;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
+import { NodeApiService } from '@/api/nodes';
+import type { Node } from '@/types/node';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedOrg = searchParams.get('org') || 'all';
-  const [nodes, setNodes] = React.useState<Node[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [nodesLoading, setNodesLoading] = React.useState(true);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [nodesLoading, setNodesLoading] = useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
-  const { loading: protocolsLoading, getProtocol } = useProtocols();
+  const { protocols, loading: protocolsLoading, getProtocol } = useProtocols();
   // const { isConnected } = useWebSocketContext();
   
   const handleOrgChange = (value: string) => {
-    if (value === 'all') {
-      searchParams.delete('org');
-    } else {
-      searchParams.set('org', value);
-    }
-    setSearchParams(searchParams);
+    setSearchParams({ org: value });
   };
 
-
-  // Fetch nodes data from API
-  React.useEffect(() => {
+  // Fetch nodes based on selected organization
+  useEffect(() => {
     const fetchNodes = async () => {
+      setNodesLoading(true);
+      
       try {
-        setNodesLoading(true);
-        // Get JWT token using the proper storage utility
-        const token = storage.getAccessToken();
+        let nodesData: Node[] = [];
         
-        if (!token) {
-          console.error('No access token found. User may need to log in.');
-          return;
-        }
-        
-        let url: string;
         if (selectedOrg && selectedOrg !== 'all') {
           // Find organization UUID from slug using cached organizations
           const org = organizations.find(org => org.slug === selectedOrg);
           if (org) {
             // Organization-specific API call using UUID
-            url = `http://localhost:8000/api/v1/organizations/${org.uuid}/nodes?limit=50&offset=0`;
+            nodesData = await NodeApiService.getNodes(org.uuid, 50);
           } else {
             console.warn(`Organization with slug "${selectedOrg}" not found in cache`);
             // Fallback to general nodes API call
-            url = 'http://localhost:8000/api/v1/nodes?limit=50&offset=0';
+            nodesData = await NodeApiService.getNodes('', 50);
           }
         } else {
           // General nodes API call
-          url = 'http://localhost:8000/api/v1/nodes?limit=50&offset=0';
+          nodesData = await NodeApiService.getNodes('', 50);
         }
-
-        const response = await fetch(url, {
-          headers: {
-            'Accept': '*/*',
-            'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Origin': 'http://localhost:5173',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
         
         // Update state with fetched nodes data
-        if (data.nodes && Array.isArray(data.nodes)) {
-          setNodes(data.nodes);
+        if (nodesData && Array.isArray(nodesData)) {
+          setNodes(nodesData);
         }
         
       } catch (error) {
@@ -133,7 +95,7 @@ const Dashboard: React.FC = () => {
   }, [selectedOrg, organizations]); // Re-fetch when organization filter changes or organizations load
 
   // Update loading state when all API calls complete
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(nodesLoading || orgsLoading || protocolsLoading);
   }, [nodesLoading, orgsLoading, protocolsLoading]);
 
@@ -240,7 +202,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-
   // Show loading state while data is being fetched
   if (loading || orgsLoading) {
     return (
@@ -313,8 +274,6 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {stats.map((stat, index) => (
@@ -378,7 +337,7 @@ const Dashboard: React.FC = () => {
             </TableHeader>
             <TableBody>
               {nodes.map((node) => {
-                const protocol = node.protocol_uuid ? getProtocol(node.protocol_uuid) : null;
+                const protocol = node.protocol_details?.uuid ? getProtocol(node.protocol_details.uuid) : null;
                 const stateInfo = getStateIcon(node.current_state);
                 const StateIcon = stateInfo.icon;
                 

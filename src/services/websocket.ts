@@ -1,4 +1,5 @@
 import { storage } from '@/utils/storage';
+import config from '@/config';
 
 export interface WebSocketMessage {
   type: string;
@@ -33,7 +34,7 @@ class WebSocketService {
   }
 
   private getWebSocketUrl(): string {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const baseUrl = config.apiUrl;
     const wsUrl = baseUrl.replace('http', 'ws').replace('https', 'wss');
     const token = storage.getAccessToken();
     
