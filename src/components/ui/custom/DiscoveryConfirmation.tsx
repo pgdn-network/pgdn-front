@@ -85,7 +85,7 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
       console.log('📍 API URL:', `/organizations/${user.org_uuid}/nodes/${node.uuid}`);
       
       // Update the node to active state with detected protocols
-      await NodeApiService.updateNode(
+      await NodeApiService.patchNode(
         user.org_uuid,
         node.uuid,
         updateData
@@ -122,7 +122,7 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
       console.log('📍 API URL:', `/organizations/${user.org_uuid}/nodes/${node.uuid}`);
       
       // Update the node with selected protocols and set to active state
-      await NodeApiService.updateNode(
+      await NodeApiService.patchNode(
         user.org_uuid,
         node.uuid,
         updateData
