@@ -58,8 +58,8 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, orga
         <div className="bg-primary/10 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
           <Rocket className="h-10 w-10 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to Node Onboarding</h1>
-        <p className="text-lg text-muted-foreground">
+        <h1 className="text-2xl font-semibold text-foreground mb-2">Welcome to Node Onboarding</h1>
+        <p className="text-base text-muted-foreground">
           Let's get your node {node?.name} set up and ready for scanning
         </p>
       </div>
@@ -71,11 +71,11 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, orga
             <Info className="h-6 w-6 text-blue-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2">What is Discovery?</h3>
-            <p className="text-muted-foreground mb-4">
+            <h3 className="text-base font-medium mb-2">What is Discovery?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
               Discovery is the first step in onboarding your node. It analyzes your target to identify:
             </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li className="flex items-center">
                 <ArrowRight className="h-4 w-4 mr-2 text-blue-500" />
                 Network connectivity and reachability
@@ -95,26 +95,26 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, orga
 
       {/* Node Information Card */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Node Details</h3>
+        <h3 className="text-base font-medium mb-4">Node Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Name:</span>
-              <span className="text-sm font-medium">{node?.name}</span>
+              <span className="text-xs text-muted-foreground">Name:</span>
+              <span className="text-xs">{node?.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Address:</span>
-              <span className="text-sm font-medium">{node?.address}</span>
+              <span className="text-xs text-muted-foreground">Address:</span>
+              <span className="text-xs">{node?.address}</span>
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Protocol:</span>
-              <span className="text-sm font-medium">{node?.protocol_details?.display_name}</span>
+              <span className="text-xs text-muted-foreground">Protocol:</span>
+              <span className="text-xs">{node?.protocol_details?.display_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Status:</span>
-              <span className="text-sm font-medium">{node?.simple_state}</span>
+              <span className="text-xs text-muted-foreground">Status:</span>
+              <span className="text-xs">{node?.simple_state}</span>
             </div>
           </div>
         </div>
@@ -123,8 +123,8 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, orga
       {/* Action Card */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Discovery Will Start Automatically</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-base font-medium mb-2">Discovery Will Start Automatically</h3>
+          <p className="text-sm text-muted-foreground">
             Your node has been created successfully. Discovery will begin automatically to analyze your node and prepare it for scanning.
           </p>
         </div>

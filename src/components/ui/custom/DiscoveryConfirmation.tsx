@@ -80,8 +80,8 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
         <div className="bg-green-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
           <CheckCircle className="h-10 w-10 text-green-600" />
         </div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Discovery Complete</h1>
-        <p className="text-lg text-muted-foreground">
+        <h1 className="text-2xl font-semibold text-foreground mb-2">Discovery Complete</h1>
+        <p className="text-base text-muted-foreground">
           We've successfully discovered your node {node?.name} in {organization?.name}. Please review the findings below.
         </p>
       </div>
@@ -92,29 +92,29 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
             <div className="bg-green-100 p-2 rounded-lg mr-3">
               <CheckCircle className="h-5 w-5 text-green-600" />
             </div>
-            <h3 className="text-lg font-semibold">Discovery Results</h3>
+            <h3 className="text-base font-medium">Discovery Results</h3>
           </div>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             The discovery process has completed successfully. Here's what we found:
           </p>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2 text-xs">
             <div className="flex justify-between">
               <span>Status:</span>
-              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+              <span className="px-2 inline-flex text-xs leading-5 rounded-full bg-green-100 text-green-800">
                 Completed
               </span>
             </div>
             <div className="flex justify-between">
               <span>Endpoints Found:</span>
-              <span className="font-medium">{node?.protocol_details?.endpoints?.length || 3}</span>
+              <span>{node?.protocol_details?.endpoints?.length || 3}</span>
             </div>
             <div className="flex justify-between">
               <span>Ports Scanned:</span>
-              <span className="font-medium">{node?.protocol_details?.ports?.join(', ') || '8080, 9000, 9001'}</span>
+              <span>{node?.protocol_details?.ports?.join(', ') || '8080, 9000, 9001'}</span>
             </div>
             <div className="flex justify-between">
               <span>Protocol:</span>
-              <span className="font-medium">{node?.protocol_details?.display_name || 'Sui'}</span>
+              <span>{node?.protocol_details?.display_name || 'Sui'}</span>
             </div>
           </div>
         </div>
@@ -124,24 +124,24 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
             <div className="bg-blue-100 p-2 rounded-lg mr-3">
               <Search className="h-5 w-5 text-blue-600" />
             </div>
-            <h3 className="text-lg font-semibold">Next Steps</h3>
+            <h3 className="text-base font-medium">Next Steps</h3>
           </div>
           <div className="space-y-3">
             <div className="flex items-center">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-              <span className="text-sm">Discovery completed successfully</span>
+              <span className="text-xs">Discovery completed successfully</span>
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-              <span className="text-sm">Review discovery results</span>
+              <span className="text-xs">Review discovery results</span>
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-              <span className="text-sm">Confirm or modify findings</span>
+              <span className="text-xs">Confirm or modify findings</span>
             </div>
             <div className="flex items-center">
               <div className="w-2 h-2 bg-gray-300 rounded-full mr-3"></div>
-              <span className="text-sm text-muted-foreground">Proceed to security scanning</span>
+              <span className="text-xs text-muted-foreground">Proceed to security scanning</span>
             </div>
           </div>
         </div>

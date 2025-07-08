@@ -76,11 +76,11 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
             <Settings className="h-6 w-6 text-blue-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold mb-2">What happened?</h3>
-            <p className="text-muted-foreground mb-4">
+            <h3 className="text-base font-medium mb-2">What happened?</h3>
+            <p className="text-sm text-muted-foreground mb-4">
               The discovery process couldn't automatically identify the protocol and services running on your node. This can happen for several reasons:
             </p>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-2 text-xs text-muted-foreground">
               <li className="flex items-center">
                 <ArrowRight className="h-4 w-4 mr-2 text-blue-500" />
                 Network connectivity issues
@@ -103,26 +103,26 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4">Node Details</h3>
+        <h3 className="text-base font-medium mb-4">Node Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Name:</span>
-              <span className="text-sm font-medium">{node?.name}</span>
+              <span className="text-xs text-muted-foreground">Name:</span>
+              <span className="text-xs">{node?.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Address:</span>
-              <span className="text-sm font-medium">{node?.address}</span>
+              <span className="text-xs text-muted-foreground">Address:</span>
+              <span className="text-xs">{node?.address}</span>
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Status:</span>
-              <span className="text-sm font-medium">{node?.simple_state}</span>
+              <span className="text-xs text-muted-foreground">Status:</span>
+              <span className="text-xs">{node?.simple_state}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Discovery:</span>
-              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+              <span className="text-xs text-muted-foreground">Discovery:</span>
+              <span className="px-2 inline-flex text-xs leading-5 rounded-full bg-red-100 text-red-800">
                 Failed
               </span>
             </div>
@@ -132,8 +132,8 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
 
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-2">Manual Configuration</h3>
-          <p className="text-muted-foreground mb-6">
+          <h3 className="text-base font-medium mb-2">Manual Configuration</h3>
+          <p className="text-sm text-muted-foreground mb-6">
             You can manually configure your node by selecting the protocol and services it's running.
           </p>
           <Button 
