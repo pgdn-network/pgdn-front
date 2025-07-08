@@ -51,6 +51,7 @@ export interface Node {
   cve_summary: CveSummary;
   total_scan_sessions: number;
   total_reports: number;
+  node_protocols?: string[]; // Array of protocol UUIDs
 }
 
 export interface CveMatch {

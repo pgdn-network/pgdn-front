@@ -76,17 +76,17 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
 
     setIsUpdating(true);
     try {
-      // Update the node to active state
+      // Update the node to active state with detected protocols
       await NodeApiService.patchNode(
         user.org_uuid,
         node.uuid,
         {
           simple_state: 'active',
-          validated: true
+          node_protocols: detectedProtocols
         }
       );
 
-      console.log('Node updated successfully');
+      console.log('Node updated successfully with protocols:', detectedProtocols);
       // TODO: Redirect to main node page or dashboard
       window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
     } catch (error) {
@@ -114,13 +114,11 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
         node.uuid,
         {
           simple_state: 'active',
-          validated: true,
-          // TODO: Add node_protocols field when API supports it
-          // node_protocols: protocols.map(p => p.id)
+          node_protocols: protocols.map(p => p.id)
         }
       );
 
-      console.log('Node updated successfully with protocols');
+      console.log('Node updated successfully with protocols:', protocols.map(p => p.id));
       // TODO: Redirect to main node page or dashboard
       window.location.href = `/organizations/${user.org_uuid}/nodes/${node.uuid}`;
     } catch (error) {
