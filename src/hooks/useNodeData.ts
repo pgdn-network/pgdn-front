@@ -11,6 +11,7 @@ import type {
   NodeStatus,
   NodeSnapshot
 } from '@/types/node';
+import { useOrganizations } from '@/contexts/OrganizationsContext';
 
 interface UseBasicNodeDataState {
   node: Node | null;
@@ -101,6 +102,8 @@ export const useBasicNodeData = (organizationUuid: string, nodeUuid: string) => 
 
 // Hook for fetching full node data including all additional data (used when node is active and discovered)
 export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
+  const { organizations } = useOrganizations();
+  const organization = organizations.find(org => org.uuid === organizationUuid) || null;
   const [state, setState] = useState<UseNodeDataState>({
     node: null,
     cveData: null,
@@ -356,6 +359,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
 
   return {
     ...state,
+    organization,
     refetch,
   };
 };

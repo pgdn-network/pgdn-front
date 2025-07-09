@@ -62,7 +62,7 @@ export const ScanProgressBar: React.FC<ScanProgressBarProps> = ({
   const displayProgress = status === 'completed' ? 100 : (status === 'failed' ? 100 : progress);
 
   return (
-    <div className="border rounded-lg p-3 bg-white dark:bg-gray-800 shadow-sm">
+    <div className="border p-3 bg-white dark:bg-gray-800 shadow-sm">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           {getStatusIcon()}
@@ -84,9 +84,9 @@ export const ScanProgressBar: React.FC<ScanProgressBarProps> = ({
         </div>
       )}
       
-      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+      <div className="w-full bg-gray-200 dark:bg-gray-700 h-2">
         <div 
-          className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor()}`}
+          className={`h-2 transition-all duration-300 ${getProgressBarColor()}`}
           style={{ width: `${displayProgress}%` }}
         />
       </div>

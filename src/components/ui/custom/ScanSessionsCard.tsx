@@ -111,7 +111,7 @@ export function ScanSessionsCard({ scanSessions }: ScanSessionsCardProps) {
         
         <div className="space-y-3">
           {sortedSessions.map((session) => (
-            <div key={session.scan_id} className="border rounded-lg p-4 space-y-3">
+            <div key={session.scan_id} className="border p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">

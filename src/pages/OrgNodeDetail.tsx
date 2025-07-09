@@ -17,6 +17,8 @@ import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
 import { useBanner } from '@/contexts/BannerContext';
+import { NodeInterventions } from '@/components/ui/custom/NodeInterventions';
+import { NodeActivity } from '@/components/ui/custom/NodeActivity';
 
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
@@ -235,8 +237,35 @@ const OrgNodeDetail: React.FC = () => {
           reportsData={reportsData}
           snapshotData={snapshotData}
           loading={loading}
-        />
-        
+        >
+          {/* Node Snapshot Section */}
+          <div className="mt-8">
+            <NodeSnapshotCard snapshot={snapshotData} loading={loading} />
+          </div>
+          {/* Interventions Section */}
+          <NodeInterventions interventionsData={interventionsData} />
+          {/* CVE Details Section */}
+          <div className="mt-8">
+            <CVECard cves={cveData} organizationSlug={slug} nodeId={nodeId} />
+          </div>
+          <NodeActivity node={node} organization={organization} />
+          {/* Events Section */}
+          <div className="mt-8">
+            <EventCard events={eventsData?.events} />
+          </div>
+          {/* Scan Sessions Section */}
+          <div className="mt-8">
+            <ScanSessionsCard scanSessions={scanSessionsData?.scans} />
+          </div>
+          {/* Reports Section */}
+          <div className="mt-8">
+            <ReportsCard 
+              reports={reportsData?.reports || []} 
+              organizationSlug={slug}
+              nodeId={nodeId}
+            />
+          </div>
+        </NodeMainLayout>
         {/* Scan Modal */}
         <ScanModal
           isOpen={isScanModalOpen}

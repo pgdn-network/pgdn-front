@@ -86,7 +86,7 @@ export function ReportsCard({ reports, organizationSlug, nodeId }: ReportsCardPr
         
         <div className="space-y-4">
           {safeReports.slice(0, 3).map((report) => (
-            <div key={report.uuid} className="border rounded-lg p-4 space-y-3">
+            <div key={report.uuid} className="border p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1 flex-1">
                   <h3 className="font-medium text-sm leading-none">{report.title}</h3>

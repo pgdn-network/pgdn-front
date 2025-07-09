@@ -23,9 +23,9 @@ export const DiscoveryProgressCard: React.FC<DiscoveryProgressCardProps> = ({
 }) => {
   // No state or effects, just render UI based on props
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div className="bg-white dark:bg-gray-800 shadow p-6">
       <div className="text-center mb-6">
-        <div className="bg-blue-100 p-3 rounded-lg w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <div className="bg-blue-100 p-3 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
           <Search className="h-8 w-8 text-blue-600" />
         </div>
         <h3 className="text-xl font-semibold mb-2">Discovery in Progress</h3>
@@ -43,7 +43,7 @@ export const DiscoveryProgressCard: React.FC<DiscoveryProgressCardProps> = ({
         </div>
       </div>
       {/* Discovery Information */}
-      <div className={`rounded-lg p-4 border ${
+      <div className={`p-4 border ${
         discoveryResult === 'success'
           ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
           : discoveryResult === 'failed'
