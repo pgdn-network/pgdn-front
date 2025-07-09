@@ -4,6 +4,8 @@ type Theme = 'dark' | 'light' | 'system'
 
 type ThemeProviderProps = {
   children: React.ReactNode
+  defaultTheme?: Theme
+  storageKey?: string
 }
 
 type ThemeProviderState = {
@@ -13,14 +15,17 @@ type ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undefined)
 
-export function ThemeProvider({ children }: ThemeProviderProps) {
+export function ThemeProvider({ children, defaultTheme = 'light', storageKey = 'pgdn-ui-theme' }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const stored = localStorage.getItem('pgdn-ui-theme')
-    return (stored as Theme) || 'dark'
+    const stored = localStorage.getItem(storageKey)
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      return stored as Theme
+    }
+    return defaultTheme // Use provided defaultTheme
   })
 
   const setTheme = (newTheme: Theme) => {
-    localStorage.setItem('pgdn-ui-theme', newTheme)
+    localStorage.setItem(storageKey, newTheme)
     setThemeState(newTheme)
   }
 

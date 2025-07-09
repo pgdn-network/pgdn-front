@@ -30,7 +30,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="inline-flex items-center justify-center rounded-md w-9 h-9 bg-surface hover:bg-surface-hover border border-border transition-colors"
+      className="inline-flex items-center justify-center rounded-md w-9 h-9 bg-surface hover:bg-surface-hover transition-colors"
       title={`Current theme: ${theme}`}
     >
       {getIcon()}

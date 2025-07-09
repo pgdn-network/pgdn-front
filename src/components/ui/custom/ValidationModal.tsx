@@ -18,7 +18,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+      <div className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Validate Node</h2>
           <Button 
@@ -37,34 +37,18 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({
             </div>
             <div>
               <h3 className="font-medium mb-2">Node Validation Required</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Node validation ensures that your target is reachable and properly configured for scanning. 
-                This process verifies network connectivity, protocol compatibility, and security policies.
-              </p>
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h4 className="font-medium text-sm mb-2">Validation Process:</h4>
-            <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Network connectivity test</li>
-              <li>• Protocol verification</li>
-              <li>• Port accessibility check</li>
-              <li>• Security policy compliance</li>
-            </ul>
-          </div>
-
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Node Information:</h4>
-            <div className="text-sm text-gray-600 space-y-1">
-              <div>Name: <span className="font-medium">{node?.name}</span></div>
-              <div>Address: <span className="font-medium">{node?.address}</span></div>
-              <div>Protocol: <span className="font-medium">{node?.protocol_details?.display_name || 'Unknown'}</span></div>
-            </div>
+            <p className="text-xs text-gray-900 dark:text-white font-normal leading-relaxed">
+              Node validation ensures that your target is reachable and properly configured for scanning. This process verifies network connectivity, protocol compatibility, and security policies.
+            </p>
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-900 dark:text-white mb-4">
               To proceed with validation, please visit our validation portal:
             </p>
             <Button 

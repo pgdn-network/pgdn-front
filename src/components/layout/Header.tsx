@@ -5,20 +5,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
 import { WebSocketStatus } from '@/components/ui/custom/WebSocketStatus'
+import { ThemeToggle } from '../theme/ThemeToggle'
 
 interface HeaderProps {
   onMobileMenuToggle: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
-  const [isDark, setIsDark] = React.useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
   const { user, logout } = useAuth()
-
-  const toggleTheme = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
-  }
 
   const handleLogout = async () => {
     setIsUserMenuOpen(false)
@@ -58,18 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
           <WebSocketStatus />
           
           {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            className="p-2 hover:bg-surface-hover rounded-md transition-all duration-200"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-secondary" />
-            ) : (
-              <Moon className="w-5 h-5 text-secondary" />
-            )}
-          </Button>
+          <ThemeToggle />
 
           {/* Notifications */}
           <div className="relative">

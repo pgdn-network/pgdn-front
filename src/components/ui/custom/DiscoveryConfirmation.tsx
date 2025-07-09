@@ -60,6 +60,20 @@ const mockProtocols = [
   { id: 'xrp', name: 'XRP', description: 'Digital asset for payments and remittances' },
 ];
 
+// Helper to update node state (optionally with protocols)
+async function updateNodeState({ orgUuid, nodeUuid, simpleState, nodeProtocols }: {
+  orgUuid: string;
+  nodeUuid: string;
+  simpleState: string;
+  nodeProtocols?: string[];
+}) {
+  const updateData: any = { simple_state: simpleState };
+  if (nodeProtocols) {
+    updateData.node_protocols = nodeProtocols;
+  }
+  await NodeApiService.patchNode(orgUuid, nodeUuid, updateData);
+}
+
 export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ node, organization }) => {
   const [isProtocolModalOpen, setIsProtocolModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -76,64 +90,41 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
 
     setIsUpdating(true);
     try {
-      const updateData = {
-        simple_state: 'active',
-        node_protocols: detectedProtocols
-      };
-      
-      console.log('🔄 Updating node with data:', updateData);
-      console.log('📍 API URL:', `/organizations/${user.org_uuid}/nodes/${node.uuid}`);
-      
-      // Update the node to active state with detected protocols
-      await NodeApiService.patchNode(
-        user.org_uuid,
-        node.uuid,
-        updateData
-      );
+      // Only update state, do NOT send node_protocols
+      await updateNodeState({
+        orgUuid: user.org_uuid,
+        nodeUuid: node.uuid,
+        simpleState: 'active',
+      });
 
-      console.log('✅ Node updated successfully with protocols:', detectedProtocols);
-      // Redirect to main node page using organization slug
+      console.log('✅ Node updated successfully (no protocol change)');
       window.location.href = `/organizations/${organization.slug}/nodes/${node.uuid}`;
     } catch (error) {
       console.error('Failed to update node:', error);
-      // TODO: Show error notification
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleProtocolSelect = async (protocols: any[]) => {
-    console.log('Selected protocols:', protocols);
     setIsProtocolModalOpen(false);
-    
     if (!user?.org_uuid) {
       console.error('No organization UUID available');
       return;
     }
-
     setIsUpdating(true);
     try {
-      const updateData = {
-        simple_state: 'active',
-        node_protocols: protocols.map(p => p.id)
-      };
-      
-      console.log('🔄 Updating node with selected protocols:', updateData);
-      console.log('📍 API URL:', `/organizations/${user.org_uuid}/nodes/${node.uuid}`);
-      
-      // Update the node with selected protocols and set to active state
-      await NodeApiService.patchNode(
-        user.org_uuid,
-        node.uuid,
-        updateData
-      );
-
+      // Only send node_protocols if user updated them
+      await updateNodeState({
+        orgUuid: user.org_uuid,
+        nodeUuid: node.uuid,
+        simpleState: 'active',
+        nodeProtocols: protocols.map(p => p.id),
+      });
       console.log('✅ Node updated successfully with protocols:', protocols.map(p => p.id));
-      // Redirect to main node page using organization slug
       window.location.href = `/organizations/${organization.slug}/nodes/${node.uuid}`;
     } catch (error) {
       console.error('Failed to update node with protocols:', error);
-      // TODO: Show error notification
     } finally {
       setIsUpdating(false);
     }
@@ -208,8 +199,6 @@ export const DiscoveryConfirmation: React.FC<DiscoveryConfirmationProps> = ({ no
           </div>
         </div>
       </div>
-
-
 
       <div className="flex justify-center space-x-4">
         <Button variant="outline" size="lg" onClick={() => setIsProtocolModalOpen(true)}>

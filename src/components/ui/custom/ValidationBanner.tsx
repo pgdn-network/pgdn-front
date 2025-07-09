@@ -44,10 +44,7 @@ export const ValidationBanner: React.FC<ValidationBannerProps> = ({ node, onClos
               <div className="bg-gray-50 p-3 rounded">
                 <h4 className="font-medium text-sm mb-2">Validation Process:</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Network connectivity test</li>
-                  <li>• Protocol verification</li>
-                  <li>• Port accessibility check</li>
-                  <li>• Security policy compliance</li>
+                  <li>To validate your node, run a single <code>curl</code> command from your node. This proves you own the IP address.</li>
                 </ul>
               </div>
               <div className="flex space-x-3">

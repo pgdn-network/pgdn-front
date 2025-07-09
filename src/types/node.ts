@@ -363,3 +363,45 @@ export interface CreateNodeResponse {
   background_task_id: string;
   message: string;
 }
+
+// Claimable node error (409)
+export interface ClaimableNodeError {
+  error: string;
+  existing_node: {
+    uuid: string;
+    name: string;
+    address: string;
+    match_type: string;
+    claim_status: string;
+  };
+  suggestion: string;
+  claim_endpoint: string;
+}
+
+// Claim response (on claim POST)
+export interface ClaimNodeResponse {
+  success: boolean;
+  claim_uuid: string;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  status: string;
+  message: string;
+  validation_instructions: string | null;
+}
+
+// Claim list entry (for /public/claims)
+export interface PublicClaim {
+  claim_uuid: string;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  status: string;
+  requesting_user_uuid: string;
+  requesting_org_uuid: string;
+  ip_validated: boolean;
+  validation_ip: string | null;
+  created_at: string;
+  processed_at: string | null;
+  rejection_reason: string | null;
+}

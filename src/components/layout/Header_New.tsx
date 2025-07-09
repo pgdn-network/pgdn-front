@@ -3,19 +3,14 @@ import { Search, Bell, Menu, Sun, Moon, Settings, User, LogOut, ChevronDown } fr
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { mockUser } from '@/mocks/user'
+import { ThemeToggle } from '../theme/ThemeToggle'
 
 interface HeaderProps {
   onMobileMenuToggle: () => void
 }
 
 export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
-  const [isDark, setIsDark] = React.useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
-
-  const toggleTheme = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
-  }
 
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-surface/80 border-b border-border/50 shadow-lg">
@@ -47,18 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
         {/* Right Side - Actions & User */}
         <div className="flex items-center gap-3">
           {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            className="p-2 hover:bg-surface-hover rounded-xl transition-all duration-300"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-amber-500" />
-            ) : (
-              <Moon className="w-5 h-5 text-indigo-500" />
-            )}
-          </Button>
+          <ThemeToggle />
 
           {/* Notifications */}
           <div className="relative">

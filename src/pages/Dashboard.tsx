@@ -40,6 +40,11 @@ import {
 import { NodeApiService } from '@/api/nodes';
 import type { Node } from '@/types/node';
 
+// Extend Node type to include protocols array for Dashboard context
+interface DashboardNode extends Node {
+  protocols?: string[];
+}
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,10 +64,9 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchNodes = async () => {
       setNodesLoading(true);
-      
       try {
         let nodesData: Node[] = [];
-        
+
         if (selectedOrg && selectedOrg !== 'all') {
           // Find organization UUID from slug using cached organizations
           const org = organizations.find(org => org.slug === selectedOrg);
@@ -70,20 +74,26 @@ const Dashboard: React.FC = () => {
             // Organization-specific API call using UUID
             nodesData = await NodeApiService.getNodes(org.uuid, 50);
           } else {
-            console.warn(`Organization with slug "${selectedOrg}" not found in cache`);
-            // Fallback to general nodes API call
-            nodesData = await NodeApiService.getNodes('', 50);
+            console.warn(`Organization with slug "${selectedOrg}" not found in cache. Skipping nodes fetch.`);
+            setNodes([]); // Clear nodes if org not found
+            setNodesLoading(false);
+            return; // Guard clause: do not call API with empty orgId
           }
         } else {
-          // General nodes API call
+          // No org selected or 'all' selected, call global endpoint
           nodesData = await NodeApiService.getNodes('', 50);
         }
-        
         // Update state with fetched nodes data
         if (nodesData && Array.isArray(nodesData)) {
-          setNodes(nodesData);
+          // Map node_protocols to protocols for Dashboard compatibility
+          const mappedNodes = nodesData.map((node: any) => {
+            if (Array.isArray(node.node_protocols)) {
+              return { ...node, protocols: node.node_protocols };
+            }
+            return node;
+          });
+          setNodes(mappedNodes);
         }
-        
       } catch (error) {
         console.error('Error fetching nodes:', error);
       } finally {
@@ -278,23 +288,25 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="flex flex-col items-start gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-surface-secondary flex items-center justify-center">
-                <stat.icon className="w-5 h-5 text-secondary" />
+            <CardContent className="w-full flex flex-col items-start gap-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-surface-secondary flex items-center justify-center">
+                  <stat.icon className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-muted uppercase tracking-widest">{stat.title}</p>
+                  <p className="text-sm text-secondary">{stat.description}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs font-bold text-muted uppercase tracking-widest">{stat.title}</p>
-                <p className="text-sm text-secondary">{stat.description}</p>
+              <p className="text-3xl font-black text-primary leading-none">{stat.value}</p>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-xs">
+                  {stat.trend === 'up' ? '↗' : '↘'}
+                  {stat.change}
+                </Badge>
+                <span className="text-xs text-muted">from last month</span>
               </div>
-            </div>
-            <p className="text-3xl font-black text-primary leading-none">{stat.value}</p>
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {stat.trend === 'up' ? '↗' : '↘'}
-                {stat.change}
-              </Badge>
-              <span className="text-xs text-muted">from last month</span>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>
@@ -336,8 +348,32 @@ const Dashboard: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {nodes.map((node) => {
-                const protocol = node.protocol_details?.uuid ? getProtocol(node.protocol_details.uuid) : null;
+              {(nodes as DashboardNode[]).map((node) => {
+                // Prefer node.protocols array if present and non-empty
+                let protocolDisplay = null;
+                if (Array.isArray(node.protocols) && node.protocols.length > 0) {
+                  const protocolNames = node.protocols.map((uuid: string) => {
+                    const proto = getProtocol(uuid);
+                    return proto ? proto.display_name : 'Unknown protocol';
+                  });
+                  protocolDisplay = (
+                    <>
+                      <div className="font-medium text-sm">{protocolNames.join(', ')}</div>
+                    </>
+                  );
+                } else if (node.protocol_details?.uuid) {
+                  const proto = getProtocol(node.protocol_details.uuid);
+                  protocolDisplay = proto ? (
+                    <>
+                      <div className="font-medium text-sm">{proto.display_name}</div>
+                      <div className="text-xs text-muted">{proto.category.replace(/_/g, ' ')}</div>
+                    </>
+                  ) : (
+                    <div className="text-xs text-muted">Unknown protocol</div>
+                  );
+                } else {
+                  protocolDisplay = <div className="text-xs text-muted">No protocol assigned</div>;
+                }
                 const stateInfo = getStateIcon(node.current_state);
                 const StateIcon = stateInfo.icon;
                 
@@ -364,14 +400,7 @@ const Dashboard: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <div>
-                        {protocol ? (
-                          <>
-                            <div className="font-medium text-sm">{protocol.display_name}</div>
-                            <div className="text-xs text-muted">{protocol.category.replace(/_/g, ' ')}</div>
-                          </>
-                        ) : (
-                          <div className="text-xs text-muted">No protocol assigned</div>
-                        )}
+                        {protocolDisplay}
                       </div>
                     </TableCell>
                     <TableCell>

@@ -14,7 +14,9 @@ import type {
   NodeReport,
   CveMatch,
   NodeSnapshot,
-  CreateNodeResponse
+  CreateNodeResponse,
+  ClaimNodeResponse,
+  PublicClaim
 } from '@/types/node';
 
 export class NodeApiService {
@@ -42,9 +44,18 @@ export class NodeApiService {
   }
 
   static async getNodes(organizationUuid: string, limit: number = 50): Promise<Node[]> {
-    const response = await apiService.get<Node[]>(
-      `${this.baseUrl}/${organizationUuid}/nodes?limit=${limit}`
-    );
+    let url;
+    if (!organizationUuid || organizationUuid === 'all') {
+      url = `/nodes?limit=${limit}`;
+    } else {
+      url = `${this.baseUrl}/${organizationUuid}/nodes?limit=${limit}`;
+    }
+    const response = await apiService.get(url);
+    // If the response is an object with a nodes array, return that
+    if (response.data && Array.isArray(response.data.nodes)) {
+      return response.data.nodes;
+    }
+    // Otherwise, assume the response is already an array
     return response.data;
   }
 
@@ -172,6 +183,21 @@ export class NodeApiService {
     const response = await apiService.get<NodeSnapshot>(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/snapshot`
     );
+    return response.data;
+  }
+
+  // Claim a public node
+  static async claimNode(claimEndpoint: string): Promise<ClaimNodeResponse> {
+    // claimEndpoint is a full path like /api/v1/public/nodes/:uuid/claim
+    // Remove /api/v1 prefix if present (apiService adds it)
+    const normalized = claimEndpoint.startsWith('/api/v1') ? claimEndpoint.substring(7) : claimEndpoint;
+    const response = await apiService.post<ClaimNodeResponse>(normalized);
+    return response.data;
+  }
+
+  // Get all public claims for the current user/org
+  static async getPublicClaims(): Promise<PublicClaim[]> {
+    const response = await apiService.get<PublicClaim[]>('/public/claims');
     return response.data;
   }
 }

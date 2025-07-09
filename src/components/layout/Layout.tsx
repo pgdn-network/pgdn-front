@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { GlobalNotifications } from '@/components/ui/custom/GlobalNotifications';
@@ -8,7 +8,13 @@ import NodeBanner from '@/components/ui/custom/NodeBanner';
 
 const LayoutContent: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { banner } = useBanner();
+  const { banner, setBanner } = useBanner();
+  const location = useLocation();
+
+  // Clear banner on route change
+  React.useEffect(() => {
+    setBanner(null);
+  }, [location, setBanner]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
