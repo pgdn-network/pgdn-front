@@ -13,7 +13,6 @@ const tabs = [
   { label: 'Reports', value: 'reports', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/reports` },
   { label: 'Scans', value: 'scans', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/scans` },
   { label: 'History', value: 'history', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/history` },
-  { label: <SettingsIcon className="w-5 h-5" aria-label="Settings" />, value: 'settings', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/settings`, isIcon: true },
 ];
 
 export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId }) => {
@@ -24,39 +23,41 @@ export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId
     (location.pathname.includes('/reports') ? 'reports' :
      location.pathname.includes('/scans') ? 'scans' :
      location.pathname.includes('/history') ? 'history' :
-     location.pathname.includes('/settings') ? 'settings' :
      'summary');
 
   return (
-    <div className="w-full mb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto mb-8">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm w-full">
         <Tabs value={activeTab} className="w-full">
-          <TabsList className="w-full flex border-b border-gray-200 dark:border-gray-700 bg-transparent p-0">
+          <TabsList className="w-full flex border-b border-gray-200 dark:border-gray-700 bg-transparent p-0 h-12">
             {tabs.map(tab => (
               <Link
                 key={tab.value}
                 to={tab.to(organizationSlug, nodeId)}
                 tabIndex={-1}
-                className="flex-1"
+                className="flex-1 no-underline"
+                style={{ textDecoration: 'none' }}
               >
                 <TabsTrigger
                   value={tab.value}
-                  aria-label={tab.isIcon ? 'Settings' : undefined}
-                  className={`w-full px-6 py-2 text-base font-medium transition-all duration-200 flex items-center justify-center
-                    border-b-2
+                  className={`w-full px-6 py-0 text-base font-medium transition-all duration-200 flex items-center justify-center
+                    h-12 rounded-none bg-transparent focus-visible:ring-0 focus-visible:outline-none border-none
                     ${activeTab === tab.value
-                      ? 'border-primary text-primary dark:text-white'
-                      : 'border-transparent text-gray-700 dark:text-gray-300 hover:text-primary hover:border-primary'}
-                    bg-transparent focus-visible:ring-0 focus-visible:outline-none`}
+                      ? 'text-primary font-bold border-b-2 border-primary bg-gray-50 dark:bg-gray-800'
+                      : 'text-gray-700 dark:text-gray-300 hover:text-primary'}
+                  `}
                   style={{ minWidth: 48 }}
                 >
-                  {tab.label}
+                  <span className="flex items-center justify-center relative">
+                    {tab.label}
+                  </span>
                 </TabsTrigger>
               </Link>
             ))}
           </TabsList>
         </Tabs>
       </div>
+      <div className="mb-8" />
     </div>
   );
 }; 

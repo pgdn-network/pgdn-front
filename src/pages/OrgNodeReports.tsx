@@ -67,21 +67,10 @@ const OrgNodeReports: React.FC = () => {
       snapshotData={snapshotData}
       loading={loading}
     >
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
-            <FileText className="w-8 h-8 text-accent" />
-            Security Reports
-          </h1>
-          <p className="text-secondary max-w-2xl">
-            Security analysis reports for {node?.name || `Node ${nodeId}`}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">
-            {reportsData?.reports?.length || 0} total reports
-          </Badge>
-        </div>
+      <div className="flex items-center gap-2 mb-6">
+        <Badge variant="outline">
+          {reportsData?.reports?.length || 0} total reports
+        </Badge>
       </div>
       <Card className="p-0">
         <Table>

@@ -60,20 +60,16 @@ export function ScanSessionsCard({ scanSessions }: ScanSessionsCardProps) {
   
   if (!sessions || sessions.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Scan Sessions
-            <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-              No scans
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">No scan sessions available</p>
-        </CardContent>
-      </Card>
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm rounded-lg p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Activity className="h-5 w-5" />
+          <span className="text-lg font-medium text-gray-900 dark:text-white">Scan Sessions</span>
+          <Badge variant="secondary" className="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 ml-2">
+            No scans
+          </Badge>
+        </div>
+        <p className="text-muted-foreground text-sm">No scan sessions available</p>
+      </div>
     )
   }
 
@@ -88,81 +84,76 @@ export function ScanSessionsCard({ scanSessions }: ScanSessionsCardProps) {
   )
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Scan Sessions
-          </div>
-          <span className="text-sm font-normal text-muted-foreground">
-            {sessions.length} session{sessions.length !== 1 ? 's' : ''}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(statusCounts).map(([status, count]) => (
-            <Badge key={status} className={getStatusBadgeClass(status)}>
-              {count} {status.toUpperCase()}
-            </Badge>
-          ))}
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm rounded-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="h-5 w-5" />
+          <span className="text-lg font-medium text-gray-900 dark:text-white">Scan Sessions</span>
         </div>
-        
-        <div className="space-y-3">
-          {sortedSessions.map((session) => (
-            <div key={session.scan_id} className="border p-4 space-y-3">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium text-sm">
-                      {session.target || 'General Scan'}
-                    </span>
-                    {session.scan_level && (
-                      <Badge variant="outline" className="text-xs">
-                        Level {session.scan_level}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    Scan ID: {session.scan_id}
-                  </p>
+        <span className="text-sm font-normal text-muted-foreground">
+          {sessions.length} session{sessions.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {Object.entries(statusCounts).map(([status, count]) => (
+          <Badge key={status} className={getStatusBadgeClass(status)}>
+            {count} {status.toUpperCase()}
+          </Badge>
+        ))}
+      </div>
+      <div className="space-y-3">
+        {sortedSessions.map((session) => (
+          <div key={session.scan_id} className="border p-4 space-y-3">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium text-sm">
+                    {session.target || 'General Scan'}
+                  </span>
+                  {session.scan_level && (
+                    <Badge variant="outline" className="text-xs">
+                      Level {session.scan_level}
+                    </Badge>
+                  )}
                 </div>
-                <Badge className={getStatusBadgeClass(session.status)}>
-                  {session.status === 'complete' && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                  {session.error_message && <AlertCircle className="h-3 w-3 mr-1" />}
-                  {session.status}
-                </Badge>
+                <p className="text-xs text-muted-foreground font-mono">
+                  Scan ID: {session.scan_id}
+                </p>
               </div>
-              
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <Badge className={getStatusBadgeClass(session.status)}>
+                {session.status === 'complete' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                {session.error_message && <AlertCircle className="h-3 w-3 mr-1" />}
+                {session.status}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Started: {new Date(session.started_at).toLocaleString()}
+              </div>
+              {session.completed_at && (
                 <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  Started: {new Date(session.started_at).toLocaleString()}
+                  Duration: {calculateDuration(session.started_at, session.completed_at)}
                 </div>
-                {session.completed_at && (
-                  <div className="flex items-center gap-1">
-                    Duration: {calculateDuration(session.started_at, session.completed_at)}
-                  </div>
-                )}
-                {session.protocol_filter && (
-                  <div>
-                    Protocol: {session.protocol_filter}
-                  </div>
-                )}
-              </div>
-
-              {session.error_message && (
-                <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 p-2 rounded text-xs">
-                  <AlertCircle className="h-3 w-3 inline mr-1" />
-                  {session.error_message}
+              )}
+              {session.protocol_filter && (
+                <div>
+                  Protocol: {session.protocol_filter}
                 </div>
               )}
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+
+            {session.error_message && (
+              <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 p-2 rounded text-xs">
+                <AlertCircle className="h-3 w-3 inline mr-1" />
+                {session.error_message}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

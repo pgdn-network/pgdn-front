@@ -60,62 +60,54 @@ export function EventCard({ events }: EventCardProps) {
   }, {} as Record<string, number>)
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          Events
-          <span className="text-sm font-normal text-muted-foreground">
-            {safeEvents.length} events
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(statusCounts).map(([status, count]) => (
-            <Badge 
-              key={status} 
-              variant={getActionStatusVariant(status)}
-              className={status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : undefined}
-            >
-              {count} {status.toUpperCase()}
-            </Badge>
-          ))}
-        </div>
-        
-        <div className="space-y-3">
-          {safeEvents.map((event, index) => (
-            <div key={`${event.uuid}-${index}`} className="border-l-2 border-muted pl-3 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-sm font-medium">{event.executed_action}</span>
-                <Badge 
-                  variant={getActionStatusVariant(event.action_status)} 
-                  className={`text-xs ${event.action_status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : ''}`}
-                >
-                  {event.action_status}
-                </Badge>
-                <Badge 
-                  variant={getOrchestratorTypeVariant(event.orchestrator_type)} 
-                  className={`text-xs ${event.orchestrator_type.toLowerCase() === 'pipeline' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' : ''}`}
-                >
-                  {event.orchestrator_type}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(event.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                <p className="font-mono text-xs">Session: {event.decision.scan_session_id}</p>
-              </div>
-              <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
-                <span>Scan Level: {event.input_state.scan_level}</span>
-                <span>Timeout: {event.input_state.timeout_minutes}m</span>
-                <span>Deep Scan: {event.input_state.enable_deep_scan ? 'Yes' : 'No'}</span>
-                <span>Parallel: {event.input_state.parallel_processing ? 'Yes' : 'No'}</span>
-              </div>
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Events <span className="text-sm font-normal text-muted-foreground ml-2">{safeEvents.length} events</span></h2>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {Object.entries(statusCounts).map(([status, count]) => (
+          <Badge 
+            key={status} 
+            variant={getActionStatusVariant(status)}
+            className={status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : undefined}
+          >
+            {count} {status.toUpperCase()}
+          </Badge>
+        ))}
+      </div>
+      <div className="space-y-3">
+        {safeEvents.map((event, index) => (
+          <div key={`${event.uuid}-${index}`} className="border-l-2 border-muted pl-3 space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-medium">{event.executed_action}</span>
+              <Badge 
+                variant={getActionStatusVariant(event.action_status)} 
+                className={`text-xs ${event.action_status.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : ''}`}
+              >
+                {event.action_status}
+              </Badge>
+              <Badge 
+                variant={getOrchestratorTypeVariant(event.orchestrator_type)} 
+                className={`text-xs ${event.orchestrator_type.toLowerCase() === 'pipeline' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100' : ''}`}
+              >
+                {event.orchestrator_type}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                {new Date(event.created_at).toLocaleDateString()}
+              </span>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            <div className="text-sm text-muted-foreground">
+              <p className="font-mono text-xs">Session: {event.decision.scan_session_id}</p>
+            </div>
+            <div className="text-xs text-muted-foreground grid grid-cols-2 gap-2">
+              <span>Scan Level: {event.input_state.scan_level}</span>
+              <span>Timeout: {event.input_state.timeout_minutes}m</span>
+              <span>Deep Scan: {event.input_state.enable_deep_scan ? 'Yes' : 'No'}</span>
+              <span>Parallel: {event.input_state.parallel_processing ? 'Yes' : 'No'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

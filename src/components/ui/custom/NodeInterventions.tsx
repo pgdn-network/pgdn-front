@@ -7,7 +7,7 @@ interface NodeInterventionsProps {
 export const NodeInterventions: React.FC<NodeInterventionsProps> = ({ interventionsData }) => {
   return (
     <div className="mt-8">
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white">Interventions</h2>
           <div className="flex items-center space-x-4">

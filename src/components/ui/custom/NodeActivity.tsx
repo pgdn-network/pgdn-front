@@ -8,7 +8,7 @@ interface NodeActivityProps {
 export const NodeActivity: React.FC<NodeActivityProps> = ({ node, organization }) => {
   return (
     <div className="mt-8">
-      <div className="bg-white dark:bg-gray-800 shadow p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
         <div className="space-y-4">
           <div className="border-l-4 border-blue-400 pl-4">

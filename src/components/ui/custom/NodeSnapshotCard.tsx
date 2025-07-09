@@ -10,7 +10,7 @@ interface NodeSnapshotCardProps {
 export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, loading = false }) => {
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white">Node Snapshot</h2>
           <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-20 rounded"></div>
@@ -29,7 +29,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
 
   if (!snapshot) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Node Snapshot</h2>
         <div className="text-sm text-gray-600 dark:text-gray-400">
           No snapshot data available
@@ -67,7 +67,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
           <Activity className="h-5 w-5 mr-2" />
