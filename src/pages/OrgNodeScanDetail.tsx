@@ -1,19 +1,17 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useNodeData } from '@/hooks/useNodeData';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
-import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 
-// Simple JSON viewer component
 const JsonViewer: React.FC<{ data: any }> = ({ data }) => (
   <pre className="overflow-x-auto bg-gray-100 dark:bg-gray-900 text-xs rounded p-4 mt-2 mb-2 max-h-96 whitespace-pre-wrap">
     {JSON.stringify(data, null, 2)}
   </pre>
 );
 
-const OrgNodeScans: React.FC = () => {
-  const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
+const OrgNodeScanDetail: React.FC = () => {
+  const { slug, nodeId, scanId } = useParams<{ slug: string; nodeId: string; scanId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const {
     node,
@@ -40,10 +38,12 @@ const OrgNodeScans: React.FC = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="p-6 border text-center">Error Loading Scans: {error}</div>
+        <div className="p-6 border text-center">Error Loading Scan: {error}</div>
       </div>
     );
   }
+
+  const scan = (scanSessionsData?.scans || []).find((s: any) => s.scan_id === scanId);
 
   return (
     <NodeMainLayout
@@ -60,9 +60,16 @@ const OrgNodeScans: React.FC = () => {
       snapshotData={snapshotData}
       loading={loading}
     >
-      <ScanSessionsCard scanSessions={scanSessionsData?.scans || []} slug={slug} nodeId={nodeId} />
+      <div className="max-w-3xl mx-auto mt-8">
+        <h1 className="text-2xl font-bold mb-4">Scan Details</h1>
+        {!scan ? (
+          <div className="p-6 border text-center text-muted-foreground">Scan not found</div>
+        ) : (
+          <JsonViewer data={scan} />
+        )}
+      </div>
     </NodeMainLayout>
   );
 };
 
-export default OrgNodeScans; 
+export default OrgNodeScanDetail; 
