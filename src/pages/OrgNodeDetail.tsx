@@ -17,9 +17,10 @@ import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
 import { useBanner } from '@/contexts/BannerContext';
-import { NodeInterventions } from '@/components/ui/custom/NodeInterventions';
-import { NodeActivity } from '@/components/ui/custom/NodeActivity';
 import { useProtocols } from '@/contexts/ProtocolsContext';
+
+import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
+import { NodeInfoCard } from '@/components/ui/custom/NodeInfoCard';
 
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
@@ -50,8 +51,6 @@ const OrgNodeDetail: React.FC = () => {
     node: fullNode, 
     cveData, 
     eventsData, 
-    interventionsData, 
-    // tasksData, // Commented out for now
     scanSessionsData, 
     reportsData,
     statusData,
@@ -234,105 +233,33 @@ const OrgNodeDetail: React.FC = () => {
           onStartScan={() => setIsScanModalOpen(true)}
           cveData={cveData}
           eventsData={eventsData}
-          interventionsData={interventionsData}
           scanSessionsData={scanSessionsData}
           reportsData={reportsData}
           snapshotData={snapshotData}
           loading={loading}
         >
+
           {/* Status and Node Information Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Node Status Card */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Status</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Status:</span>
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    {node.simple_state ? node.simple_state.charAt(0).toUpperCase() + node.simple_state.slice(1) : 'Unknown'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Validated:</span>
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    node.validated ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {node.validated ? 'Yes' : 'No'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Ready for Scan:</span>
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    (node.simple_state === 'active' && node.discovery_status === 'completed') ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {(node.simple_state === 'active' && node.discovery_status === 'completed') ? 'Yes' : 'No'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Type:</span>
-                  <span className="text-sm text-gray-900 dark:text-white">
-                    {Array.isArray(node.node_protocols) && node.node_protocols.length > 0
-                      ? node.node_protocols.map((uuid: string) => {
-                          const proto = getProtocol(uuid);
-                          return proto ? proto.display_name : 'Unknown';
-                        }).join(', ')
-                      : node.protocol_details?.display_name || 'Unknown'}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {/* Node Info Card */}
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Node Information</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">IP Address(es):</span>
-                  <span className="text-sm text-gray-900 dark:text-white">
-                    {node.resolved_ips.length === 0 && 'N/A'}
-                    {node.resolved_ips.length > 0 && (
-                      <>
-                        {node.resolved_ips.slice(0, 3).map((ip: any, idx: number) => (
-                          <span key={ip.ip_address}>
-                            {ip.ip_address}{idx < Math.min(2, node.resolved_ips.length - 1) ? ', ' : ''}
-                          </span>
-                        ))}
-                        {node.resolved_ips.length > 3 && (
-                          <span className="ml-1 text-xs text-blue-600 underline cursor-pointer">+{node.resolved_ips.length - 3} more</span>
-                        )}
-                      </>
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Geo Location:</span>
-                  <span className="text-sm text-gray-900 dark:text-white">{snapshotData?.geo_location || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Hostname:</span>
-                  <span className="text-sm text-gray-900 dark:text-white">{node.address}</span>
-                </div>
-                {/* TODO: Harcoded version for now, add version from node */}
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Version:</span>
-                  <span className="text-sm text-gray-900 dark:text-white">v1.2.3</span>
-                </div>
-              </div>
-            </div>
+            <NodeStatusCard node={node} getProtocol={getProtocol} />
+            <NodeInfoCard node={node} snapshotData={snapshotData} />
           </div>
           {/* Node Snapshot Section */}
           <div className="mt-8">
             <NodeSnapshotCard snapshot={snapshotData} loading={loading} />
           </div>
-          {/* Interventions Section */}
-          <NodeInterventions interventionsData={interventionsData} />
+
           {/* CVE Details Section */}
           <div className="mt-8">
             <CVECard cves={cveData} organizationSlug={slug} nodeId={nodeId} />
           </div>
-          <NodeActivity node={node} organization={organization} />
           {/* Events Section */}
           <div className="mt-8">
-            <EventCard events={eventsData?.events} />
+            <EventCard 
+              events={eventsData?.events} 
+              organizationSlug={slug}
+              nodeId={nodeId}
+            />
           </div>
           {/* Scan Sessions Section */}
           <div className="mt-8">

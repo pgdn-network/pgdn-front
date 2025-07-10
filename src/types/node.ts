@@ -105,21 +105,23 @@ export type NodeCveResponse = CveMatch[];
 export interface NodeEvent {
   uuid: string;
   node_uuid: string;
-  user_uuid: string;
+  user_uuid?: string;
   organization_uuid: string;
-  orchestrator_type: string;
-  input_state: {
-    scan_level: number;
-    timeout_minutes: number;
-    enable_deep_scan: boolean;
-    parallel_processing: boolean;
+  orchestrator_type?: string;
+  input_state?: {
+    scan_level?: number;
+    timeout_minutes?: number;
+    enable_deep_scan?: boolean;
+    parallel_processing?: boolean;
   };
-  decision: {
-    scan_session_id: string;
+  decision?: {
+    scan_session_id?: string;
   };
-  executed_action: string;
-  action_status: string;
-  created_at: string;
+  executed_action?: string;
+  action_status?: string;
+  created_at?: string;
+  event_type?: string;
+  event_data?: any;
 }
 
 export interface NodeEventsResponse {
@@ -404,4 +406,33 @@ export interface PublicClaim {
   created_at: string;
   processed_at: string | null;
   rejection_reason: string | null;
+}
+
+export interface NodeAction {
+  uuid: string;
+  node_uuid: string;
+  action_type: string;
+  action_identifier: string;
+  status: 'open' | 'closed' | 'muted';
+  created_at: string;
+  last_seen_at: string;
+  closed_at: string | null;
+  muted_at: string | null;
+  title: string;
+  description: string;
+  priority: number;
+  action_data: Record<string, any>;
+  organization_uuid: string;
+}
+
+export interface NodeActionsResponse {
+  actions: NodeAction[];
+  total: number;
+  open_count: number;
+  closed_count: number;
+  muted_count: number;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
 }

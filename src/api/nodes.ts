@@ -3,7 +3,6 @@ import type {
   Node, 
   NodeCveResponse, 
   NodeEventsResponse, 
-  NodeInterventionsResponse, 
   NodeTasksResponse, 
   NodeScanSessionsResponse,
   NodeReportsResponse,
@@ -16,7 +15,9 @@ import type {
   NodeSnapshot,
   CreateNodeResponse,
   ClaimNodeResponse,
-  PublicClaim
+  PublicClaim,
+  NodeActionsResponse,
+  NodeAction
 } from '@/types/node';
 
 export class NodeApiService {
@@ -87,16 +88,9 @@ export class NodeApiService {
     await apiService.delete(`${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}`);
   }
 
-  static async getNodeEvents(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeEventsResponse> {
+  static async getNodeEvents(organizationUuid: string, nodeUuid: string, limit: number = 10, offset: number = 0): Promise<NodeEventsResponse> {
     const response = await apiService.get<NodeEventsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/events?limit=${limit}`
-    );
-    return response.data;
-  }
-
-  static async getNodeInterventions(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeInterventionsResponse> {
-    const response = await apiService.get<NodeInterventionsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/interventions?limit=${limit}`
+      `/organizations/${organizationUuid}/nodes/${nodeUuid}/node-events?limit=${limit}&offset=${offset}`
     );
     return response.data;
   }
@@ -198,6 +192,21 @@ export class NodeApiService {
   // Get all public claims for the current user/org
   static async getPublicClaims(): Promise<PublicClaim[]> {
     const response = await apiService.get<PublicClaim[]>('/public/claims');
+    return response.data;
+  }
+
+  static async getNodeActions(organizationUuid: string, nodeUuid: string, status: string = 'open', limit: number = 10): Promise<NodeActionsResponse> {
+    const response = await apiService.get<NodeActionsResponse>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/actions?status=${status}&limit=${limit}`
+    );
+    return response.data;
+  }
+
+  static async patchNodeAction(organizationUuid: string, nodeUuid: string, actionUuid: string, data: Partial<NodeAction>): Promise<NodeAction> {
+    const response = await apiService.patch<NodeAction>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/actions/${actionUuid}`,
+      data
+    );
     return response.data;
   }
 }

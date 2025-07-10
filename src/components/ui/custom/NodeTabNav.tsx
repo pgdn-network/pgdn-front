@@ -12,7 +12,7 @@ const tabs = [
   { label: 'Summary', value: 'summary', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}` },
   { label: 'Reports', value: 'reports', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/reports` },
   { label: 'Scans', value: 'scans', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/scans` },
-  { label: 'History', value: 'history', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/history` },
+  { label: 'Events', value: 'history', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/history` },
 ];
 
 export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId }) => {

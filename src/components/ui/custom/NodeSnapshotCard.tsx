@@ -95,7 +95,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
               Last Scan:
             </span>
             <span className="text-sm text-gray-900 dark:text-white">
-              {snapshot.latest_scan_date ? new Date(snapshot.latest_scan_date).toLocaleDateString() : 'N/A'}
+              {snapshot.latest_scan_date ? new Date(snapshot.latest_scan_date).toLocaleString() : 'N/A'}
             </span>
           </div>
           
@@ -218,16 +218,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           </div>
         </div>
       </div>
-      
-      {/* Last Activity */}
-      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-gray-500 dark:text-gray-400">Last Activity:</span>
-          <span className="text-gray-900 dark:text-white">
-            {snapshot.last_activity ? new Date(snapshot.last_activity).toLocaleString() : 'N/A'}
-          </span>
-        </div>
-      </div>
+
     </div>
   );
 }; 

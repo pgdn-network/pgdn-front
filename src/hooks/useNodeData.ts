@@ -4,7 +4,6 @@ import type {
   Node, 
   NodeCveResponse, 
   NodeEventsResponse, 
-  NodeInterventionsResponse, 
   NodeTasksResponse, 
   NodeScanSessionsResponse,
   NodeReportsResponse,
@@ -23,7 +22,6 @@ interface UseNodeDataState {
   node: Node | null;
   cveData: NodeCveResponse | null;
   eventsData: NodeEventsResponse | null;
-  interventionsData: NodeInterventionsResponse | null;
   // tasksData: NodeTasksResponse | null; // Commented out for now
   scanSessionsData: NodeScanSessionsResponse | null;
   reportsData: NodeReportsResponse | null;
@@ -108,7 +106,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
     node: null,
     cveData: null,
     eventsData: null,
-    interventionsData: null,
     // tasksData: null, // Commented out for now
     scanSessionsData: null,
     reportsData: null,
@@ -135,7 +132,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           // Fetch all additional data with individual error handling
           let cveData: NodeCveResponse | null = null;
           let eventsData: NodeEventsResponse | null = null;
-          let interventionsData: NodeInterventionsResponse | null = null;
           // let tasksData: NodeTasksResponse | null = null; // Commented out for now
           let scanSessionsData: NodeScanSessionsResponse | null = null;
           let reportsData: NodeReportsResponse | null = null;
@@ -150,26 +146,11 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           }
 
           try {
-            eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
+            eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 10);
           } catch (eventsError) {
             console.warn('Failed to fetch events data:', eventsError);
             eventsData = null;
           }
-
-          try {
-            interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
-          } catch (interventionsError) {
-            console.warn('Failed to fetch interventions data:', interventionsError);
-            interventionsData = null;
-          }
-
-          // Tasks fetching commented out for now
-          // try {
-          //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
-          // } catch (tasksError) {
-          //   console.warn('Failed to fetch tasks data:', tasksError);
-          //   tasksData = null;
-          // }
 
           try {
             scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
@@ -203,7 +184,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             node: nodeData,
             cveData: cveData,
             eventsData: eventsData,
-            interventionsData: interventionsData,
             // tasksData: tasksData, // Commented out for now
             scanSessionsData: scanSessionsData,
             reportsData: reportsData,
@@ -218,7 +198,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             node: nodeData,
             cveData: null,
             eventsData: null,
-            interventionsData: null,
             // tasksData: null, // Commented out for now
             scanSessionsData: null,
             reportsData: null,
@@ -252,7 +231,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           // Fetch all additional data with individual error handling
           let cveData: NodeCveResponse | null = null;
           let eventsData: NodeEventsResponse | null = null;
-          let interventionsData: NodeInterventionsResponse | null = null;
           // let tasksData: NodeTasksResponse | null = null; // Commented out for now
           let scanSessionsData: NodeScanSessionsResponse | null = null;
           let reportsData: NodeReportsResponse | null = null;
@@ -267,26 +245,11 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           }
 
           try {
-            eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 5);
+            eventsData = await NodeApiService.getNodeEvents(organizationUuid, nodeUuid, 10);
           } catch (eventsError) {
             console.warn('Failed to fetch events data:', eventsError);
             eventsData = null;
           }
-
-          try {
-            interventionsData = await NodeApiService.getNodeInterventions(organizationUuid, nodeUuid, 5);
-          } catch (interventionsError) {
-            console.warn('Failed to fetch interventions data:', interventionsError);
-            interventionsData = null;
-          }
-
-          // Tasks fetching commented out for now
-          // try {
-          //   tasksData = await NodeApiService.getNodeTasks(organizationUuid, nodeUuid, 5);
-          // } catch (tasksError) {
-          //   console.warn('Failed to fetch tasks data:', tasksError);
-          //   tasksData = null;
-          // }
 
           try {
             scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
@@ -320,7 +283,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             node: nodeData,
             cveData: cveData,
             eventsData: eventsData,
-            interventionsData: interventionsData,
             // tasksData: tasksData, // Commented out for now
             scanSessionsData: scanSessionsData,
             reportsData: reportsData,
@@ -335,7 +297,6 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             node: nodeData,
             cveData: null,
             eventsData: null,
-            interventionsData: null,
             // tasksData: null, // Commented out for now
             scanSessionsData: null,
             reportsData: null,
