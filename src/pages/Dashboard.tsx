@@ -16,7 +16,7 @@ import Loader from '@/components/ui/custom/Loader';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
 import { useWebSocketContext } from '@/contexts/WebSocketContext';
-import { mockUser } from '@/mocks/user';
+import { useAuth } from '@/hooks/useAuth';
 import { storage } from '@/utils/storage';
 import { 
   Server, 
@@ -54,6 +54,7 @@ const Dashboard: React.FC = () => {
   const [nodesLoading, setNodesLoading] = useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { protocols, loading: protocolsLoading, getProtocol } = useProtocols();
+  const { user } = useAuth();
   // const { isConnected } = useWebSocketContext();
   
   const handleOrgChange = (value: string) => {
@@ -220,7 +221,7 @@ const Dashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
-            <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{mockUser.name.split(' ')[0]}</span></p>
+            <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{user?.first_name || 'User'}</span></p>
             <p className="text-muted max-w-2xl mt-2">Monitor your DePIN network performance, track node health, and manage your decentralized infrastructure from one central hub.</p>
           </div>
           <div className="flex items-center gap-2">
@@ -274,7 +275,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
-          <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{mockUser.name.split(' ')[0]}</span></p>
+          <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{user?.first_name || 'User'}</span></p>
           <p className="text-muted max-w-2xl mt-2">Monitor your DePIN network performance, track node health, and manage your decentralized infrastructure from one central hub.</p>
         </div>
         <div className="flex items-center gap-2">
