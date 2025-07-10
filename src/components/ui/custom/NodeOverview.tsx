@@ -27,6 +27,17 @@ export const NodeOverview: React.FC<NodeOverviewProps> = ({
 }) => {
   const { getProtocol } = useProtocols();
 
+  if (!node || !node.name) {
+    return (
+      <div className="max-w-7xl mx-auto pt-8 pb-6">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Node Not Found</h1>
+          <p className="mt-2 mb-6 text-sm text-gray-600 dark:text-gray-400">No node data available or node is not active.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto pt-8 pb-6">
       <div className="px-4 sm:px-6 lg:px-8">

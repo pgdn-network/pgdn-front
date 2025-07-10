@@ -1,29 +1,36 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
-import { useNodeData } from '@/hooks/useNodeData';
-import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
-
-const JsonViewer: React.FC<{ data: any }> = ({ data }) => (
-  <pre className="overflow-x-auto bg-gray-100 dark:bg-gray-900 text-xs rounded p-4 mt-2 mb-2 max-h-96 whitespace-pre-wrap">
-    {JSON.stringify(data, null, 2)}
-  </pre>
-);
+import { NodeApiService } from '@/api/nodes';
+import ScanResultsPage from '@/components/ui/custom/ScanResultsPage';
 
 const OrgNodeScanDetail: React.FC = () => {
   const { slug, nodeId, scanId } = useParams<{ slug: string; nodeId: string; scanId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
-  const {
-    node,
-    organization,
-    scanSessionsData,
-    snapshotData,
-    loading,
-    error
-  } = useNodeData(
-    organizations.find(org => org.slug === slug)?.uuid || '',
-    nodeId || ''
-  );
+  const [sessionDetail, setSessionDetail] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Find organization by slug
+  const organization = organizations.find(org => org.slug === slug);
+  const organizationUuid = organization?.uuid || '';
+
+  useEffect(() => {
+    const fetchSessionDetail = async () => {
+      if (!organizationUuid || !nodeId || !scanId) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await NodeApiService.getNodeSessionDetail(organizationUuid, nodeId, scanId);
+        setSessionDetail(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch session details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSessionDetail();
+  }, [organizationUuid, nodeId, scanId]);
 
   if (loading || orgsLoading) {
     return (
@@ -43,32 +50,18 @@ const OrgNodeScanDetail: React.FC = () => {
     );
   }
 
-  const scan = (scanSessionsData?.scans || []).find((s: any) => s.scan_id === scanId);
-
   return (
-    <NodeMainLayout
-      node={node}
-      organization={organization}
-      nodeId={nodeId || ''}
-      slug={slug || ''}
-      onStartScan={() => {}}
-      cveData={null}
-      eventsData={null}
-      scanSessionsData={scanSessionsData}
-      reportsData={null}
-      snapshotData={snapshotData}
-      actionsData={null}
-      loading={loading}
-    >
-      <div className="max-w-3xl mx-auto mt-8">
-        <h1 className="text-2xl font-bold mb-4">Scan Details</h1>
-        {!scan ? (
-          <div className="p-6 border text-center text-muted-foreground">Scan not found</div>
-        ) : (
-          <JsonViewer data={scan} />
-        )}
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Scan Details</h1>
+        <Link to={`/organizations/${slug}/nodes/${nodeId}/scans`} className="text-primary underline text-sm font-medium">&larr; Back to Scans</Link>
       </div>
-    </NodeMainLayout>
+      {!sessionDetail ? (
+        <div className="p-6 border text-center text-muted-foreground">Session not found</div>
+      ) : (
+        <ScanResultsPage scanData={sessionDetail} />
+      )}
+    </div>
   );
 };
 

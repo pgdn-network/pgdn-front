@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { websocketService, type WebSocketMessage } from '@/services/websocket';
@@ -30,6 +30,7 @@ interface WebSocketProviderProps {
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const { addNotification } = useNotifications();
+  const isMountedRef = useRef(false);
   
   // Use the new WebSocket store
   const { 
@@ -118,6 +119,14 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
 
   // Connect to WebSocket when authenticated
   useEffect(() => {
+    console.log('WebSocketProvider useEffect - isAuthenticated:', isAuthenticated);
+    
+    // Mark as mounted after first render to avoid StrictMode issues
+    if (!isMountedRef.current) {
+      isMountedRef.current = true;
+      return; // Skip the first render in StrictMode
+    }
+    
     if (isAuthenticated) {
       console.log('User authenticated, connecting to WebSocket...');
       
@@ -152,13 +161,18 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({ children }
       });
     } else {
       // Disconnect when not authenticated
+      console.log('User not authenticated, disconnecting WebSocket...');
       websocketService.disconnect();
       setConnection(false, 'disconnected');
     }
 
     // Cleanup on unmount
     return () => {
-      websocketService.disconnect();
+      console.log('WebSocketProvider cleanup - unmounting');
+      // Only disconnect if we're actually unmounting, not just in StrictMode
+      if (isMountedRef.current) {
+        websocketService.disconnect();
+      }
     };
   }, [isAuthenticated, addNotification]);
 

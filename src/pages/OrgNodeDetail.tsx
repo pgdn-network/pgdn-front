@@ -276,7 +276,12 @@ const OrgNodeDetail: React.FC = () => {
           </div>
           {/* Scan Sessions Section */}
           <div className="mt-8">
-            <ScanSessionsCard scanSessions={scanSessionsData?.scans} />
+            <ScanSessionsCard 
+              scanSessions={Array.isArray(scanSessionsData?.scans) ? scanSessionsData.scans.slice(0, 3) : []}
+              slug={slug}
+              nodeId={nodeId}
+              viewAllHref={Array.isArray(scanSessionsData?.scans) && scanSessionsData.scans.length > 3 && slug && nodeId ? `/organizations/${slug}/nodes/${nodeId}/scans` : undefined}
+            />
           </div>
           {/* Reports Section */}
           <div className="mt-8">

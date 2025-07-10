@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useNodeData } from '@/hooks/useNodeData';
@@ -12,9 +12,13 @@ const JsonViewer: React.FC<{ data: any }> = ({ data }) => (
   </pre>
 );
 
+const PAGE_LIMIT = 25;
+
 const OrgNodeScans: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const [page, setPage] = useState(1);
+  const offset = (page - 1) * PAGE_LIMIT;
   const {
     node,
     organization,
@@ -24,7 +28,9 @@ const OrgNodeScans: React.FC = () => {
     error
   } = useNodeData(
     organizations.find(org => org.slug === slug)?.uuid || '',
-    nodeId || ''
+    nodeId || '',
+    PAGE_LIMIT,
+    offset
   );
 
   if (loading || orgsLoading) {
@@ -61,6 +67,26 @@ const OrgNodeScans: React.FC = () => {
       loading={loading}
     >
       <ScanSessionsCard scanSessions={scanSessionsData?.scans || []} slug={slug} nodeId={nodeId} />
+      {/* Pagination Controls */}
+      {scanSessionsData && scanSessionsData.total > PAGE_LIMIT && (
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            className="px-3 py-1 rounded border bg-surface-secondary disabled:opacity-50"
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+          >
+            Previous
+          </button>
+          <span>Page {page} of {Math.ceil(scanSessionsData.total / PAGE_LIMIT)}</span>
+          <button
+            className="px-3 py-1 rounded border bg-surface-secondary disabled:opacity-50"
+            onClick={() => setPage(page + 1)}
+            disabled={page >= Math.ceil(scanSessionsData.total / PAGE_LIMIT)}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </NodeMainLayout>
   );
 };

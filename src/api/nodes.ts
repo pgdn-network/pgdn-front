@@ -102,10 +102,9 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async getNodeScanSessions(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeScanSessionsResponse> {
-    const response = await apiService.get<NodeScanSessionsResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scans?limit=${limit}`
-    );
+  static async getNodeScanSessions(organizationUuid: string, nodeUuid: string, limit: number = 5, offset: number = 0): Promise<NodeScanSessionsResponse> {
+    const url = `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/sessions?limit=${limit}&offset=${offset}`;
+    const response = await apiService.get<NodeScanSessionsResponse>(url);
     return response.data;
   }
 
@@ -211,6 +210,13 @@ export class NodeApiService {
     const response = await apiService.patch(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/actions/${actionUuid}`,
       body
+    );
+    return response.data;
+  }
+
+  static async getNodeSessionDetail(organizationUuid: string, nodeUuid: string, scanId: string): Promise<any> {
+    const response = await apiService.get<any>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/sessions/${scanId}`
     );
     return response.data;
   }

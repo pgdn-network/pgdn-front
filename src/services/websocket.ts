@@ -99,6 +99,7 @@ class WebSocketService {
         this.ws.onmessage = (event) => {
           try {
             const message: WebSocketMessage = JSON.parse(event.data);
+            console.log('WebSocket message received:', message);
             this.config.onMessage?.(message);
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);
@@ -107,6 +108,7 @@ class WebSocketService {
 
         this.ws.onclose = (event) => {
           console.log('WebSocket disconnected:', event.code, event.reason);
+          console.log('WebSocket onclose - isManualDisconnect:', this.isManualDisconnect);
           this.isConnecting = false;
           this.stopHeartbeat();
           this.config.onDisconnect?.();

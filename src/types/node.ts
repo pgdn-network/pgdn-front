@@ -175,12 +175,12 @@ export interface NodeTasksResponse {
 
 // Scan Sessions
 export interface NodeScanSession {
-  scan_id: string;
+  session_id: string;
   node_uuid: string;
   organization_uuid: string;
   target: string | null;
   protocol_filter: string | null;
-  scan_level: number | null;
+  scan_level: string | number | null;
   status: string;
   started_at: string;
   completed_at: string | null;

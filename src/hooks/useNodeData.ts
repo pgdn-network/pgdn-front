@@ -101,7 +101,12 @@ export const useBasicNodeData = (organizationUuid: string, nodeUuid: string) => 
 };
 
 // Hook for fetching full node data including all additional data (used when node is active and discovered)
-export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
+export const useNodeData = (
+  organizationUuid: string,
+  nodeUuid: string,
+  scanSessionsLimit: number = 25,
+  scanSessionsOffset: number = 0
+) => {
   const { organizations } = useOrganizations();
   const organization = organizations.find(org => org.uuid === organizationUuid) || null;
   const [state, setState] = useState<UseNodeDataState>({
@@ -157,7 +162,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           }
 
           try {
-            scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
+            scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, scanSessionsLimit, scanSessionsOffset);
           } catch (scanSessionsError) {
             console.warn('Failed to fetch scan sessions data:', scanSessionsError);
             scanSessionsData = null;
@@ -230,7 +235,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
     };
 
     fetchNodeData();
-  }, [organizationUuid, nodeUuid]);
+  }, [organizationUuid, nodeUuid, scanSessionsLimit, scanSessionsOffset]);
 
   const refetch = () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
@@ -266,7 +271,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           }
 
           try {
-            scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, 5);
+            scanSessionsData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeUuid, scanSessionsLimit, scanSessionsOffset);
           } catch (scanSessionsError) {
             console.warn('Failed to fetch scan sessions data:', scanSessionsError);
             scanSessionsData = null;
