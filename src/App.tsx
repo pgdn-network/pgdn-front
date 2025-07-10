@@ -14,7 +14,6 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NodeList from './pages/NodeList';
-
 import NodeCreate from './pages/NodeCreate';
 import NodeIps from './pages/NodeIps';
 import Scans from './pages/Scans';
@@ -42,53 +41,58 @@ function App() {
         <Router>
           <ScrollRestoration />
           <AuthProvider>
-            <OrganizationsProvider>
-              <ProtocolsProvider>
-                <NotificationProvider>
-                  <WebSocketProvider>
-                    <Routes>
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/forgot-password" element={<ForgotPassword />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <Layout />
-                        </ProtectedRoute>
-                      }>
-                        <Route index element={<Dashboard />} />
-                        <Route path="nodes" element={<NodeList />} />
-                        <Route path="nodes/create" element={<NodeCreate />} />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-                        <Route path="scans" element={<Scans />} />
-                        <Route path="orchestrations" element={<Orchestrations />} />
-                        <Route path="reports" element={<Reports />} />
-                        <Route path="settings" element={<Settings />} />
-                        <Route path="profile" element={<Profile />} />
-                        <Route path="organizations" element={<Organizations />} />
-                        {/* TODO: Re-enable when organization detail page is implemented */}
-                        {/* <Route path="organizations/:slug" element={<OrgNodeList />} /> */}
-                        <Route path="organizations/:slug/nodes/create" element={<OrgNodeCreate />} />
-                        <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
-                                              <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
-                      <Route path="organizations/:slug/nodes/:nodeId/reports" element={<OrgNodeReports />} />
-                      <Route path="organizations/:slug/nodes/:nodeId/scans" element={<OrgNodeScans />} />
-                      <Route path="organizations/:slug/nodes/:nodeId/scans/:scanId" element={<OrgNodeScanDetail />} />
-                      <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />
-                      <Route path="organizations/:slug/nodes/:nodeId/cves" element={<OrgNodeCves />} />
-                      <Route path="organizations/:slug/nodes/:nodeId/cves/:cveUuid" element={<OrgNodeCveDetail />} />
-                      </Route>
-                                          <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <ScrollToTopButton />
-                </WebSocketProvider>
-              </NotificationProvider>
-            </ProtocolsProvider>
-          </OrganizationsProvider>
-        </AuthProvider>
-      </Router>
-    </ThemeProvider>
-  </ErrorBoundary>
+              {/* Protected routes */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <OrganizationsProvider>
+                      <ProtocolsProvider>
+                        <NotificationProvider>
+                          <WebSocketProvider>
+                            <Layout />
+                          </WebSocketProvider>
+                        </NotificationProvider>
+                      </ProtocolsProvider>
+                    </OrganizationsProvider>
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="nodes" element={<NodeList />} />
+                <Route path="nodes/create" element={<NodeCreate />} />
+                <Route path="scans" element={<Scans />} />
+                <Route path="orchestrations" element={<Orchestrations />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="organizations" element={<Organizations />} />
+                {/* TODO: Re-enable when organization detail page is implemented */}
+                {/* <Route path="organizations/:slug" element={<OrgNodeList />} /> */}
+                <Route path="organizations/:slug/nodes/create" element={<OrgNodeCreate />} />
+                <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
+                <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
+                <Route path="organizations/:slug/nodes/:nodeId/reports" element={<OrgNodeReports />} />
+                <Route path="organizations/:slug/nodes/:nodeId/scans" element={<OrgNodeScans />} />
+                <Route path="organizations/:slug/nodes/:nodeId/scans/:scanId" element={<OrgNodeScanDetail />} />
+                <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />
+                <Route path="organizations/:slug/nodes/:nodeId/cves" element={<OrgNodeCves />} />
+                <Route path="organizations/:slug/nodes/:nodeId/cves/:cveUuid" element={<OrgNodeCveDetail />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <ScrollToTopButton />
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
