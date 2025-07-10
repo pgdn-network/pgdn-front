@@ -61,10 +61,10 @@ const OrgNodeReports: React.FC = () => {
       onStartScan={() => {}}
       cveData={null}
       eventsData={null}
-      interventionsData={null}
       scanSessionsData={null}
       reportsData={reportsData}
       snapshotData={snapshotData}
+      actionsData={null}
       loading={loading}
     >
       <div className="flex items-center gap-2 mb-6">

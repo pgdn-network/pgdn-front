@@ -54,10 +54,10 @@ const OrgNodeScanDetail: React.FC = () => {
       onStartScan={() => {}}
       cveData={null}
       eventsData={null}
-      interventionsData={null}
       scanSessionsData={scanSessionsData}
       reportsData={null}
       snapshotData={snapshotData}
+      actionsData={null}
       loading={loading}
     >
       <div className="max-w-3xl mx-auto mt-8">

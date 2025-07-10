@@ -202,10 +202,15 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async patchNodeAction(organizationUuid: string, nodeUuid: string, actionUuid: string, data: Partial<NodeAction>): Promise<NodeAction> {
-    const response = await apiService.patch<NodeAction>(
+  static async patchNodeAction(
+    organizationUuid: string,
+    nodeUuid: string,
+    actionUuid: string,
+    body: { status: string }
+  ) {
+    const response = await apiService.patch(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/actions/${actionUuid}`,
-      data
+      body
     );
     return response.data;
   }

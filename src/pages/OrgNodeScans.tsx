@@ -54,10 +54,10 @@ const OrgNodeScans: React.FC = () => {
       onStartScan={() => {}}
       cveData={null}
       eventsData={null}
-      interventionsData={null}
       scanSessionsData={scanSessionsData}
       reportsData={null}
       snapshotData={snapshotData}
+      actionsData={null}
       loading={loading}
     >
       <ScanSessionsCard scanSessions={scanSessionsData?.scans || []} slug={slug} nodeId={nodeId} />

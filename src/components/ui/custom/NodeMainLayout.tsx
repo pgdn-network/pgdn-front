@@ -13,6 +13,7 @@ interface NodeMainLayoutProps {
   scanSessionsData: any;
   reportsData: any;
   snapshotData: any;
+  actionsData: any;
   loading: boolean;
   children?: React.ReactNode;
 }

@@ -7,6 +7,7 @@ import { EventCard } from '@/components/ui/custom/EventCard';
 import { ReportsCard } from '@/components/ui/custom/ReportsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
+import { NodeActionsCard } from '@/components/ui/custom/NodeActionsCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { ValidationModal } from '@/components/ui/custom/ValidationModal';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
@@ -55,6 +56,7 @@ const OrgNodeDetail: React.FC = () => {
     reportsData,
     statusData,
     snapshotData,
+    actionsData,
     loading: fullLoading, 
     error: fullError, 
     refetch: fullRefetch 
@@ -236,6 +238,7 @@ const OrgNodeDetail: React.FC = () => {
           scanSessionsData={scanSessionsData}
           reportsData={reportsData}
           snapshotData={snapshotData}
+          actionsData={actionsData}
           loading={loading}
         >
 
@@ -244,9 +247,19 @@ const OrgNodeDetail: React.FC = () => {
             <NodeStatusCard node={node} getProtocol={getProtocol} />
             <NodeInfoCard node={node} snapshotData={snapshotData} />
           </div>
+
           {/* Node Snapshot Section */}
           <div className="mt-8">
             <NodeSnapshotCard snapshot={snapshotData} loading={loading} />
+          </div>
+
+          {/* Node Actions Section */}
+          <div className="mt-8">
+            <NodeActionsCard 
+              actionsData={actionsData} 
+              organizationUuid={organization?.uuid} 
+              nodeId={nodeId} 
+            />
           </div>
 
           {/* CVE Details Section */}

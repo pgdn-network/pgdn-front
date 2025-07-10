@@ -8,7 +8,8 @@ import type {
   NodeScanSessionsResponse,
   NodeReportsResponse,
   NodeStatus,
-  NodeSnapshot
+  NodeSnapshot,
+  NodeActionsResponse
 } from '@/types/node';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 
@@ -27,6 +28,7 @@ interface UseNodeDataState {
   reportsData: NodeReportsResponse | null;
   statusData: NodeStatus | null;
   snapshotData: NodeSnapshot | null;
+  actionsData: NodeActionsResponse | null;
   loading: boolean;
   error: string | null;
 }
@@ -111,6 +113,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
     reportsData: null,
     statusData: null,
     snapshotData: null,
+    actionsData: null,
     loading: true,
     error: null,
   });
@@ -137,6 +140,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           let reportsData: NodeReportsResponse | null = null;
           let statusData: NodeStatus | null = null;
           let snapshotData: NodeSnapshot | null = null;
+          let actionsData: NodeActionsResponse | null = null;
 
           try {
             cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
@@ -180,6 +184,13 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             snapshotData = null;
           }
 
+          try {
+            actionsData = await NodeApiService.getNodeActions(organizationUuid, nodeUuid);
+          } catch (actionsError) {
+            console.warn('Failed to fetch actions data:', actionsError);
+            actionsData = null;
+          }
+
           setState({
             node: nodeData,
             cveData: cveData,
@@ -189,6 +200,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             reportsData: reportsData,
             statusData: statusData,
             snapshotData: snapshotData,
+            actionsData: actionsData,
             loading: false,
             error: null,
           });
@@ -203,6 +215,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             reportsData: null,
             statusData: null,
             snapshotData: null,
+            actionsData: null,
             loading: false,
             error: null,
           });
@@ -236,6 +249,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
           let reportsData: NodeReportsResponse | null = null;
           let statusData: NodeStatus | null = null;
           let snapshotData: NodeSnapshot | null = null;
+          let actionsData: NodeActionsResponse | null = null;
 
           try {
             cveData = await NodeApiService.getNodeCveMatches(organizationUuid, nodeUuid, 5);
@@ -279,6 +293,13 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             snapshotData = null;
           }
 
+          try {
+            actionsData = await NodeApiService.getNodeActions(organizationUuid, nodeUuid);
+          } catch (actionsError) {
+            console.warn('Failed to fetch actions data:', actionsError);
+            actionsData = null;
+          }
+
           setState({
             node: nodeData,
             cveData: cveData,
@@ -288,6 +309,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             reportsData: reportsData,
             statusData: statusData,
             snapshotData: snapshotData,
+            actionsData: actionsData,
             loading: false,
             error: null,
           });
@@ -302,6 +324,7 @@ export const useNodeData = (organizationUuid: string, nodeUuid: string) => {
             reportsData: null,
             statusData: null,
             snapshotData: null,
+            actionsData: null,
             loading: false,
             error: null,
           });

@@ -91,6 +91,7 @@ const OrgNodeEvents: React.FC = () => {
       scanSessionsData={null}
       reportsData={null}
       snapshotData={null}
+      actionsData={null}
       loading={loading}
     >
       <div className="space-y-6">
