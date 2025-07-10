@@ -34,15 +34,14 @@ class WebSocketService {
   }
 
   private getWebSocketUrl(): string {
-    const baseUrl = config.apiUrl;
-    const wsUrl = baseUrl.replace('http', 'ws').replace('https', 'wss');
+    const wsUrl = config.wsUrl || config.apiUrl.replace('http', 'ws').replace('https', 'wss');
     const token = storage.getAccessToken();
     
     if (!token) {
       throw new Error('No access token available for WebSocket connection');
     }
     
-    return `${wsUrl}/ws?token=${token}`;
+    return `${wsUrl}${wsUrl.endsWith('/ws') ? '' : '/ws'}?token=${token}`;
   }
 
   private setupEventListeners(): void {

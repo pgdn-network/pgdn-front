@@ -5,6 +5,7 @@ interface Config {
   appEnv: string;
   isDevelopment: boolean;
   isProduction: boolean;
+  wsUrl: string;
 }
 
 const config: Config = {
@@ -14,6 +15,7 @@ const config: Config = {
   appEnv: import.meta.env.VITE_APP_ENV || 'development',
   isDevelopment: import.meta.env.DEV,
   isProduction: import.meta.env.PROD,
+  wsUrl: import.meta.env.VITE_WS_URL || '',
 };
 
 export default config;
