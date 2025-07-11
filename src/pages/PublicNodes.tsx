@@ -14,6 +14,7 @@ export default function PublicNodes() {
   const [nodes, setNodes] = useState<PublicNode[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,7 +22,10 @@ export default function PublicNodes() {
   }, []);
 
   const handleSearch = () => {
-    fetchPublicNodes(searchTerm);
+    if (searchTerm.trim()) {
+      setIsSearching(true);
+      fetchPublicNodes(searchTerm);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -32,7 +36,9 @@ export default function PublicNodes() {
 
   const fetchPublicNodes = async (search?: string) => {
     try {
-      setIsLoading(true);
+      if (!search) {
+        setIsLoading(true);
+      }
       setError(null);
       const nodesData = await NodeApiService.getPublicNodes(search);
       setNodes(nodesData);
@@ -41,6 +47,7 @@ export default function PublicNodes() {
       setError('Failed to load public nodes. Please try again later.');
     } finally {
       setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
@@ -116,11 +123,11 @@ export default function PublicNodes() {
           </div>
           <Button 
             onClick={handleSearch}
-            disabled={isLoading}
+            disabled={isSearching}
             className="px-6 py-3"
           >
             <Search className="w-4 h-4 mr-2" />
-            Search
+            {isSearching ? 'Searching...' : 'Search'}
           </Button>
         </div>
       </div>
@@ -179,7 +186,16 @@ export default function PublicNodes() {
 
       {/* Nodes List */}
       <div className="space-y-4">
-        {nodes.length === 0 ? (
+        {isSearching && (
+          <div className="flex justify-center py-8">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <span className="text-gray-600 dark:text-gray-400">Searching...</span>
+            </div>
+          </div>
+        )}
+        
+        {!isSearching && nodes.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <p className="text-gray-500 dark:text-gray-400">
@@ -187,7 +203,7 @@ export default function PublicNodes() {
               </p>
             </CardContent>
           </Card>
-        ) : (
+        ) : !isSearching && (
           nodes.map((node: PublicNode) => (
             <Card key={node.uuid} className="hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
