@@ -42,11 +42,11 @@ export default function PublicNodes() {
     };
   }, [searchTerm]);
 
-  const fetchPublicNodes = async (query?: string) => {
+  const fetchPublicNodes = async (search?: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      const nodesData = await NodeApiService.getPublicNodes(query);
+      const nodesData = await NodeApiService.getPublicNodes(search);
       setNodes(nodesData);
     } catch (err) {
       console.error('Error fetching public nodes:', err);
