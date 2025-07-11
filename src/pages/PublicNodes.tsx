@@ -22,9 +22,10 @@ export default function PublicNodes() {
   }, []);
 
   const handleSearch = () => {
-    if (searchTerm.trim()) {
+    const trimmedSearch = searchTerm.trim();
+    if (trimmedSearch.length >= 5) {
       setIsSearching(true);
-      fetchPublicNodes(searchTerm);
+      fetchPublicNodes(trimmedSearch);
     }
   };
 
@@ -114,22 +115,31 @@ export default function PublicNodes() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
               type="text"
-              placeholder="Search nodes by name, address, or protocol..."
+              placeholder="Search nodes by name, address, or protocol... (min 5 characters)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="pl-10 pr-4 py-3 text-lg"
+              className={`pl-10 pr-4 py-3 text-lg ${
+                searchTerm.trim().length > 0 && searchTerm.trim().length < 5 
+                  ? 'border-red-300 focus:border-red-500' 
+                  : ''
+              }`}
             />
           </div>
           <Button 
             onClick={handleSearch}
-            disabled={isSearching}
+            disabled={isSearching || searchTerm.trim().length < 5}
             className="px-6 py-3"
           >
             <Search className="w-4 h-4 mr-2" />
             {isSearching ? 'Searching...' : 'Search'}
           </Button>
         </div>
+        {searchTerm.trim().length > 0 && searchTerm.trim().length < 5 && (
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            Please enter at least 5 characters to search
+          </p>
+        )}
       </div>
 
       {/* Error Message */}
