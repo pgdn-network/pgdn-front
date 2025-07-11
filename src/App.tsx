@@ -35,6 +35,8 @@ import OrgNodeScanDetail from './pages/OrgNodeScanDetail';
 import OrgNodeEvents from './pages/OrgNodeEvents';
 import OrgNodeSettings from './pages/OrgNodeSettings';
 import NotFound from './pages/NotFound';
+import PublicNodes from './pages/PublicNodes';
+import PublicLayout from './components/layout/PublicLayout';
 
 function App() {
   return (
@@ -45,6 +47,7 @@ function App() {
           <AuthProvider>
             <Routes>
               {/* Public routes */}
+              <Route path="/public" element={<PublicLayout><PublicNodes /></PublicLayout>} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

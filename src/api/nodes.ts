@@ -16,7 +16,8 @@ import type {
   CreateNodeResponse,
   ClaimNodeResponse,
   PublicClaim,
-  NodeActionsResponse
+  NodeActionsResponse,
+  PublicNode
 } from '@/types/node';
 
 export class NodeApiService {
@@ -190,6 +191,12 @@ export class NodeApiService {
   // Get all public claims for the current user/org
   static async getPublicClaims(): Promise<PublicClaim[]> {
     const response = await apiService.get<PublicClaim[]>('/public/claims');
+    return response.data;
+  }
+
+  // Get all public nodes
+  static async getPublicNodes(): Promise<PublicNode[]> {
+    const response = await apiService.get<PublicNode[]>('/public/nodes');
     return response.data;
   }
 

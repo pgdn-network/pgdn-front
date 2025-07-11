@@ -436,3 +436,14 @@ export interface NodeActionsResponse {
   node_address: string;
   organization_uuid: string;
 }
+
+export interface PublicNode {
+  uuid: string;
+  name: string;
+  address: string;
+  current_owner_type: string;
+  claim_status: string;
+  is_public: boolean;
+  created_at: string;
+  protocols: string[];
+}
