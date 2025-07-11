@@ -195,8 +195,14 @@ export class NodeApiService {
   }
 
   // Get all public nodes
-  static async getPublicNodes(): Promise<PublicNode[]> {
-    const response = await apiService.get<PublicNode[]>('/public/nodes');
+  static async getPublicNodes(query?: string): Promise<PublicNode[]> {
+    const params = new URLSearchParams();
+    if (query && query.trim()) {
+      params.append('query', query.trim());
+    }
+    
+    const url = `/public/nodes${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiService.get<PublicNode[]>(url);
     return response.data;
   }
 

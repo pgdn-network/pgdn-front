@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { NodeApiService } from '@/api/nodes';
 import type { PublicNode } from '@/types/node';
@@ -12,24 +12,41 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function PublicNodes() {
   const { user, isAuthenticated } = useAuth();
   const [nodes, setNodes] = useState<PublicNode[]>([]);
-  const [filteredNodes, setFilteredNodes] = useState<PublicNode[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchPublicNodes();
   }, []);
 
   useEffect(() => {
-    filterNodes();
-  }, [searchTerm, nodes]);
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
 
-  const fetchPublicNodes = async () => {
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      fetchPublicNodes(searchTerm);
+    }, 300); // 300ms delay
+
+    setSearchTimeout(timeout);
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [searchTerm]);
+
+  const fetchPublicNodes = async (query?: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      const nodesData = await NodeApiService.getPublicNodes();
+      const nodesData = await NodeApiService.getPublicNodes(query);
       setNodes(nodesData);
     } catch (err) {
       console.error('Error fetching public nodes:', err);
@@ -37,22 +54,6 @@ export default function PublicNodes() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const filterNodes = () => {
-    if (!searchTerm.trim()) {
-      setFilteredNodes(nodes);
-      return;
-    }
-
-    const filtered = nodes.filter(node =>
-      node.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      node.protocols.some(protocol => 
-        protocol.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-    setFilteredNodes(filtered);
   };
 
   const formatDate = (dateString: string) => {
@@ -179,7 +180,7 @@ export default function PublicNodes() {
 
       {/* Nodes List */}
       <div className="space-y-4">
-        {filteredNodes.length === 0 ? (
+        {nodes.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <p className="text-gray-500 dark:text-gray-400">
@@ -188,7 +189,7 @@ export default function PublicNodes() {
             </CardContent>
           </Card>
         ) : (
-          filteredNodes.map((node) => (
+          nodes.map((node: PublicNode) => (
             <Card key={node.uuid} className="hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -218,13 +219,13 @@ export default function PublicNodes() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end space-y-2">
-                    <div className="flex flex-wrap gap-1">
-                      {node.protocols.map((protocol) => (
-                        <Badge key={protocol} variant="secondary">
-                          {protocol}
-                        </Badge>
-                      ))}
-                    </div>
+                                         <div className="flex flex-wrap gap-1">
+                       {node.protocols.map((protocol: string) => (
+                         <Badge key={protocol} variant="secondary">
+                           {protocol}
+                         </Badge>
+                       ))}
+                     </div>
                     {isAuthenticated && (
                       <Button size="sm" variant="outline">
                         View Details
