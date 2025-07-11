@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/custom/Badge';
@@ -12,10 +11,6 @@ const NodeList: React.FC = () => {
     alert('To add a node, please select an organization first. Go to Organizations > Select Org > Add Node');
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Nodes' }
-  ];
 
   return (
     <div className="space-y-6">

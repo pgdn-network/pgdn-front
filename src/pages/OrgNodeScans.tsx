@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useNodeData } from '@/hooks/useNodeData';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
-
-// Simple JSON viewer component
-const JsonViewer: React.FC<{ data: any }> = ({ data }) => (
-  <pre className="overflow-x-auto bg-gray-100 dark:bg-gray-900 text-xs rounded p-4 mt-2 mb-2 max-h-96 whitespace-pre-wrap">
-    {JSON.stringify(data, null, 2)}
-  </pre>
-);
 
 const PAGE_LIMIT = 25;
 

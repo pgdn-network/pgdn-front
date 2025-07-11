@@ -1,17 +1,12 @@
 import React from 'react';
 import { User, Mail, Building, Shield, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import Breadcrumb from '@/components/common/Breadcrumb';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 const Profile: React.FC = () => {
   const { user, logout } = useAuth();
-
-  const breadcrumbItems = [
-    { label: 'Profile' }
-  ];
 
   const handleLogout = () => {
     logout();
@@ -22,9 +17,7 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4">
-      <Breadcrumb items={breadcrumbItems} />
-      
+    <div className="container mx-auto px-4 py-4">      
       <div className="max-w-2xl mx-auto mt-8">
         <Card>
           <CardHeader>

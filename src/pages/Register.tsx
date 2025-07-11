@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import type { ApiErrorResponse, ApiErrorDetail, ValidationError } from '@/api/auth';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,10 +37,6 @@ const Register: React.FC = () => {
     resolver: zodResolver(registerSchema),
     mode: 'onChange',
   });
-
-  const breadcrumbItems = [
-    { label: 'PGDN' }
-  ];
 
   const parseApiError = (errorResponse: ApiErrorResponse): string => {
     const { detail } = errorResponse;
@@ -84,11 +79,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="container mx-auto px-4 py-4">
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
-      
+    <div className="min-h-screen bg-background flex flex-col">      
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">

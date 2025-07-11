@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Settings, Play, Pause, Clock, Workflow, Plus, Eye, Edit, Trash2 } from 'lucide-react';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/custom/Badge';
@@ -41,10 +40,6 @@ const Orchestrations: React.FC = () => {
     alert(`Deleting orchestration: ${id}`);
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Orchestrations' }
-  ];
 
   // Mock orchestration data
   const orchestrations = [

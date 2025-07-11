@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, AlertTriangle, CheckCircle, Clock, MapPin, Server, Activity } from 'lucide-react';
+import { Clock, MapPin, Server, Activity } from 'lucide-react';
 import type { NodeSnapshot } from '@/types/node';
 
 interface NodeSnapshotCardProps {

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { BarChart3, FileText, Download, Eye, Calendar, TrendingUp } from 'lucide-react';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/custom/Badge';
@@ -22,10 +21,6 @@ const Reports: React.FC = () => {
     alert(`Viewing report: ${reportId}`);
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Reports' }
-  ];
 
   // Mock report data
   const reports = [

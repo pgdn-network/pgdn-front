@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Network, AlertTriangle, Loader2, Wifi, WifiOff } from 'lucide-react';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
@@ -55,15 +54,6 @@ const NodeIps: React.FC = () => {
     return new Date(dateString).toLocaleString();
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Organizations', href: '/organizations' },
-    { label: organization?.name || slug || 'Organization', href: `/organizations/${slug}` },
-    { label: 'Nodes', href: `/organizations/${slug}/nodes` },
-    { label: nodeIpsData?.node_name || nodeId || 'Node', href: `/organizations/${slug}/nodes/${nodeId}` },
-    { label: 'IP Addresses' }
-  ];
-
   if (loading || orgsLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -112,9 +102,7 @@ const NodeIps: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
-        <Breadcrumb items={breadcrumbItems} />
-        
+      <div className="container mx-auto px-4 py-4">        
         <div className="mt-4">
           <div className="md:flex md:items-center md:justify-between">
             <div className="flex-1 min-w-0">

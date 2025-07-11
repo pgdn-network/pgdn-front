@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,9 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
-import { storage } from '@/utils/storage';
 import { NodeOnboardingStepper } from '@/components/ui/custom/NodeOnboardingStepper';
-import { UserPlus, Server, Info, ArrowRight } from 'lucide-react';
+import { Server, Info, ArrowRight } from 'lucide-react';
 import { NodeApiService } from '@/api/nodes';
 import type { ClaimableNodeError, ClaimNodeResponse } from '@/types/node';
 
@@ -71,7 +70,9 @@ const OrgNodeCreate: React.FC = () => {
       if (err?.response?.status === 409 && err?.response?.data?.detail?.error) {
         setClaimable(err.response.data.detail as ClaimableNodeError);
       } else {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        // Extract error message from API response
+        const errorMessage = err?.response?.data?.detail || err?.message || 'An error occurred';
+        setError(errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -86,7 +87,9 @@ const OrgNodeCreate: React.FC = () => {
       const result = await NodeApiService.claimNode(claimable.claim_endpoint);
       setClaimResult(result);
     } catch (err: any) {
-      setError(err instanceof Error ? err.message : 'Failed to claim node');
+      // Extract error message from API response
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Failed to claim node';
+      setError(errorMessage);
     } finally {
       setClaiming(false);
     }

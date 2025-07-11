@@ -103,8 +103,10 @@ export const CreateNodeModal: React.FC<CreateNodeModalProps> = ({
       } else {
         navigate('/');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (err: any) {
+      // Extract error message from API response
+      const errorMessage = err?.response?.data?.detail || err?.message || 'An error occurred';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

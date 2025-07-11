@@ -9,11 +9,7 @@ import {
   Target, 
   CheckCircle, 
   XCircle, 
-  Clock,
-  User,
-  FileText,
-  ExternalLink,
-  Info
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

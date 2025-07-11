@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/custom/Badge';
@@ -47,10 +46,6 @@ const Scans: React.FC = () => {
     alert(`Retrying scan: ${scanId}`);
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Scans' }
-  ];
 
   // Mock scan data
   const scans = [

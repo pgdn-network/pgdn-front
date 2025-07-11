@@ -59,12 +59,6 @@ const Organizations: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" asChild>
-            <Link to="/nodes/create">
-              <Server className="h-4 w-4 mr-2" />
-              Create Node
-            </Link>
-          </Button>
           <Button variant="default" onClick={handleCreateOrg}>
             <Plus className="h-4 w-4 mr-2" />
             Create Organization

@@ -118,7 +118,7 @@ export function Sidebar() {
           </div>
           <div className="flex items-center gap-2 text-xs text-muted">
             <Globe className="w-3 h-3" />
-            <span>247 nodes online</span>
+            <span>3 open actions</span>
           </div>
         </div>
       </div>

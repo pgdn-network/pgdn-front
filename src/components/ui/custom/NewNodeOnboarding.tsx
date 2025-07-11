@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Rocket, Search, Info, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useEffect } from 'react';
+import { Rocket, Info, ArrowRight } from 'lucide-react';
 import { useWebSocketContext } from '@/contexts/WebSocketContext';
 import type { Node as ApiNode } from '@/types/node';
 
@@ -18,7 +17,7 @@ interface NewNodeOnboardingProps {
   organization: Organization;
 }
 
-export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, organization }) => {
+export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node }) => {
   const { lastMessage } = useWebSocketContext();
 
   // Listen for WebSocket discovery progress messages
@@ -33,10 +32,6 @@ export const NewNodeOnboarding: React.FC<NewNodeOnboardingProps> = ({ node, orga
     }
   }, [lastMessage, node.uuid]);
 
-  const handleDiscoveryComplete = (success: boolean) => {
-    // In a real implementation, you would update the node status here
-    console.log('Discovery completed:', success);
-  };
 
   const isFirstState = node.simple_state === 'new' && node.discovery_status === 'pending';
 

@@ -67,7 +67,9 @@ const NodeCreate: React.FC = () => {
       if (err?.response?.status === 409 && err?.response?.data?.detail?.error) {
         setClaimable(err.response.data.detail as ClaimableNodeError);
       } else {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        // Extract error message from API response
+        const errorMessage = err?.response?.data?.detail || err?.message || 'An error occurred';
+        setError(errorMessage);
       }
     } finally {
       setIsLoading(false);
@@ -82,7 +84,9 @@ const NodeCreate: React.FC = () => {
       const result = await NodeApiService.claimNode(claimable.claim_endpoint);
       setClaimResult(result);
     } catch (err: any) {
-      setError(err instanceof Error ? err.message : 'Failed to claim node');
+      // Extract error message from API response
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Failed to claim node';
+      setError(errorMessage);
     } finally {
       setClaiming(false);
     }

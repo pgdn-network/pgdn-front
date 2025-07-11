@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Settings as SettingsIcon, User, Shield, Bell, Palette, Save, Trash2, Key, Lock } from 'lucide-react';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
@@ -58,10 +57,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Settings' }
-  ];
 
   return (
     <div className="space-y-6">

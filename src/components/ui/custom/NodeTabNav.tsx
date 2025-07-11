@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Settings as SettingsIcon } from 'lucide-react';
 
 interface NodeTabNavProps {
   organizationSlug: string;
@@ -13,6 +12,7 @@ const tabs = [
   { label: 'Reports', value: 'reports', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/reports` },
   { label: 'Scans', value: 'scans', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/scans` },
   { label: 'Events', value: 'history', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/history` },
+  { label: 'Settings', value: 'settings', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/settings` },
 ];
 
 export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId }) => {
@@ -23,6 +23,7 @@ export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId
     (location.pathname.includes('/reports') ? 'reports' :
      location.pathname.includes('/scans') ? 'scans' :
      location.pathname.includes('/history') ? 'history' :
+     location.pathname.includes('/settings') ? 'settings' :
      'summary');
 
   return (

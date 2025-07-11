@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { StatusDot } from '@/components/ui/custom/StatusDot';
-import { Badge } from '@/components/ui/custom/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,13 +14,9 @@ import {
 import Loader from '@/components/ui/custom/Loader';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
-import { useWebSocketContext } from '@/contexts/WebSocketContext';
 import { useAuth } from '@/hooks/useAuth';
-import { storage } from '@/utils/storage';
 import { 
   Server, 
-  Shield, 
-  CheckCircle,
   XCircle,
   Globe,
   Clock,
@@ -32,10 +27,7 @@ import {
   LockOpen,
   AlertTriangle,
   Loader2,
-  HelpCircle,
-  ExternalLink,
-  TrendingUp,
-  TrendingDown
+  HelpCircle
 } from 'lucide-react';
 import { NodeApiService } from '@/api/nodes';
 import type { Node } from '@/types/node';
@@ -53,9 +45,8 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [nodesLoading, setNodesLoading] = useState(true);
   const { organizations, loading: orgsLoading } = useOrganizations();
-  const { protocols, loading: protocolsLoading, getProtocol } = useProtocols();
+  const { loading: protocolsLoading, getProtocol } = useProtocols();
   const { user } = useAuth();
-  // const { isConnected } = useWebSocketContext();
   
   const handleOrgChange = (value: string) => {
     setSearchParams({ org: value });
@@ -177,41 +168,6 @@ const Dashboard: React.FC = () => {
   // Determine if we should show no nodes page
   const shouldShowNoNodesPage = !loading && !orgsLoading && nodes.length === 0;
   
-  // Mock data for stats with enhanced visual indicators
-  const stats = [
-    {
-      title: 'Total Nodes',
-      value: '247',
-      change: '+12%',
-      icon: Server,
-      trend: 'up',
-      description: 'Active network nodes'
-    },
-    {
-      title: 'Online Nodes',
-      value: '231',
-      change: '+5%',
-      icon: CheckCircle,
-      trend: 'up',
-      description: 'Healthy and responding'
-    },
-    {
-      title: 'Offline Nodes',
-      value: '16',
-      change: '-8%',
-      icon: XCircle,
-      trend: 'down',
-      description: 'Require attention'
-    },
-    {
-      title: 'Security Score',
-      value: '98.5%',
-      change: '+2%',
-      icon: Shield,
-      trend: 'up',
-      description: 'Network security rating'
-    }
-  ];
 
   // Show loading state while data is being fetched
   if (loading || orgsLoading) {
@@ -223,11 +179,6 @@ const Dashboard: React.FC = () => {
             <h1 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
             <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{user?.first_name || 'User'}</span></p>
             <p className="text-muted max-w-2xl mt-2">Monitor your DePIN network performance, track node health, and manage your decentralized infrastructure from one central hub.</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted">Network Status</span>
-            <StatusDot status="online" />
-            <span className="text-success font-semibold">All Systems Operational</span>
           </div>
         </div>
 
@@ -278,14 +229,9 @@ const Dashboard: React.FC = () => {
           <p className="text-lg text-secondary">Welcome back, <span className="font-semibold text-accent">{user?.first_name || 'User'}</span></p>
           <p className="text-muted max-w-2xl mt-2">Monitor your DePIN network performance, track node health, and manage your decentralized infrastructure from one central hub.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted">Network Status</span>
-          <StatusDot status="online" />
-          <span className="text-success font-semibold">All Systems Operational</span>
-        </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="flex flex-col items-start gap-2">
@@ -310,7 +256,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </div> */}
 
       {/* Table Section */}
       <div>

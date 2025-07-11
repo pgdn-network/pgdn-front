@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,10 +14,6 @@ const ForgotPassword: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-
-  const breadcrumbItems = [
-    { label: 'PGDN' }
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,11 +49,7 @@ const ForgotPassword: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="container mx-auto px-4 py-4">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-        
+      <div className="min-h-screen bg-background flex flex-col">        
         <div className="flex-1 flex items-center justify-center">
           <div className="max-w-md w-full space-y-8">
             <div className="text-center">
@@ -95,11 +86,7 @@ const ForgotPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="container mx-auto px-4 py-4">
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
-      
+    <div className="min-h-screen bg-background flex flex-col">      
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">

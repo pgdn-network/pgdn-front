@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,10 +23,6 @@ const Login: React.FC = () => {
     }
   }, [location.state]);
 
-  const breadcrumbItems = [
-    { label: 'PGDN' }
-  ];
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -48,11 +43,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="container mx-auto px-4 py-4">
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
-      
+    <div className="min-h-screen bg-background flex flex-col">      
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">

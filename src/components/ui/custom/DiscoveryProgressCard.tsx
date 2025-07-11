@@ -1,12 +1,6 @@
 import React from 'react';
-import { Search, Loader2, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
+import { Search, CheckCircle, AlertTriangle } from 'lucide-react';
 
-interface DiscoveryStep {
-  id: string;
-  name: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'failed';
-  description: string;
-}
 
 interface DiscoveryProgressCardProps {
   nodeName: string;
@@ -19,7 +13,6 @@ export const DiscoveryProgressCard: React.FC<DiscoveryProgressCardProps> = ({
   nodeName,
   progress,
   discoveryResult,
-  isRunning,
 }) => {
   // No state or effects, just render UI based on props
   return (

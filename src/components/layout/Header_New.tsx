@@ -1,5 +1,5 @@
 import React from 'react'
-import { Search, Bell, Menu, Sun, Moon, Settings, User, LogOut, ChevronDown } from 'lucide-react'
+import { Search, Bell, Menu, Settings, User, LogOut, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { mockUser } from '@/mocks/user'

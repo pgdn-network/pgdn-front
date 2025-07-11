@@ -31,8 +31,6 @@ const steps = [
   },
 ] as const;
 
-type StepKey = typeof steps[number]['key'];
-
 function getStepIndex(step: OnboardingStep): number {
   return steps.findIndex(s => s.key === step);
 }

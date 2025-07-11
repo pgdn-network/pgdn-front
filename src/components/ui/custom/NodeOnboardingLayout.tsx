@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NewNodeOnboarding } from '@/components/ui/custom/NewNodeOnboarding';
 import { DiscoveryConfirmation } from '@/components/ui/custom/DiscoveryConfirmation';
 import { DiscoveryFailure } from '@/components/ui/custom/DiscoveryFailure';

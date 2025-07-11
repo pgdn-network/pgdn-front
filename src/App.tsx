@@ -33,6 +33,7 @@ import OrgNodeCveDetail from './pages/OrgNodeCveDetail';
 import OrgNodeScans from './pages/OrgNodeScans';
 import OrgNodeScanDetail from './pages/OrgNodeScanDetail';
 import OrgNodeEvents from './pages/OrgNodeEvents';
+import OrgNodeSettings from './pages/OrgNodeSettings';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -87,6 +88,7 @@ function App() {
                 <Route path="organizations/:slug/nodes/:nodeId/cves" element={<OrgNodeCves />} />
                 <Route path="organizations/:slug/nodes/:nodeId/cves/:cveUuid" element={<OrgNodeCveDetail />} />
                 <Route path="organizations/:slug/nodes/:nodeId/history" element={<OrgNodeEvents />} />
+                <Route path="organizations/:slug/nodes/:nodeId/settings" element={<OrgNodeSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

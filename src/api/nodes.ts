@@ -16,8 +16,7 @@ import type {
   CreateNodeResponse,
   ClaimNodeResponse,
   PublicClaim,
-  NodeActionsResponse,
-  NodeAction
+  NodeActionsResponse
 } from '@/types/node';
 
 export class NodeApiService {

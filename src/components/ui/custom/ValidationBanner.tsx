@@ -7,19 +7,8 @@ interface ValidationBannerProps {
   onClose: () => void;
 }
 
-export const ValidationBanner: React.FC<ValidationBannerProps> = ({ node, onClose }) => {
+export const ValidationBanner: React.FC<ValidationBannerProps> = ({ node }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const validateAction = (
-    <Button 
-      variant="outline" 
-      size="sm"
-      onClick={() => setIsModalOpen(true)}
-      className="text-yellow-800 border-yellow-400 hover:bg-yellow-100 h-6 px-2"
-    >
-      Validate Node
-    </Button>
-  );
 
   return (
     <>

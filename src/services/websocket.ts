@@ -18,7 +18,6 @@ export interface WebSocketConfig {
 class WebSocketService {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = Infinity; // Changed to keep trying indefinitely
   private reconnectDelay = 1000; // Start with 1 second
   private maxReconnectDelay = 30000; // Max 30 seconds between attempts
   private reconnectTimer: NodeJS.Timeout | null = null;

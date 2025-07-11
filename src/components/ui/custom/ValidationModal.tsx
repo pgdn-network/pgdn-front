@@ -11,8 +11,7 @@ interface ValidationModalProps {
 
 export const ValidationModal: React.FC<ValidationModalProps> = ({
   isOpen,
-  onClose,
-  node
+  onClose
 }) => {
   if (!isOpen) return null;
 

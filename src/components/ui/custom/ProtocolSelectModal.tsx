@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, Check, AlertCircle, Shield, Globe, Database, Zap, Coins, Network, Cpu, HardDrive, Link, FileText, Layers, Activity, Star, Hexagon, Circle, Square, Triangle, Diamond } from 'lucide-react';
+import { X, Check, AlertCircle, Shield, Globe, Database, Zap, Coins, Network, Cpu, HardDrive, Link, Layers, Activity, Star, Hexagon, Circle, Square, Triangle, Diamond } from 'lucide-react';
 
 interface Protocol {
   id: string;

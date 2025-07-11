@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, CheckCircle } from 'lucide-react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import Breadcrumb from '../components/common/Breadcrumb';
 import { Card } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,10 +19,6 @@ const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get('token');
-
-  const breadcrumbItems = [
-    { label: 'PGDN' }
-  ];
 
   useEffect(() => {
     if (!token) {
@@ -101,11 +96,7 @@ const ResetPassword: React.FC = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="container mx-auto px-4 py-4">
-          <Breadcrumb items={breadcrumbItems} />
-        </div>
-        
+      <div className="min-h-screen bg-background flex flex-col">        
         <div className="flex-1 flex items-center justify-center">
           <div className="max-w-md w-full space-y-8">
             <div className="text-center">
@@ -139,11 +130,7 @@ const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="container mx-auto px-4 py-4">
-        <Breadcrumb items={breadcrumbItems} />
-      </div>
-      
+    <div className="min-h-screen bg-background flex flex-col">      
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">

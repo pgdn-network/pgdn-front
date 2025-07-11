@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FileText, ArrowLeft, Eye, Calendar, AlertTriangle, Shield } from 'lucide-react';
+import { FileText, Eye, Calendar, AlertTriangle, Shield } from 'lucide-react';
 import { Card } from '@/components/ui/custom/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/custom/Badge';
@@ -24,8 +24,6 @@ const OrgNodeReports: React.FC = () => {
     organizations.find(org => org.slug === slug)?.uuid || '',
     nodeId || ''
   );
-  const [currentPage, setCurrentPage] = useState(1);
-  const limit = 20;
 
   if (loading || orgsLoading) {
     return (

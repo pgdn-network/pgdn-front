@@ -16,7 +16,6 @@ import {
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/custom/Badge';
 import { Button } from '@/components/ui/button';
-import Breadcrumb from '@/components/common/Breadcrumb';
 import { NodeApiService } from '@/api/nodes';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import type { NodeReport, ReportFinding } from '@/types/node';
@@ -104,16 +103,6 @@ const OrgNodeReportDetail: React.FC = () => {
     }
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Organizations', href: '/organizations' },
-    { label: slug || '', href: `/organizations/${slug}` },
-    { label: 'Nodes', href: `/organizations/${slug}` },
-    { label: `Node ${nodeId}`, href: `/organizations/${slug}/nodes/${nodeId}` },
-    { label: 'Reports', href: `/organizations/${slug}/nodes/${nodeId}/reports` },
-    { label: report?.title || 'Report' }
-  ];
-
   if (loading || orgsLoading) {
     return (
       <div className="space-y-6">
@@ -141,9 +130,6 @@ const OrgNodeReportDetail: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb items={breadcrumbItems} />
-
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

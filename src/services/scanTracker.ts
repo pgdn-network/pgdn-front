@@ -92,13 +92,12 @@ class ScanTracker {
             
             onComplete(status);
           }
-        } else if ('scans' in response && Array.isArray(response.scans)) {
+        } else if ('scans' in response && Array.isArray((response as any).scans)) {
           // This is the expected ScanSessionStatus response
           const status: ScanSessionStatus = response as ScanSessionStatus;
           // Update the tracked scan
           const trackedScan = this.trackedScans.get(session_id);
           if (trackedScan) {
-            // @ts-ignore
             trackedScan.scans = status.scans;
           }
           
@@ -156,7 +155,7 @@ class ScanTracker {
   }
 
   private startTaskTracking(sessionId: string, sessionResponse: ScanSessionResponse) {
-    const { tracking_urls, scans } = sessionResponse;
+    const { tracking_urls } = sessionResponse;
     // Check if we have individual task tracking URLs
     if (!tracking_urls.scan_tasks || tracking_urls.scan_tasks.length === 0) {
       console.log(`No individual task tracking URLs available for session ${sessionId}`);

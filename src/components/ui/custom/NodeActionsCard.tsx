@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ListChecks, CheckCircle, AlertTriangle, Clock, ExternalLink, Loader2 } from 'lucide-react';
 import type { NodeActionsResponse, NodeAction } from '@/types/node';
@@ -68,29 +67,6 @@ export const NodeActionsCard: React.FC<NodeActionsCardProps> = ({
     }
   };
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'open':
-        return 'destructive' as const;
-      case 'closed':
-        return 'default' as const;
-      case 'muted':
-        return 'secondary' as const;
-      default:
-        return 'outline' as const;
-    }
-  };
-
-  const getPriorityVariant = (priority: number) => {
-    switch (priority) {
-      case 1:
-        return 'destructive' as const;
-      case 2:
-        return 'secondary' as const;
-      default:
-        return 'outline' as const;
-    }
-  };
 
   const handleComplete = async (action: NodeAction) => {
     if (!organizationUuid || !nodeId) return;
@@ -107,7 +83,7 @@ export const NodeActionsCard: React.FC<NodeActionsCardProps> = ({
         prev ? prev.map(a => a.uuid === action.uuid ? { ...a, status: 'closed' } : a) : null
       );
       setActionErrors(prev => ({ ...prev, [action.uuid]: '' }));
-    } catch (err) {
+    } catch {
       setActionErrors(prev => ({ ...prev, [action.uuid]: 'Failed to complete action' }));
     } finally {
       setUpdating(null);

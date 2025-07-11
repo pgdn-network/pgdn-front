@@ -1,38 +1,10 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Activity, CheckCircle, AlertTriangle, Clock, Zap, TrendingUp, AlertCircle } from 'lucide-react'
-import type { NodeStatus } from '@/types/node'
 
 interface NodeStatusCardProps {
   node: any;
   getProtocol: (uuid: string) => { display_name: string } | null;
 }
 
-function getStatusBadgeClass(status: string) {
-  switch (status.toLowerCase()) {
-    case 'connected':
-      return '!bg-blue-600 !text-white !border-blue-600';
-    case 'healthy':
-      return '!bg-green-600 !text-white !border-green-600';
-    case 'critical':
-    case 'error':
-      return '!bg-red-600 !text-white !border-red-600';
-    case 'warning':
-    case 'degraded':
-      return '!bg-yellow-500 !text-white !border-yellow-500';
-    default:
-      return '!bg-gray-800 !text-white !border-gray-800';
-  }
-}
-
-function formatDuration(seconds: number | null): string {
-  if (seconds === null || seconds === undefined) return 'N/A'
-  if (seconds < 60) return `${seconds.toFixed(1)}s`
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = Math.round(seconds % 60)
-  return `${minutes}m ${remainingSeconds}s`
-}
 
 export const NodeStatusCard: React.FC<NodeStatusCardProps> = ({ node, getProtocol }) => (
   <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">

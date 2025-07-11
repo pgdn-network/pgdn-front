@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Server, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CVECard } from '@/components/ui/custom/CVECard';
 import { EventCard } from '@/components/ui/custom/EventCard';
-import { ReportsCard } from '@/components/ui/custom/ReportsCard';
-import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { NodeActionsCard } from '@/components/ui/custom/NodeActionsCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
@@ -13,7 +10,7 @@ import { ValidationModal } from '@/components/ui/custom/ValidationModal';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { NodeOnboardingLayout } from '@/components/ui/custom/NodeOnboardingLayout';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { useBasicNodeData, useNodeData } from '@/hooks/useNodeData';
+import { useBasicNodeData, useNodeAdditionalData } from '@/hooks/useNodeData';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { NodeApiService } from '@/api/nodes';
 import { scanTracker } from '@/services/scanTracker';
@@ -29,7 +26,7 @@ const OrgNodeDetail: React.FC = () => {
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
-  const { banner, setBanner } = useBanner();
+  const { setBanner } = useBanner();
   const { addNotification, updateNotification } = useNotifications();
   const { getProtocol } = useProtocols();
   
@@ -45,28 +42,25 @@ const OrgNodeDetail: React.FC = () => {
     refetch: basicRefetch 
   } = useBasicNodeData(organizationUuid, nodeId || '');
 
-  // Only use full node data if node is active and discovery is completed
-  const shouldUseFullData = basicNode?.simple_state === 'active' && basicNode?.discovery_status === 'completed';
+  // Only use additional data if node is active and discovery is completed
+  const shouldUseAdditionalData = basicNode?.simple_state === 'active' && basicNode?.discovery_status === 'completed';
   
   const { 
-    node: fullNode, 
-    cveData, 
     eventsData, 
     scanSessionsData, 
     reportsData,
-    statusData,
     snapshotData,
     actionsData,
-    loading: fullLoading, 
-    error: fullError, 
-    refetch: fullRefetch 
-  } = useNodeData(shouldUseFullData ? organizationUuid : '', shouldUseFullData ? nodeId || '' : '');
+    loading: additionalLoading, 
+    error: additionalError, 
+    refetch: additionalRefetch 
+  } = useNodeAdditionalData(shouldUseAdditionalData ? basicNode : null, organizationUuid, nodeId || '');
 
-  // Use the appropriate node data based on state
-  const node = shouldUseFullData ? fullNode : basicNode;
-  const loading = basicLoading || (shouldUseFullData && fullLoading);
-  const error = basicError || fullError;
-  const refetch = shouldUseFullData ? fullRefetch : basicRefetch;
+  // Use the basic node data and combine with additional data
+  const node = basicNode;
+  const loading = basicLoading || (shouldUseAdditionalData && additionalLoading);
+  const error = basicError || additionalError;
+  const refetch = shouldUseAdditionalData ? additionalRefetch : basicRefetch;
 
   const handleStartScan = async (scanners: string[]) => {
     if (!organizationUuid || !nodeId) return;
@@ -233,7 +227,7 @@ const OrgNodeDetail: React.FC = () => {
           nodeId={nodeId || ''}
           slug={slug || ''}
           onStartScan={() => setIsScanModalOpen(true)}
-          cveData={cveData}
+          cveData={null}
           eventsData={eventsData}
           scanSessionsData={scanSessionsData}
           reportsData={reportsData}
@@ -262,10 +256,11 @@ const OrgNodeDetail: React.FC = () => {
             />
           </div>
 
-          {/* CVE Details Section */}
+          {/* CVE Details Section 
           <div className="mt-8">
             <CVECard cves={cveData} organizationSlug={slug} nodeId={nodeId} />
           </div>
+          */}
           {/* Events Section */}
           <div className="mt-8">
             <EventCard 
@@ -274,7 +269,7 @@ const OrgNodeDetail: React.FC = () => {
               nodeId={nodeId}
             />
           </div>
-          {/* Scan Sessions Section */}
+          {/* Scan Sessions Section 
           <div className="mt-8">
             <ScanSessionsCard 
               scanSessions={Array.isArray(scanSessionsData?.scans) ? scanSessionsData.scans.slice(0, 3) : []}
@@ -283,14 +278,15 @@ const OrgNodeDetail: React.FC = () => {
               viewAllHref={Array.isArray(scanSessionsData?.scans) && scanSessionsData.scans.length > 3 && slug && nodeId ? `/organizations/${slug}/nodes/${nodeId}/scans` : undefined}
             />
           </div>
-          {/* Reports Section */}
+          
           <div className="mt-8">
             <ReportsCard 
               reports={reportsData?.reports || []} 
               organizationSlug={slug}
               nodeId={nodeId}
             />
-          </div>
+          </div> 
+          */}
         </NodeMainLayout>
         {/* Scan Modal */}
         <ScanModal

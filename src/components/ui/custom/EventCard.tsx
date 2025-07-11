@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Clock, Activity, Shield, Search, AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink } from 'lucide-react'
+import { Clock, Activity, Shield, Search, AlertTriangle, CheckCircle, XCircle, RotateCcw, ExternalLink, FileText, Database } from 'lucide-react'
 import type { NodeEvent } from '@/types/node'
 
 interface EventCardProps {
@@ -139,6 +139,151 @@ function parseEvent(event: NodeEvent): ParsedEvent {
       timestamp,
       icon,
       statusColor,
+      details,
+      badges
+    }
+  }
+
+  // Report events
+  if (event.event_type === 'report_generated') {
+    const details: Array<{ label: string; value: string | number }> = []
+    const badges: Array<{ text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = []
+
+    if (eventData.report_type) {
+      badges.push({ text: eventData.report_type.replace('_', ' ').toUpperCase(), variant: 'secondary' })
+    }
+    if (eventData.risk_level) {
+      const riskVariant = eventData.risk_level.toLowerCase() === 'critical' ? 'destructive' : 
+                          eventData.risk_level.toLowerCase() === 'high' ? 'destructive' : 'outline'
+      badges.push({ text: `${eventData.risk_level} Risk`, variant: riskVariant })
+    }
+    if (typeof eventData.total_vulnerabilities === 'number') {
+      details.push({ label: 'Vulnerabilities', value: eventData.total_vulnerabilities })
+    }
+    if (typeof eventData.critical_vulnerabilities === 'number') {
+      details.push({ label: 'Critical', value: eventData.critical_vulnerabilities })
+    }
+    if (typeof eventData.risk_score === 'number') {
+      details.push({ label: 'Risk Score', value: eventData.risk_score })
+    }
+
+    return {
+      id: event.uuid,
+      type: 'scan',
+      subtype: 'report',
+      title: eventData.title || 'Security Report Generated',
+      timestamp,
+      icon: <FileText className="h-4 w-4" />,
+      statusColor: 'border-blue-500',
+      details,
+      badges
+    }
+  }
+
+  // Normalization events
+  if (event.event_type === 'normalized') {
+    const details: Array<{ label: string; value: string | number }> = []
+    const badges: Array<{ text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = []
+
+    badges.push({ text: 'DATA PROCESSING', variant: 'secondary' })
+    
+    if (typeof eventData.services_count === 'number') {
+      details.push({ label: 'Services', value: eventData.services_count })
+    }
+    if (typeof eventData.open_ports_count === 'number') {
+      details.push({ label: 'Open Ports', value: eventData.open_ports_count })
+    }
+    if (typeof eventData.cve_matches_count === 'number') {
+      details.push({ label: 'CVE Matches', value: eventData.cve_matches_count })
+    }
+    if (eventData.scan_session_id) {
+      details.push({ label: 'Session ID', value: eventData.scan_session_id })
+    }
+
+    return {
+      id: event.uuid,
+      type: 'scan',
+      subtype: 'normalized',
+      title: 'Scan Data Normalized',
+      timestamp,
+      icon: <Database className="h-4 w-4" />,
+      statusColor: 'border-green-500',
+      details,
+      badges
+    }
+  }
+
+  // Score update events
+  if (event.event_type === 'score_updated') {
+    const details: Array<{ label: string; value: string | number }> = []
+    const badges: Array<{ text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = []
+
+    badges.push({ text: 'SCORE UPDATE', variant: 'secondary' })
+    
+    if (eventData.security_grade) {
+      const gradeVariant = eventData.security_grade === 'F' ? 'destructive' : 
+                          eventData.security_grade === 'D' ? 'destructive' : 
+                          eventData.security_grade === 'C' ? 'outline' : 'default'
+      badges.push({ text: `Grade ${eventData.security_grade}`, variant: gradeVariant })
+    }
+    
+    if (typeof eventData.score === 'number') {
+      details.push({ label: 'Score', value: eventData.score })
+    }
+    if (typeof eventData.services_count === 'number') {
+      details.push({ label: 'Services', value: eventData.services_count })
+    }
+    if (typeof eventData.open_ports_count === 'number') {
+      details.push({ label: 'Open Ports', value: eventData.open_ports_count })
+    }
+    if (eventData.scan_session_id) {
+      details.push({ label: 'Session ID', value: eventData.scan_session_id })
+    }
+
+    return {
+      id: event.uuid,
+      type: 'scan',
+      subtype: 'score_updated',
+      title: 'Security Score Updated',
+      timestamp,
+      icon: <Shield className="h-4 w-4" />,
+      statusColor: eventData.security_grade === 'F' ? 'border-red-500' : 
+                   eventData.security_grade === 'D' ? 'border-orange-500' : 'border-blue-500',
+      details,
+      badges
+    }
+  }
+
+  // Node created events
+  if (event.event_type === 'node_created') {
+    const details: Array<{ label: string; value: string | number }> = []
+    const badges: Array<{ text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = []
+
+    badges.push({ text: 'NODE CREATED', variant: 'default' })
+    
+    if (eventData.creation_method) {
+      const methodVariant = eventData.creation_method === 'manual' ? 'default' : 'secondary'
+      badges.push({ text: eventData.creation_method.toUpperCase(), variant: methodVariant })
+    }
+    
+    if (eventData.node_name) {
+      details.push({ label: 'Node Name', value: eventData.node_name })
+    }
+    if (eventData.node_address) {
+      details.push({ label: 'Address', value: eventData.node_address })
+    }
+    if (eventData.protocol_name) {
+      details.push({ label: 'Protocol', value: eventData.protocol_name })
+    }
+
+    return {
+      id: event.uuid,
+      type: 'action',
+      subtype: 'created',
+      title: `Node Created: ${eventData.node_name || 'Unknown Node'}`,
+      timestamp,
+      icon: <Activity className="h-4 w-4" />,
+      statusColor: 'border-green-500',
       details,
       badges
     }
@@ -286,14 +431,24 @@ export function EventCard({ events, organizationSlug, nodeId, showViewMore = tru
                         <Badge 
                           key={badgeIndex} 
                           variant={badge.variant} 
-                          className={`text-xs ${
+                          className={`text-xs font-medium ${
                             badge.text.includes('CVE-') 
                               ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                              : badge.text === 'NODE CREATED'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                              : badge.text === 'MANUAL'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+                              : badge.text === 'AUTOMATIC'
+                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100'
                               : badge.variant === 'secondary' && (badge.text === 'WEB' || badge.text === 'NETWORK' || badge.text === 'HOST')
                               ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
                               : badge.variant === 'destructive'
                               ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
-                              : ''
+                              : badge.variant === 'default'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+                              : badge.variant === 'secondary'
+                              ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100'
                           }`}
                         >
                           {badge.text}
