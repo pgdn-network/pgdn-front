@@ -66,6 +66,16 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
     }
   };
 
+  const getScoreGrade = (score: number | null): { grade: string; color: string } => {
+    if (score === null) return { grade: 'N/A', color: 'bg-gray-100 text-gray-800' };
+    
+    if (score >= 90) return { grade: 'A', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' };
+    if (score >= 80) return { grade: 'B', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' };
+    if (score >= 65) return { grade: 'C', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' };
+    if (score >= 40) return { grade: 'D', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' };
+    return { grade: 'F', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' };
+  };
+
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
@@ -115,8 +125,15 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           
           {snapshot.latest_score !== null && (
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Latest Score:</span>
-              <span className="text-sm text-gray-900 dark:text-white">{snapshot.latest_score}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Security Grade:</span>
+              <div className="flex items-center space-x-2">
+                <span className={`px-2 py-1 text-xs font-bold rounded-full ${getScoreGrade(snapshot.latest_score).color}`}>
+                  {getScoreGrade(snapshot.latest_score).grade}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  ({snapshot.latest_score})
+                </span>
+              </div>
             </div>
           )}
         </div>

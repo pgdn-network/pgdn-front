@@ -18,9 +18,9 @@ import { Button } from '@/components/ui/button'
 
 const baseNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
-  { icon: ScanLine, label: 'Scans', href: '/scans' },
-  { icon: GitBranch, label: 'Orchestrations', href: '/orchestrations' },
-  { icon: FileText, label: 'Reports', href: '/reports' },
+  { icon: ScanLine, label: 'Scans', href: '/scans', enabled: false },
+  { icon: GitBranch, label: 'Orchestrations', href: '/orchestrations', enabled: true },
+  { icon: FileText, label: 'Reports', href: '/reports', enabled: false },
 ]
 
 export function Sidebar() {
@@ -29,7 +29,7 @@ export function Sidebar() {
 
   const navItems = [
     ...baseNavItems.slice(0, 1), // Dashboard
-    ...(organizations.length > 1 ? [{ icon: Building2, label: 'Organizations', href: '/organizations' }] : []),
+    ...(organizations.length > 0 ? [{ icon: Building2, label: 'Organizations', href: '/organizations' }] : []),
     ...baseNavItems.slice(1) // Rest of the items
   ]
 
@@ -61,26 +61,28 @@ export function Sidebar() {
       <nav className="flex-1 p-4">
         <div className="space-y-1">
           {navItems.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) =>
-                cn(
-                  'group flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                  'hover:bg-surface-hover',
-                  isActive
-                    ? 'bg-accent text-white shadow-sm'
-                    : 'text-primary hover:text-primary hover:bg-surface-hover'
-                )
-              }
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="flex-1">{item.label}</span>
-              <ChevronRight className={cn(
-                'w-4 h-4 transition-all duration-200',
-                'opacity-0 group-hover:opacity-100'
-              )} />
-            </NavLink>
+            item.enabled !== false && (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) =>
+                  cn(
+                    'group flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-200',
+                    'hover:bg-surface-hover',
+                    isActive
+                      ? 'bg-accent text-white shadow-sm'
+                      : 'text-primary hover:text-primary hover:bg-surface-hover'
+                  )
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="flex-1">{item.label}</span>
+                <ChevronRight className={cn(
+                  'w-4 h-4 transition-all duration-200',
+                  'opacity-0 group-hover:opacity-100'
+                )} />
+              </NavLink>
+            )
           ))}
         </div>
       </nav>
