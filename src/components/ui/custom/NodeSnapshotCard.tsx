@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clock, MapPin, Server, Activity } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { NodeSnapshot } from '@/types/node';
 
 interface NodeSnapshotCardProps {
@@ -126,14 +127,18 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           {snapshot.latest_score !== null && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500 dark:text-gray-400">Security Grade:</span>
-              <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 text-xs font-bold rounded-full ${getScoreGrade(snapshot.latest_score).color}`}>
-                  {getScoreGrade(snapshot.latest_score).grade}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  ({snapshot.latest_score})
-                </span>
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`px-2 py-1 text-xs font-bold rounded-full cursor-help ${getScoreGrade(snapshot.latest_score).color}`}>
+                      {getScoreGrade(snapshot.latest_score).grade}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Score: {snapshot.latest_score}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
         </div>
