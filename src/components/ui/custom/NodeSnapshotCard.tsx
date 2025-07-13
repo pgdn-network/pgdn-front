@@ -135,7 +135,7 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Score: {snapshot.latest_score}</p>
+                    <p>Score: {snapshot.latest_score}%</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
