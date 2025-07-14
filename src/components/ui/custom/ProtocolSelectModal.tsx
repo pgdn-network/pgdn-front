@@ -119,11 +119,11 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
   const handleConfirm = () => {
     const selectedProtocolsList = protocols.filter(p => selectedProtocols.includes(p.id));
     onSelect(selectedProtocolsList);
-    setSelectedProtocols([]);
+    // Don't reset selection here, let the parent handle it
   };
 
   const handleClose = () => {
-    setSelectedProtocols([]);
+    // Don't reset selection when closing, let the parent handle it
     onClose();
   };
 
