@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { NodeApiService } from '@/api/nodes';
 import type { PublicNode } from '@/types/node';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Globe, User, Calendar, Network, ArrowRight } from 'lucide-react';
+import { Search, Globe, User, Calendar, Network } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PublicNodes() {

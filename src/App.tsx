@@ -18,6 +18,10 @@ import NodeCreate from './pages/NodeCreate';
 import NodeIps from './pages/NodeIps';
 import Scans from './pages/Scans';
 import Orchestrations from './pages/Orchestrations';
+import Compliance from './pages/Compliance';
+import ComplianceDetail from './pages/ComplianceDetail';
+import ComplianceTemplates from './pages/ComplianceTemplates';
+import ComplianceScan from './pages/ComplianceScan';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
@@ -75,6 +79,10 @@ function App() {
                 <Route path="nodes/create" element={<NodeCreate />} />
                 <Route path="scans" element={<Scans />} />
                 <Route path="orchestrations" element={<Orchestrations />} />
+                <Route path="compliance" element={<Compliance />} />
+                <Route path="compliance/:frameworkId" element={<ComplianceDetail />} />
+                <Route path="compliance/templates" element={<ComplianceTemplates />} />
+                <Route path="compliance/scan" element={<ComplianceScan />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<Profile />} />

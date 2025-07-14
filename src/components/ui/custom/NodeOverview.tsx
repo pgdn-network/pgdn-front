@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { NodeTabNav } from '@/components/ui/custom/NodeTabNav';
 import { Radar } from 'lucide-react';
