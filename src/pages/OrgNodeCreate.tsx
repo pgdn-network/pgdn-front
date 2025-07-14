@@ -5,16 +5,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
+import { useProtocols } from '@/contexts/ProtocolsContext';
 import { NodeOnboardingStepper } from '@/components/ui/custom/NodeOnboardingStepper';
-import { Server, Info, ArrowRight } from 'lucide-react';
+import { ProtocolSelectModal } from '@/components/ui/custom/ProtocolSelectModal';
+import { Server, Info, ArrowRight, Plus, X } from 'lucide-react';
 import { NodeApiService } from '@/api/nodes';
 import type { ClaimableNodeError, ClaimNodeResponse } from '@/types/node';
+import type { Protocol as ContextProtocol } from '@/contexts/ProtocolsContext';
 
 const OrgNodeCreate: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { organizations } = useOrganizations();
+  const { protocols, loading: protocolsLoading } = useProtocols();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [claimable, setClaimable] = useState<ClaimableNodeError | null>(null);
@@ -24,7 +30,9 @@ const OrgNodeCreate: React.FC = () => {
     name: '',
     address: ''
   });
+  const [selectedProtocols, setSelectedProtocols] = useState<ContextProtocol[]>([]);
   const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
+  const [showProtocolModal, setShowProtocolModal] = useState(false);
 
   // Find organization UUID from slug
   const organization = organizations.find(org => org.slug === slug);
@@ -36,6 +44,19 @@ const OrgNodeCreate: React.FC = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleProtocolSelect = (modalProtocols: { id: string; name: string; description?: string }[]) => {
+    // Convert back to ContextProtocol format
+    const contextProtocols = modalProtocols.map(p => 
+      protocols.find(cp => cp.uuid === p.id)!
+    ).filter(Boolean) as ContextProtocol[];
+    setSelectedProtocols(contextProtocols);
+    setShowProtocolModal(false);
+  };
+
+  const removeProtocol = (protocolId: string) => {
+    setSelectedProtocols(prev => prev.filter(p => p.uuid !== protocolId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,12 +78,23 @@ const OrgNodeCreate: React.FC = () => {
       return;
     }
 
+    if (selectedProtocols.length === 0) {
+      setError('Please select at least one protocol for your node.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const data = await NodeApiService.createNode(organizationUuid, formData);
+      const nodeData = {
+        ...formData,
+        node_protocols: selectedProtocols.map(p => p.uuid)
+      };
       
-      // Navigate to the newly created node page
+      const data = await NodeApiService.createNode(organizationUuid, nodeData);
+      
+      // Navigate to the discovery page for new nodes
       if (data && data.node && data.node.uuid) {
-        navigate(`/organizations/${slug}/nodes/${data.node.uuid}`);
+        navigate(`/organizations/${slug}/nodes/${data.node.uuid}/discovery`);
       } else {
         navigate(`/organizations/${slug}`);
       }
@@ -99,7 +131,7 @@ const OrgNodeCreate: React.FC = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-2xl mx-auto">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-foreground mb-2">Organization Not Found</h2>
               <p className="text-muted-foreground">
@@ -115,11 +147,11 @@ const OrgNodeCreate: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-2xl mx-auto">
           <NodeOnboardingStepper currentStep="add" />
           
           {/* Node Information Card */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-6">
+          <Card className="p-6 mb-6">
             <div className="flex items-start space-x-4">
               <div className="bg-blue-100 p-3 rounded-lg">
                 <Info className="h-6 w-6 text-blue-600" />
@@ -145,10 +177,10 @@ const OrgNodeCreate: React.FC = () => {
                 </ul>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Create Node Form Card */}
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <Card className="p-6">
             <div className="text-center mb-6">
               <h3 className="text-lg font-semibold mb-2">Node Configuration</h3>
               <p className="text-muted-foreground">
@@ -230,6 +262,7 @@ const OrgNodeCreate: React.FC = () => {
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium">Node Name</Label>
                   <Input
@@ -244,6 +277,7 @@ const OrgNodeCreate: React.FC = () => {
                     className="w-full"
                   />
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="address" className="text-sm font-medium">Node Address</Label>
                   <Input
@@ -258,6 +292,62 @@ const OrgNodeCreate: React.FC = () => {
                     className="w-full"
                   />
                 </div>
+
+                {/* Protocol Selection */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Protocols</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedProtocols.length}/3 selected
+                    </span>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowProtocolModal(true)}
+                    disabled={isLoading || protocolsLoading}
+                    className="w-full justify-start"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {selectedProtocols.length === 0 
+                      ? 'Select protocols for your node' 
+                      : `${selectedProtocols.length} protocol${selectedProtocols.length !== 1 ? 's' : ''} selected`
+                    }
+                  </Button>
+
+                  {/* Selected Protocols Display */}
+                  {selectedProtocols.length > 0 && (
+                    <div className="space-y-2">
+                      {selectedProtocols.map((protocol) => (
+                        <div
+                          key={protocol.uuid}
+                          className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <Server className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">{protocol.display_name}</p>
+                              <p className="text-xs text-muted-foreground">{protocol.category}</p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeProtocol(protocol.uuid)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-4 pt-4">
                   <div className="flex items-start space-x-3 p-4 border border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20 rounded-lg">
                     <Checkbox
@@ -280,6 +370,7 @@ const OrgNodeCreate: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                
                 <div className="flex justify-end space-x-4 pt-4">
                   <Button
                     type="button"
@@ -291,7 +382,13 @@ const OrgNodeCreate: React.FC = () => {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isLoading || !formData.name.trim() || !formData.address.trim() || !ownershipConfirmed}
+                    disabled={
+                      isLoading || 
+                      !formData.name.trim() || 
+                      !formData.address.trim() || 
+                      !ownershipConfirmed ||
+                      selectedProtocols.length === 0
+                    }
                     size="lg"
                     className="px-8"
                   >
@@ -301,9 +398,22 @@ const OrgNodeCreate: React.FC = () => {
                 </div>
               </form>
             )}
-          </div>
+          </Card>
         </div>
       </div>
+
+      {/* Protocol Selection Modal */}
+      <ProtocolSelectModal
+        isOpen={showProtocolModal}
+        onClose={() => setShowProtocolModal(false)}
+        onSelect={handleProtocolSelect}
+        protocols={protocols.map(p => ({
+          id: p.uuid,
+          name: p.display_name,
+          description: `${p.category} protocol`
+        }))}
+        maxSelection={3}
+      />
     </div>
   );
 };

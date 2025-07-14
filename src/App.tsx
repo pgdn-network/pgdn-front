@@ -38,6 +38,7 @@ import OrgNodeScans from './pages/OrgNodeScans';
 import OrgNodeScanDetail from './pages/OrgNodeScanDetail';
 import OrgNodeEvents from './pages/OrgNodeEvents';
 import OrgNodeSettings from './pages/OrgNodeSettings';
+import NodeDiscovery from './pages/NodeDiscovery';
 import NotFound from './pages/NotFound';
 import PublicNodes from './pages/PublicNodes';
 import PublicLayout from './components/layout/PublicLayout';
@@ -100,6 +101,7 @@ function App() {
                 <Route path="organizations/:slug/nodes/:nodeId/cves/:cveUuid" element={<OrgNodeCveDetail />} />
                 <Route path="organizations/:slug/nodes/:nodeId/history" element={<OrgNodeEvents />} />
                 <Route path="organizations/:slug/nodes/:nodeId/settings" element={<OrgNodeSettings />} />
+                <Route path="organizations/:slug/nodes/:nodeUuid/discovery" element={<NodeDiscovery />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
