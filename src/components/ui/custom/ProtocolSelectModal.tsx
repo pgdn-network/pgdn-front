@@ -104,29 +104,20 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
   if (!isOpen) return null;
 
   const handleProtocolToggle = (protocolId: string) => {
-    console.log('Toggling protocol:', protocolId);
     setSelectedProtocols(prev => {
-      console.log('Previous selection:', prev);
       if (prev.includes(protocolId)) {
-        const newSelection = prev.filter(id => id !== protocolId);
-        console.log('Removed protocol, new selection:', newSelection);
-        return newSelection;
+        return prev.filter(id => id !== protocolId);
       } else {
         if (prev.length >= maxSelection) {
-          console.log('Max selection reached, cannot add more');
           return prev;
         }
-        const newSelection = [...prev, protocolId];
-        console.log('Added protocol, new selection:', newSelection);
-        return newSelection;
+        return [...prev, protocolId];
       }
     });
   };
 
   const handleConfirm = () => {
-    console.log('Confirming selection, selectedProtocols:', selectedProtocols);
     const selectedProtocolsList = protocols.filter(p => selectedProtocols.includes(p.id));
-    console.log('Selected protocols list:', selectedProtocolsList);
     onSelect(selectedProtocolsList);
     setSelectedProtocols([]);
   };

@@ -47,15 +47,11 @@ const OrgNodeCreate: React.FC = () => {
   };
 
   const handleProtocolSelect = (modalProtocols: { id: string; name: string; description?: string }[]) => {
-    console.log('Modal protocols selected:', modalProtocols);
-    console.log('Available protocols:', protocols);
-    
     // Convert back to ContextProtocol format
     const contextProtocols = modalProtocols.map(p => 
       protocols.find(cp => cp.uuid === p.id)
     ).filter(Boolean) as ContextProtocol[];
     
-    console.log('Context protocols:', contextProtocols);
     setSelectedProtocols(contextProtocols);
     setShowProtocolModal(false);
   };
@@ -316,7 +312,7 @@ const OrgNodeCreate: React.FC = () => {
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     {selectedProtocols.length === 0 
-                      ? 'Select protocols for your node' 
+                      ? `Select protocols for your node (${protocols.length} available)` 
                       : `${selectedProtocols.length} protocol${selectedProtocols.length !== 1 ? 's' : ''} selected`
                     }
                   </Button>
