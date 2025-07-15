@@ -103,30 +103,15 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
 
   if (!isOpen) return null;
 
-  console.log('ProtocolSelectModal render:', {
-    isOpen,
-    protocolsCount: protocols.length,
-    protocols: protocols.map(p => ({ id: p.id, name: p.name })),
-    selectedProtocols,
-    maxSelection
-  });
-
   const handleProtocolToggle = (protocolId: string) => {
-    console.log('handleProtocolToggle called with:', protocolId);
     setSelectedProtocols(prev => {
-      console.log('Previous selection:', prev);
       if (prev.includes(protocolId)) {
-        const newSelection = prev.filter(id => id !== protocolId);
-        console.log('Removing protocol, new selection:', newSelection);
-        return newSelection;
+        return prev.filter(id => id !== protocolId);
       } else {
         if (prev.length >= maxSelection) {
-          console.log('Max selection reached');
           return prev;
         }
-        const newSelection = [...prev, protocolId];
-        console.log('Adding protocol, new selection:', newSelection);
-        return newSelection;
+        return [...prev, protocolId];
       }
     });
   };
@@ -219,14 +204,7 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
                       ? 'ring-1 ring-green-300 bg-green-25 dark:bg-green-900/10 border-green-200 dark:border-green-800'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
                   }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Protocol clicked:', protocol.id, 'isDisabled:', isDisabled);
-                    if (!isDisabled) {
-                      handleProtocolToggle(protocol.id);
-                    }
-                  }}
+                  onClick={() => !isDisabled && handleProtocolToggle(protocol.id)}
                 >
                   <div className="p-4">
                     <div className="flex items-start space-x-3">
