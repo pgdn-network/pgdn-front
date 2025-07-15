@@ -7,15 +7,21 @@ import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { NodeActionsCard } from '@/components/ui/custom/NodeActionsCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { ValidationModal } from '@/components/ui/custom/ValidationModal';
+import { DiscoveryResultsModal } from '@/components/ui/custom/DiscoveryResultsModal';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { NodeOnboardingLayout } from '@/components/ui/custom/NodeOnboardingLayout';
-import { useNotifications } from '@/contexts/NotificationContext';
-import { useBasicNodeData, useNodeAdditionalData } from '@/hooks/useNodeData';
+
 import { useOrganizations } from '@/contexts/OrganizationsContext';
-import { NodeApiService } from '@/api/nodes';
-import { scanTracker } from '@/services/scanTracker';
 import { useBanner } from '@/contexts/BannerContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
+import { NodeApiService } from '@/api/nodes';
+import { useBasicNodeData, useNodeAdditionalData } from '@/hooks/useNodeData';
+import { scanTracker } from '@/services/scanTracker';
+import { hasDiscoveryModalBeenShown, markDiscoveryModalAsShown } from '@/utils/discoveryModalTracking';
+import { useNodeDiscoverySubscription } from '@/hooks/useWebSocketSubscription';
+import { useNodeTasksPolling } from '@/hooks/useNodeTasksPolling';
+
 
 import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
 import { NodeInfoCard } from '@/components/ui/custom/NodeInfoCard';
@@ -25,6 +31,7 @@ const OrgNodeDetail: React.FC = () => {
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
+  const [isDiscoveryResultsModalOpen, setIsDiscoveryResultsModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
   const { setBanner } = useBanner();
   const { addNotification, updateNotification } = useNotifications();
@@ -61,6 +68,43 @@ const OrgNodeDetail: React.FC = () => {
   const loading = basicLoading || (shouldUseAdditionalData && additionalLoading);
   const error = basicError || additionalError;
   const refetch = shouldUseAdditionalData ? additionalRefetch : basicRefetch;
+
+  // Poll for node tasks every 15 seconds
+  const { tasks, total, refresh: refreshTasks } = useNodeTasksPolling(organizationUuid, nodeId || '');
+
+  // Listen for WebSocket messages and refresh tasks when scan completes
+  const discoveryMessage = useNodeDiscoverySubscription(nodeId || '');
+  
+  useEffect(() => {
+    if (discoveryMessage && (discoveryMessage.type === 'scan_completed' || discoveryMessage.type === 'scan_failed')) {
+      console.log('WebSocket scan message received, refreshing tasks:', discoveryMessage.type);
+      refreshTasks();
+    }
+  }, [discoveryMessage, refreshTasks]);
+
+  // Check if we should show the discovery results modal
+  useEffect(() => {
+    if (node && nodeId && node.simple_state === 'active' && node.discovery_status === 'completed') {
+      // Check if modal has been shown for this node
+      if (!hasDiscoveryModalBeenShown(nodeId)) {
+        setIsDiscoveryResultsModalOpen(true);
+      }
+    }
+  }, [node, nodeId]);
+
+  // Handle closing the discovery results modal
+  const handleCloseDiscoveryModal = () => {
+    setIsDiscoveryResultsModalOpen(false);
+    if (nodeId) {
+      markDiscoveryModalAsShown(nodeId);
+    }
+  };
+
+  // Handle starting scan from discovery modal (with deep_discovery)
+  const handleStartDiscoveryScan = () => {
+    if (!organizationUuid || !nodeId) return;
+    handleStartScan(['deep_discovery']);
+  };
 
   const handleStartScan = async (scanners: string[]) => {
     if (!organizationUuid || !nodeId) return;
@@ -127,6 +171,9 @@ const OrgNodeDetail: React.FC = () => {
           });
         }
       );
+      
+      // Immediately refresh tasks to show the loader
+      refreshTasks();
       
     } catch (error) {
       console.error('Failed to start scan:', error);
@@ -234,6 +281,8 @@ const OrgNodeDetail: React.FC = () => {
           snapshotData={snapshotData}
           actionsData={actionsData}
           loading={loading}
+          tasks={tasks}
+          totalTasks={total}
         >
 
           {/* Status and Node Information Cards */}
@@ -302,6 +351,14 @@ const OrgNodeDetail: React.FC = () => {
           onClose={() => setIsValidationModalOpen(false)}
           node={node}
         />
+
+        {/* Discovery Results Modal - shown once after discovery completion */}
+        <DiscoveryResultsModal
+          isOpen={isDiscoveryResultsModalOpen}
+          onClose={handleCloseDiscoveryModal}
+          onStartScan={handleStartDiscoveryScan}
+          node={node}
+        />
       </>
     );
   }
@@ -329,6 +386,14 @@ const OrgNodeDetail: React.FC = () => {
       <ValidationModal
         isOpen={isValidationModalOpen}
         onClose={() => setIsValidationModalOpen(false)}
+        node={node}
+      />
+      
+      {/* Discovery Results Modal - shown once after discovery completion */}
+      <DiscoveryResultsModal
+        isOpen={isDiscoveryResultsModalOpen}
+        onClose={handleCloseDiscoveryModal}
+        onStartScan={handleStartDiscoveryScan}
         node={node}
       />
     </>

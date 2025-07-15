@@ -17,7 +17,7 @@ const OrgNodeEvents: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const limit = 50;
+  const limit = 100;
 
   // Find organization by slug
   const organization = organizations.find(org => org.slug === slug);

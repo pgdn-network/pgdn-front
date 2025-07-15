@@ -52,6 +52,10 @@ export interface Node {
   total_scan_sessions: number;
   total_reports: number;
   node_protocols?: string[]; // Array of protocol UUIDs
+  // New fields from API response
+  network?: string;
+  node_type?: string;
+  protocols?: string[]; // Array of protocol UUIDs
 }
 
 export interface CveMatch {
@@ -170,7 +174,11 @@ export interface NodeTask {
 
 export interface NodeTasksResponse {
   tasks: NodeTask[];
-  // Will be updated with actual response structure
+  total: number;
+  node_uuid: string;
+  node_name: string;
+  node_address: string;
+  organization_uuid: string;
 }
 
 // Scan Sessions

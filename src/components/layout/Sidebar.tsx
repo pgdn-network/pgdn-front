@@ -9,7 +9,8 @@ import {
   LogOut,
   ChevronRight,
   Activity,
-  Globe
+  Globe,
+  Shield
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
@@ -20,6 +21,7 @@ const baseNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
   { icon: ScanLine, label: 'Scans', href: '/scans', enabled: false },
   { icon: GitBranch, label: 'Orchestrations', href: '/orchestrations', enabled: true },
+  { icon: Shield, label: 'Compliance', href: '/compliance', enabled: true },
   { icon: FileText, label: 'Reports', href: '/reports', enabled: false },
 ]
 

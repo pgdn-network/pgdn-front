@@ -88,14 +88,7 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
   maxSelection = 3,
   detectedProtocols = []
 }) => {
-  const [selectedProtocols, setSelectedProtocols] = useState<string[]>([]);
-
-  // Pre-select detected protocols when modal opens
-  React.useEffect(() => {
-    if (isOpen && detectedProtocols.length > 0) {
-      setSelectedProtocols(detectedProtocols);
-    }
-  }, [isOpen, detectedProtocols]);
+  const [selectedProtocols, setSelectedProtocols] = useState<string[]>(detectedProtocols);
 
   if (!isOpen) return null;
 
@@ -115,11 +108,11 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
   const handleConfirm = () => {
     const selectedProtocolsList = protocols.filter(p => selectedProtocols.includes(p.id));
     onSelect(selectedProtocolsList);
-    setSelectedProtocols([]);
+    // Don't reset selection here, let the parent handle it
   };
 
   const handleClose = () => {
-    setSelectedProtocols([]);
+    // Don't reset selection when closing, let the parent handle it
     onClose();
   };
 
@@ -187,9 +180,9 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
               const isDetected = detectedProtocols.includes(protocol.id);
               
               return (
-                <Card
+                <div
                   key={protocol.id}
-                  className={`relative cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  className={`relative cursor-pointer transition-all duration-200 hover:shadow-md border rounded-lg ${
                     isSelected 
                       ? isDetected
                         ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
@@ -245,7 +238,7 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
                       </div>
                     </div>
                   </div>
-                </Card>
+                </div>
               );
             })}
           </div>

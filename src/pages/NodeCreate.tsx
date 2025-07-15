@@ -57,10 +57,22 @@ const NodeCreate: React.FC = () => {
     setClaimResult(null);
 
     try {
-      await NodeApiService.createNode(formData.organization_uuid, {
+      const data = await NodeApiService.createNode(formData.organization_uuid, {
         name: formData.name,
         address: formData.address
       });
+      
+      // Trigger discovery scan after successful node creation
+      if (data && data.node && data.node.uuid) {
+        try {
+          await NodeApiService.startNodeScan(formData.organization_uuid, data.node.uuid, ['discovery']);
+          console.log('Discovery scan triggered successfully for node:', data.node.uuid);
+        } catch (scanError) {
+          console.error('Failed to trigger discovery scan:', scanError);
+          // Don't fail the entire flow if scan trigger fails
+        }
+      }
+      
       navigate('/');
     } catch (err: any) {
       // Try to parse claimable node error

@@ -218,7 +218,7 @@ const OrgNodeReportDetail: React.FC = () => {
             <Code className="h-5 w-5" />
             Report Metadata
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Analyzer</p>
               <p className="font-medium">{report.report_metadata.persona}</p>
@@ -230,10 +230,6 @@ const OrgNodeReportDetail: React.FC = () => {
             <div>
               <p className="text-sm text-muted-foreground">Version</p>
               <p className="font-medium">{report.report_metadata.analyzer_version}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Scan ID</p>
-              <p className="font-mono text-xs">{report.report_metadata.scan_id}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Generated At</p>

@@ -27,7 +27,7 @@ export const scanOrchestrationConfig: ScanOrchestrationConfig = {
         config: { run: "web" },
         default: true,
         required: true,
-        description: "Web service detection and analysis"
+        description: "Web service detection and analysis (< 30s)"
       },
       whatweb: {
         enabled: true,
@@ -35,7 +35,7 @@ export const scanOrchestrationConfig: ScanOrchestrationConfig = {
         config: { run: "whatweb" },
         default: true,
         required: true,
-        description: "WhatWeb technology detection"
+        description: "WhatWeb technology detection (< 60s)"
       },
       geo: {
         enabled: true,
@@ -43,7 +43,7 @@ export const scanOrchestrationConfig: ScanOrchestrationConfig = {
         config: { run: "geo" },
         default: true,
         required: true,
-        description: "Geolocation scanning"
+        description: "Geolocation scanning (< 60s)"
       },
       ssl: {
         enabled: true,
@@ -51,7 +51,7 @@ export const scanOrchestrationConfig: ScanOrchestrationConfig = {
         config: { run: "ssl_test" },
         default: true,
         required: true,
-        description: "SSL/TLS security testing"
+        description: "SSL/TLS security testing (< 60s)"
       },
       node_scan: {
         enabled: true,
@@ -59,25 +59,33 @@ export const scanOrchestrationConfig: ScanOrchestrationConfig = {
         config: { run: "node_scan", protocol: true },
         default: true,
         required: true,
-        description: "Comprehensive node infrastructure scan"
+        description: "Comprehensive node infrastructure scan (< 60s)"
       },
       compliance: {
-        enabled: true,
+        enabled: false,
         scan_type: "compliance",
         min_level: 1,
         config: { run: "compliance", protocol: true },
-        default: true,
-        required: true,
-        description: "Level 1 compliance scanning"
+        default: false,
+        required: false,
+        description: "Level 1 compliance scanning (< 2 mins)"
       },
       protocol_scan: {
-        enabled: true,
+        enabled: false,
         scan_type: "protocol_scan",
         min_level: 2,
         config: { run: "protocol_scan", protocol: true },
         default: false,
         required: false,
         description: "Level 2 compliance scanning"
+      },
+      deep_discovery: {
+        enabled: true,
+        scan_type: "deep_discovery",
+        config: { run: "deep_discovery" },
+        default: false,
+        required: false,
+        description: "Deep discovery scan for comprehensive node analysis (< 3 mins)"
       }
     }
   }
@@ -101,8 +109,8 @@ export const getAvailableScanners = () => {
 
 // Helper function to get default selected scanners
 export const getDefaultScanners = () => {
-  // Only return 'web' as the default selected scanner
-  return ['web'];
+  // Return empty array - no scans selected by default
+  return [];
 };
 
 // Helper function to format scanner labels
@@ -114,7 +122,8 @@ const formatScannerLabel = (scanType: string): string => {
     ssl: 'SSL/TLS Scanner',
     node_scan: 'Node Scanner',
     compliance: 'Compliance Scanner (Level 1)',
-    protocol_scan: 'Protocol Scanner (Level 2)'
+    protocol_scan: 'Protocol Scanner (Level 2)',
+    deep_discovery: 'Deep Discovery Scanner'
   };
   
   return labelMap[scanType] || scanType.charAt(0).toUpperCase() + scanType.slice(1);

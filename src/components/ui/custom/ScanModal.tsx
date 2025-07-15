@@ -46,7 +46,7 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onConfirm
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[650px]">
         <DialogHeader>
           <DialogTitle>Configure Scan</DialogTitle>
           <DialogDescription>
@@ -55,21 +55,21 @@ export const ScanModal: React.FC<ScanModalProps> = ({ isOpen, onClose, onConfirm
         </DialogHeader>
         <div className="space-y-4 py-4">
           {scannerOptions.map((scanner) => (
-            <div key={scanner.id} className="flex items-start space-x-3">
+            <div key={scanner.id} className="flex items-center space-x-3">
               <Checkbox
                 id={scanner.id}
                 checked={selectedScanners.includes(scanner.id)}
                 onCheckedChange={(checked) => handleCheckedChange(scanner.id, checked as boolean)}
                 disabled={isLoading}
               />
-              <div className="space-y-1">
+              <div className="flex-1">
                 <label
                   htmlFor={scanner.id}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer block"
                 >
                   {scanner.label}
                 </label>
-                <p className="text-sm text-muted-foreground">{scanner.description}</p>
+                <p className="text-sm text-muted-foreground mt-1">{scanner.description}</p>
               </div>
             </div>
           ))}

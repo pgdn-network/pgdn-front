@@ -18,6 +18,10 @@ import NodeCreate from './pages/NodeCreate';
 import NodeIps from './pages/NodeIps';
 import Scans from './pages/Scans';
 import Orchestrations from './pages/Orchestrations';
+import Compliance from './pages/Compliance';
+import ComplianceDetail from './pages/ComplianceDetail';
+import ComplianceTemplates from './pages/ComplianceTemplates';
+import ComplianceScan from './pages/ComplianceScan';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
@@ -34,6 +38,7 @@ import OrgNodeScans from './pages/OrgNodeScans';
 import OrgNodeScanDetail from './pages/OrgNodeScanDetail';
 import OrgNodeEvents from './pages/OrgNodeEvents';
 import OrgNodeSettings from './pages/OrgNodeSettings';
+import NodeDiscovery from './pages/NodeDiscovery';
 import NotFound from './pages/NotFound';
 import PublicNodes from './pages/PublicNodes';
 import PublicLayout from './components/layout/PublicLayout';
@@ -75,6 +80,10 @@ function App() {
                 <Route path="nodes/create" element={<NodeCreate />} />
                 <Route path="scans" element={<Scans />} />
                 <Route path="orchestrations" element={<Orchestrations />} />
+                <Route path="compliance" element={<Compliance />} />
+                <Route path="compliance/:frameworkId" element={<ComplianceDetail />} />
+                <Route path="compliance/templates" element={<ComplianceTemplates />} />
+                <Route path="compliance/scan" element={<ComplianceScan />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="profile" element={<Profile />} />
@@ -92,6 +101,7 @@ function App() {
                 <Route path="organizations/:slug/nodes/:nodeId/cves/:cveUuid" element={<OrgNodeCveDetail />} />
                 <Route path="organizations/:slug/nodes/:nodeId/history" element={<OrgNodeEvents />} />
                 <Route path="organizations/:slug/nodes/:nodeId/settings" element={<OrgNodeSettings />} />
+                <Route path="organizations/:slug/nodes/:nodeUuid/discovery" element={<NodeDiscovery />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
