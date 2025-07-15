@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { NodeActionsCard } from '@/components/ui/custom/NodeActionsCard';
+import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { ValidationModal } from '@/components/ui/custom/ValidationModal';
 import { DiscoveryResultsModal } from '@/components/ui/custom/DiscoveryResultsModal';
+import { DisputeModal, type DisputeData } from '@/components/ui/custom/DisputeModal';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { NodeOnboardingLayout } from '@/components/ui/custom/NodeOnboardingLayout';
 
@@ -38,7 +40,14 @@ const OrgNodeDetail: React.FC = () => {
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
   const [isDiscoveryResultsModalOpen, setIsDiscoveryResultsModalOpen] = useState(false);
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [disputeData, setDisputeData] = useState<{
+    scanType: string;
+    target: string;
+    sessionId?: string;
+  } | null>(null);
   const [isScanLoading, setIsScanLoading] = useState(false);
+  const [isDisputeLoading, setIsDisputeLoading] = useState(false);
   const [scanJustStarted, setScanJustStarted] = useState(false);
   const [scanStartTime, setScanStartTime] = useState<number | null>(null);
   const [scanCompleted, setScanCompleted] = useState(false);
@@ -298,6 +307,54 @@ const OrgNodeDetail: React.FC = () => {
     // Only run when node changes
   }, [node, setBanner]);
 
+  // Handle dispute functionality
+  const handleOpenDispute = (scanType: string, target: string, sessionId?: string) => {
+    setDisputeData({ scanType, target, sessionId });
+    setIsDisputeModalOpen(true);
+  };
+
+  const handleCloseDispute = () => {
+    setIsDisputeModalOpen(false);
+    setDisputeData(null);
+  };
+
+  const handleSubmitDispute = async (disputeSubmission: DisputeData) => {
+    setIsDisputeLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Dispute submitted:', disputeSubmission);
+      
+      // Show success notification
+      addNotification({
+        type: 'success',
+        title: 'Dispute Submitted',
+        message: `Your dispute for ${disputeSubmission.scanType} scan has been recorded. This is a prototype - no validation logic is implemented yet.`,
+        duration: 8000
+      });
+
+      handleCloseDispute();
+    } catch (error) {
+      console.error('Failed to submit dispute:', error);
+      
+      addNotification({
+        type: 'error',
+        title: 'Failed to Submit Dispute',
+        message: 'Please try again or contact support if the problem persists.',
+        duration: 5000
+      });
+    } finally {
+      setIsDisputeLoading(false);
+    }
+  };
+
+  // Handle dispute from scan sessions
+  const handleDisputeScanSession = (sessionId: string, scanTypes: string[], target: string) => {
+    const scanType = scanTypes.length > 0 ? scanTypes.join(', ') : 'unknown';
+    handleOpenDispute(scanType, target, sessionId);
+  };
+
   if (loading || orgsLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -400,16 +457,18 @@ const OrgNodeDetail: React.FC = () => {
               nodeId={nodeId}
             />
           </div>
-          {/* Scan Sessions Section 
+          {/* Scan Sessions Section */}
           <div className="mt-8">
             <ScanSessionsCard 
               scanSessions={Array.isArray(scanSessionsData?.scans) ? scanSessionsData.scans.slice(0, 3) : []}
               slug={slug}
               nodeId={nodeId}
               viewAllHref={Array.isArray(scanSessionsData?.scans) && scanSessionsData.scans.length > 3 && slug && nodeId ? `/organizations/${slug}/nodes/${nodeId}/scans` : undefined}
+              onDispute={handleDisputeScanSession}
             />
           </div>
           
+          {/* 
           <div className="mt-8">
             <ReportsCard 
               reports={reportsData?.reports || []} 
@@ -441,6 +500,19 @@ const OrgNodeDetail: React.FC = () => {
           onStartScan={handleStartDiscoveryScan}
           node={node}
         />
+
+        {/* Dispute Modal - for handling disputes */}
+        {disputeData && (
+          <DisputeModal
+            isOpen={isDisputeModalOpen}
+            onClose={handleCloseDispute}
+            onSubmit={handleSubmitDispute}
+            isLoading={isDisputeLoading}
+            scanType={disputeData.scanType}
+            target={disputeData.target}
+            sessionId={disputeData.sessionId}
+          />
+        )}
       </>
     );
   }
@@ -478,6 +550,19 @@ const OrgNodeDetail: React.FC = () => {
         onStartScan={handleStartDiscoveryScan}
         node={node}
       />
+
+      {/* Dispute Modal - for handling disputes */}
+      {disputeData && (
+        <DisputeModal
+          isOpen={isDisputeModalOpen}
+          onClose={handleCloseDispute}
+          onSubmit={handleSubmitDispute}
+          isLoading={isDisputeLoading}
+          scanType={disputeData.scanType}
+          target={disputeData.target}
+          sessionId={disputeData.sessionId}
+        />
+      )}
     </>
   );
 };
