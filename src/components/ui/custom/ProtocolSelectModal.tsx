@@ -92,12 +92,8 @@ export const ProtocolSelectModal: React.FC<ProtocolSelectModalProps> = ({
 
   // Pre-select detected protocols when modal opens
   React.useEffect(() => {
-    if (isOpen) {
-      if (detectedProtocols.length > 0) {
-        setSelectedProtocols(detectedProtocols);
-      } else {
-        setSelectedProtocols([]);
-      }
+    if (isOpen && detectedProtocols.length > 0) {
+      setSelectedProtocols(detectedProtocols);
     }
   }, [isOpen, detectedProtocols]);
 
