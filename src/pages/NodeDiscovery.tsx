@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { NodeApiService } from '@/api/nodes';
+import { formatErrorMessage } from '@/utils/errorHandling';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { 
   Server, 
@@ -37,10 +38,11 @@ const NodeDiscovery: React.FC = () => {
     const fetchNode = async () => {
       try {
         setLoading(true);
+        setError(null);
         const nodeData = await NodeApiService.getNode(organization.uuid, nodeUuid);
         setNode(nodeData);
       } catch (err: any) {
-        setError(err?.response?.data?.detail || 'Failed to load node');
+        setError(formatErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -54,10 +56,11 @@ const NodeDiscovery: React.FC = () => {
     
     try {
       setRefreshing(true);
+      setError(null);
       const nodeData = await NodeApiService.getNode(organization.uuid, nodeUuid);
       setNode(nodeData);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || 'Failed to refresh node');
+      setError(formatErrorMessage(err));
     } finally {
       setRefreshing(false);
     }

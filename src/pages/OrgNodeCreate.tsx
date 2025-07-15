@@ -13,6 +13,7 @@ import { NodeOnboardingStepper } from '@/components/ui/custom/NodeOnboardingStep
 import { ProtocolSelectModal } from '@/components/ui/custom/ProtocolSelectModal';
 import { Server, Info, ArrowRight, Plus, X } from 'lucide-react';
 import { NodeApiService } from '@/api/nodes';
+import { formatErrorMessage } from '@/utils/errorHandling';
 import type { ClaimableNodeError, ClaimNodeResponse } from '@/types/node';
 import type { Protocol as ContextProtocol } from '@/contexts/ProtocolsContext';
 
@@ -34,18 +35,7 @@ const OrgNodeCreate: React.FC = () => {
   const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
   const [showProtocolModal, setShowProtocolModal] = useState(false);
 
-  // Helper function to ensure error is always a string
-  const formatErrorMessage = (error: any): string => {
-    if (typeof error === 'string') return error;
-    if (error?.response?.data?.detail) {
-      if (Array.isArray(error.response.data.detail)) {
-        return error.response.data.detail.map((err: any) => err.msg).join(', ');
-      }
-      return String(error.response.data.detail);
-    }
-    if (error?.message) return String(error.message);
-    return 'An error occurred';
-  };
+
 
   // Find organization UUID from slug
   const organization = organizations.find(org => org.slug === slug);
