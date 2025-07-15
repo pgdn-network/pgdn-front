@@ -88,7 +88,7 @@ const OrgNodeCreate: React.FC = () => {
     try {
       const nodeData = {
         ...formData,
-        node_protocols: selectedProtocols.map(p => p.uuid)
+        protocol_uuid: selectedProtocols[0].uuid // Use the first selected protocol
       };
       
       const data = await NodeApiService.createNode(organizationUuid, nodeData);
@@ -104,7 +104,17 @@ const OrgNodeCreate: React.FC = () => {
         setClaimable(err.response.data.detail as ClaimableNodeError);
       } else {
         // Extract error message from API response
-        const errorMessage = err?.response?.data?.detail || err?.message || 'An error occurred';
+        let errorMessage = 'An error occurred';
+        if (err?.response?.data?.detail) {
+          if (Array.isArray(err.response.data.detail)) {
+            // Handle validation errors array
+            errorMessage = err.response.data.detail.map((error: any) => error.msg).join(', ');
+          } else {
+            errorMessage = err.response.data.detail;
+          }
+        } else if (err?.message) {
+          errorMessage = err.message;
+        }
         setError(errorMessage);
       }
     } finally {
