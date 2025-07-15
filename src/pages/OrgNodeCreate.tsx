@@ -34,6 +34,19 @@ const OrgNodeCreate: React.FC = () => {
   const [ownershipConfirmed, setOwnershipConfirmed] = useState(false);
   const [showProtocolModal, setShowProtocolModal] = useState(false);
 
+  // Helper function to ensure error is always a string
+  const formatErrorMessage = (error: any): string => {
+    if (typeof error === 'string') return error;
+    if (error?.response?.data?.detail) {
+      if (Array.isArray(error.response.data.detail)) {
+        return error.response.data.detail.map((err: any) => err.msg).join(', ');
+      }
+      return String(error.response.data.detail);
+    }
+    if (error?.message) return String(error.message);
+    return 'An error occurred';
+  };
+
   // Find organization UUID from slug
   const organization = organizations.find(org => org.slug === slug);
   const organizationUuid = organization?.uuid;
@@ -104,18 +117,7 @@ const OrgNodeCreate: React.FC = () => {
         setClaimable(err.response.data.detail as ClaimableNodeError);
       } else {
         // Extract error message from API response
-        let errorMessage = 'An error occurred';
-        if (err?.response?.data?.detail) {
-          if (Array.isArray(err.response.data.detail)) {
-            // Handle validation errors array
-            errorMessage = err.response.data.detail.map((error: any) => error.msg).join(', ');
-          } else {
-            errorMessage = err.response.data.detail;
-          }
-        } else if (err?.message) {
-          errorMessage = err.message;
-        }
-        setError(errorMessage);
+        setError(formatErrorMessage(err));
       }
     } finally {
       setIsLoading(false);
@@ -131,8 +133,7 @@ const OrgNodeCreate: React.FC = () => {
       setClaimResult(result);
     } catch (err: any) {
       // Extract error message from API response
-      const errorMessage = err?.response?.data?.detail || err?.message || 'Failed to claim node';
-      setError(errorMessage);
+      setError(formatErrorMessage(err));
     } finally {
       setClaiming(false);
     }
