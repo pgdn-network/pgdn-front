@@ -42,7 +42,7 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
             <h4 className="font-medium text-sm mb-2">Validation Process:</h4>
             <p className="text-xs text-gray-900 dark:text-white font-normal leading-relaxed">
-              Node validation ensures that your target is reachable and properly configured for scanning. This process verifies network connectivity, protocol compatibility, and security policies.
+              Node validation ensures that your target actually belongs to you and is not a malicious actor impersonating your node.
             </p>
           </div>
 

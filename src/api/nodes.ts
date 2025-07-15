@@ -97,13 +97,19 @@ export class NodeApiService {
 
   static async getNodeTasks(organizationUuid: string, nodeUuid: string, limit: number = 5): Promise<NodeTasksResponse> {
     const response = await apiService.get<NodeTasksResponse>(
-      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/tasks?limit=${limit}`
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/tasks?limit=${limit}&simple=true`
     );
     return response.data;
   }
 
   static async getNodeScanSessions(organizationUuid: string, nodeUuid: string, limit: number = 5, offset: number = 0): Promise<NodeScanSessionsResponse> {
     const url = `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/sessions?limit=${limit}&offset=${offset}`;
+    const response = await apiService.get<NodeScanSessionsResponse>(url);
+    return response.data;
+  }
+
+  static async getNodeRunningScanSessions(organizationUuid: string, nodeUuid: string, limit: number = 50): Promise<NodeScanSessionsResponse> {
+    const url = `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/sessions?scan_status=running&limit=${limit}`;
     const response = await apiService.get<NodeScanSessionsResponse>(url);
     return response.data;
   }

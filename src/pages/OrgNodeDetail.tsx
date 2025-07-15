@@ -20,7 +20,7 @@ import { useBasicNodeData, useNodeAdditionalData } from '@/hooks/useNodeData';
 import { scanTracker } from '@/services/scanTracker';
 import { hasDiscoveryModalBeenShown, markDiscoveryModalAsShown } from '@/utils/discoveryModalTracking';
 import { useNodeDiscoverySubscription } from '@/hooks/useWebSocketSubscription';
-import { useNodeTasksPolling } from '@/hooks/useNodeTasksPolling';
+import { useNodeScansPolling } from '@/hooks/useNodeScansPolling';
 
 
 import { NodeStatusCard } from '@/components/ui/custom/NodeStatusCard';
@@ -28,11 +28,20 @@ import { NodeInfoCard } from '@/components/ui/custom/NodeInfoCard';
 
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
+  
+  // Helper function to count running scans (all returned scans are running)
+  const getRemainingScansCount = (scans: any[]) => {
+    return scans.length; // All scans returned are running scans
+  };
+  
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
   const [isDiscoveryResultsModalOpen, setIsDiscoveryResultsModalOpen] = useState(false);
   const [isScanLoading, setIsScanLoading] = useState(false);
+  const [scanJustStarted, setScanJustStarted] = useState(false);
+  const [scanStartTime, setScanStartTime] = useState<number | null>(null);
+  const [scanCompleted, setScanCompleted] = useState(false);
   const { setBanner } = useBanner();
   const { addNotification, updateNotification } = useNotifications();
   const { getProtocol } = useProtocols();
@@ -69,18 +78,54 @@ const OrgNodeDetail: React.FC = () => {
   const error = basicError || additionalError;
   const refetch = shouldUseAdditionalData ? additionalRefetch : basicRefetch;
 
-  // Poll for node tasks every 15 seconds
-  const { tasks, total, refresh: refreshTasks } = useNodeTasksPolling(organizationUuid, nodeId || '');
+  // Poll for running scan sessions every 15 seconds
+  const { scans, loading: scansLoading, refresh: refreshScans } = useNodeScansPolling(organizationUuid, nodeId || '');
 
   // Listen for WebSocket messages and refresh tasks when scan completes
   const discoveryMessage = useNodeDiscoverySubscription(nodeId || '');
   
   useEffect(() => {
     if (discoveryMessage && (discoveryMessage.type === 'scan_completed' || discoveryMessage.type === 'scan_failed')) {
-      console.log('WebSocket scan message received, refreshing tasks:', discoveryMessage.type);
-      refreshTasks();
+      refreshScans();
+      // Set scan completed flag when scan finishes
+      setScanJustStarted(false);
+      setScanStartTime(null);
+      setScanCompleted(true);
     }
-  }, [discoveryMessage, refreshTasks]);
+  }, [discoveryMessage, refreshScans]);
+
+  // Clear scanJustStarted flag when we have actual scans or after sufficient time has passed
+  useEffect(() => {
+    if (scanJustStarted && scanStartTime) {
+      const remainingScans = getRemainingScansCount(scans);
+      
+      if (remainingScans > 0) {
+        // If we have actual remaining scans, clear the flag (real scans are now showing)
+        setScanJustStarted(false);
+        setScanStartTime(null);
+        setScanCompleted(false); // Clear completed state when new scans appear
+      } else {
+        // Only clear after a significant amount of time has passed with no scans
+        const timeSinceScan = Date.now() - scanStartTime;
+        const minWaitTime = 45000; // 45 seconds minimum wait
+        
+        if (timeSinceScan > minWaitTime && !scansLoading) {
+          setScanJustStarted(false);
+          setScanStartTime(null);
+          setScanCompleted(true); // Set completed instead of just clearing
+        }
+      }
+    }
+  }, [scans.length, scansLoading, scanJustStarted, scanStartTime]);
+
+  // Clear completed state when new scans are detected (page refresh scenario)
+  useEffect(() => {
+    const remainingScans = getRemainingScansCount(scans);
+    
+    if (remainingScans > 0 && scanCompleted) {
+      setScanCompleted(false);
+    }
+  }, [scans, scanCompleted]);
 
   // Check if we should show the discovery results modal
   useEffect(() => {
@@ -172,18 +217,53 @@ const OrgNodeDetail: React.FC = () => {
         }
       );
       
-      // Immediately refresh tasks to show the loader
-      refreshTasks();
+      // Immediately refresh scans to show the loader
+      refreshScans();
+      
+      // Set flag to show loader immediately
+      setScanJustStarted(true);
+      setScanStartTime(Date.now());
+      setScanCompleted(false); // Clear any previous completed state
+      
+      // Remove the setTimeout fallback as we now handle it in the useEffect
       
     } catch (error) {
       console.error('Failed to start scan:', error);
       
-      // Show error notification
+      // Extract error message from API response
+      let errorMessage = 'Please try again or contact support if the problem persists.';
+      
+      if (error && typeof error === 'object' && error !== null) {
+        // Check for different error response formats
+        if ('response' in error && error.response && typeof error.response === 'object' && error.response !== null && 'data' in error.response) {
+          const responseData = (error.response as any).data;
+          if (responseData && typeof responseData === 'object') {
+            // Check for detail field (common API error format)
+            if ('detail' in responseData && typeof responseData.detail === 'string') {
+              errorMessage = responseData.detail;
+            }
+            // Check for message field
+            else if ('message' in responseData && typeof responseData.message === 'string') {
+              errorMessage = responseData.message;
+            }
+            // Check for error field
+            else if ('error' in responseData && typeof responseData.error === 'string') {
+              errorMessage = responseData.error;
+            }
+          }
+        }
+        // Check if error has a message property directly
+        else if ('message' in error && typeof error.message === 'string') {
+          errorMessage = error.message;
+        }
+      }
+      
+      // Show error notification with the actual error message
       addNotification({
         type: 'error',
         title: 'Failed to Start Scan',
-        message: 'Please try again or contact support if the problem persists.',
-        duration: 7000
+        message: errorMessage,
+        duration: 10000 // Longer duration for error messages
       });
     } finally {
       setIsScanLoading(false);
@@ -281,8 +361,10 @@ const OrgNodeDetail: React.FC = () => {
           snapshotData={snapshotData}
           actionsData={actionsData}
           loading={loading}
-          tasks={tasks}
-          totalTasks={total}
+          tasks={scans}
+          tasksLoading={scansLoading}
+          scanJustStarted={scanJustStarted}
+          scanCompleted={scanCompleted}
         >
 
           {/* Status and Node Information Cards */}

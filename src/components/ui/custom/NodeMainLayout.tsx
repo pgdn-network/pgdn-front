@@ -1,6 +1,5 @@
 import React from 'react';
 import { NodeOverview } from '@/components/ui/custom/NodeOverview';
-import { NodeScanTaskLoader } from '@/components/ui/custom/NodeScanTaskLoader';
 
 interface NodeMainLayoutProps {
   node: any;
@@ -19,7 +18,9 @@ interface NodeMainLayoutProps {
   children?: React.ReactNode;
   // Task polling props
   tasks?: any[];
-  totalTasks?: number;
+  tasksLoading?: boolean;
+  scanJustStarted?: boolean;
+  scanCompleted?: boolean;
 }
 
 export const NodeMainLayout: React.FC<NodeMainLayoutProps> = ({
@@ -30,7 +31,9 @@ export const NodeMainLayout: React.FC<NodeMainLayoutProps> = ({
   snapshotData,
   children,
   tasks = [],
-  totalTasks = 0
+  tasksLoading = false,
+  scanJustStarted = false,
+  scanCompleted = false
 }) => {
   return (
     <div className="min-h-screen bg-background">
@@ -40,12 +43,12 @@ export const NodeMainLayout: React.FC<NodeMainLayoutProps> = ({
         nodeId={nodeId} 
         onStartScan={onStartScan}
         snapshotData={snapshotData}
+        tasks={tasks}
+        tasksLoading={tasksLoading}
+        scanJustStarted={scanJustStarted}
+        scanCompleted={scanCompleted}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Scan Task Loader */}
-        <div className="mb-4">
-          <NodeScanTaskLoader remaining={tasks.length} total={totalTasks} />
-        </div>
         {children}
       </div>
     </div>
