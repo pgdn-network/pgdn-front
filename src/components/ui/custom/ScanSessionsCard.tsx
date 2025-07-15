@@ -1,6 +1,6 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/custom/DataTable';
 import { Badge } from '@/components/ui/badge';
-import { Eye } from 'lucide-react';
+import { Eye, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import type { NodeScanSession } from '@/types/node';
@@ -11,6 +11,7 @@ interface ScanSessionsCardProps {
   slug?: string;
   nodeId?: string;
   viewAllHref?: string;
+  onDispute?: (sessionId: string, scanTypes: string[], target: string) => void;
 }
 
 function getStatusBadgeClass(status: string): string {
@@ -41,11 +42,22 @@ function calculateDuration(started: string, completed: string | null): string {
   return `${minutes}m ${seconds}s`;
 }
 
-export function ScanSessionsCard({ scanSessions, slug, nodeId, viewAllHref }: ScanSessionsCardProps) {
+export function ScanSessionsCard({ scanSessions, slug, nodeId, viewAllHref, onDispute }: ScanSessionsCardProps) {
   const sessions = Array.isArray(scanSessions) ? scanSessions : [];
   const sortedSessions = [...sessions].sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
+
+  const handleDispute = (session: NodeScanSession) => {
+    if (!onDispute) return;
+    
+    const scanTypes = Array.isArray((session as any).scan_types) 
+      ? (session as any).scan_types 
+      : ['unknown'];
+    const target = session.target || 'unknown';
+    
+    onDispute(session.session_id, scanTypes, target);
+  };
 
   return (
     <Card className="p-0">
@@ -70,13 +82,13 @@ export function ScanSessionsCard({ scanSessions, slug, nodeId, viewAllHref }: Sc
               <TableHead>Started</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead>Error</TableHead>
-              <TableHead></TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedSessions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">No scan sessions available</TableCell>
+                <TableCell colSpan={8} className="text-center text-muted-foreground">No scan sessions available</TableCell>
               </TableRow>
             ) : (
               sortedSessions.map((session) => (
@@ -100,13 +112,26 @@ export function ScanSessionsCard({ scanSessions, slug, nodeId, viewAllHref }: Sc
                   <TableCell>{session.completed_at ? calculateDuration(session.started_at, session.completed_at) : '-'}</TableCell>
                   <TableCell className="text-xs text-red-600">{session.error_message || '-'}</TableCell>
                   <TableCell>
-                    {slug && nodeId && (
-                      <Link to={`/organizations/${slug}/nodes/${nodeId}/scans/${session.session_id}`}>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      {slug && nodeId && (
+                        <Link to={`/organizations/${slug}/nodes/${nodeId}/scans/${session.session_id}`}>
+                          <Button variant="ghost" size="sm" title="View Details">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      )}
+                      {onDispute && (session.status === 'done' || session.status === 'complete') && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleDispute(session)}
+                          title="Dispute Results"
+                          className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                        >
+                          <AlertTriangle className="h-4 w-4" />
                         </Button>
-                      </Link>
-                    )}
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

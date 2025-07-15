@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { AlertTriangle } from 'lucide-react';
 
 /**
  * ScanResultsPage Component
@@ -757,7 +758,10 @@ const FallbackScanResult: React.FC<{ result: any }> = ({ result }) => (
  *
  * Renders summary info, tabs for each scan type, and a subcomponent for each scan result.
  */
-export const ScanResultsPage: React.FC<{ scanData: any }> = ({ scanData }) => {
+export const ScanResultsPage: React.FC<{ 
+  scanData: any; 
+  onDispute?: (scanType: string, target: string, sessionId?: string) => void; 
+}> = ({ scanData, onDispute }) => {
   // Extract scan types and results
   const scanResults = Array.isArray(scanData?.scan_results) ? scanData.scan_results : [];
 
@@ -821,22 +825,35 @@ export const ScanResultsPage: React.FC<{ scanData: any }> = ({ scanData }) => {
             <div key={r.scan_type + '-' + idx} className="border rounded bg-white dark:bg-gray-900 p-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold capitalize">{r.scan_type} Scan</h2>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    // Inline download logic (no helper)
-                    const blob = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `scan-${r.scan_type}-${idx + 1}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  Download JSON
-                </Button>
+                <div className="flex items-center gap-2">
+                  {onDispute && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDispute(r.scan_type, summary.target, scanData?.session_id)}
+                      className="text-orange-600 hover:text-orange-700 border-orange-200 hover:border-orange-300"
+                    >
+                      <AlertTriangle className="h-4 w-4 mr-1" />
+                      Dispute
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Inline download logic (no helper)
+                      const blob = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `scan-${r.scan_type}-${idx + 1}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    Download JSON
+                  </Button>
+                </div>
               </div>
               <ScanComponent result={r.scan_results} />
             </div>

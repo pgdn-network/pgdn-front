@@ -4,13 +4,23 @@ import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useNodeData } from '@/hooks/useNodeData';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
+import { DisputeModal, type DisputeData } from '@/components/ui/custom/DisputeModal';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const PAGE_LIMIT = 25;
 
 const OrgNodeScans: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const { addNotification } = useNotifications();
   const [page, setPage] = useState(1);
+  const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [disputeData, setDisputeData] = useState<{
+    scanType: string;
+    target: string;
+    sessionId?: string;
+  } | null>(null);
+  const [isDisputeLoading, setIsDisputeLoading] = useState(false);
   const offset = (page - 1) * PAGE_LIMIT;
   const {
     node,
@@ -44,8 +54,52 @@ const OrgNodeScans: React.FC = () => {
     );
   }
 
+  // Handle dispute functionality
+  const handleOpenDispute = (sessionId: string, scanTypes: string[], target: string) => {
+    const scanType = scanTypes.length > 0 ? scanTypes.join(', ') : 'unknown';
+    setDisputeData({ scanType, target, sessionId });
+    setIsDisputeModalOpen(true);
+  };
+
+  const handleCloseDispute = () => {
+    setIsDisputeModalOpen(false);
+    setDisputeData(null);
+  };
+
+  const handleSubmitDispute = async (disputeSubmission: DisputeData) => {
+    setIsDisputeLoading(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Dispute submitted:', disputeSubmission);
+      
+      // Show success notification
+      addNotification({
+        type: 'success',
+        title: 'Dispute Submitted',
+        message: `Your dispute for ${disputeSubmission.scanType} scan has been recorded. This is a prototype - no validation logic is implemented yet.`,
+        duration: 8000
+      });
+
+      handleCloseDispute();
+    } catch (error) {
+      console.error('Failed to submit dispute:', error);
+      
+      addNotification({
+        type: 'error',
+        title: 'Failed to Submit Dispute',
+        message: 'Please try again or contact support if the problem persists.',
+        duration: 5000
+      });
+    } finally {
+      setIsDisputeLoading(false);
+    }
+  };
+
   return (
-    <NodeMainLayout
+    <>
+      <NodeMainLayout
       node={node}
       organization={organization}
       nodeId={nodeId || ''}
@@ -59,7 +113,12 @@ const OrgNodeScans: React.FC = () => {
       actionsData={null}
       loading={loading}
     >
-      <ScanSessionsCard scanSessions={scanSessionsData?.scans || []} slug={slug} nodeId={nodeId} />
+      <ScanSessionsCard 
+        scanSessions={scanSessionsData?.scans || []} 
+        slug={slug} 
+        nodeId={nodeId} 
+        onDispute={handleOpenDispute}
+      />
       {/* Pagination Controls */}
       {scanSessionsData && scanSessionsData.total > PAGE_LIMIT && (
         <div className="flex justify-center items-center gap-4 mt-6">
@@ -80,8 +139,20 @@ const OrgNodeScans: React.FC = () => {
           </button>
         </div>
       )}
+      {disputeData && (
+        <DisputeModal
+          isOpen={isDisputeModalOpen}
+          onClose={handleCloseDispute}
+          onSubmit={handleSubmitDispute}
+          isLoading={isDisputeLoading}
+          scanType={disputeData.scanType}
+          target={disputeData.target}
+          sessionId={disputeData.sessionId}
+        />
+      )}
     </NodeMainLayout>
+    </>
   );
 };
 
-export default OrgNodeScans; 
+export default OrgNodeScans;
