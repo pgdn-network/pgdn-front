@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
 import { NodeOnboardingStepper } from '@/components/ui/custom/NodeOnboardingStepper';
@@ -96,9 +96,18 @@ const OrgNodeCreate: React.FC = () => {
       
       const data = await NodeApiService.createNode(organizationUuid, nodeData);
       
-      // Navigate to the discovery page for new nodes
+      // Trigger discovery scan after successful node creation
       if (data && data.node && data.node.uuid) {
-        navigate(`/organizations/${slug}/nodes/${data.node.uuid}/discovery`);
+        try {
+          await NodeApiService.startNodeScan(organizationUuid, data.node.uuid, ['discovery']);
+          console.log('Discovery scan triggered successfully for node:', data.node.uuid);
+        } catch (scanError) {
+          console.error('Failed to trigger discovery scan:', scanError);
+          // Don't fail the entire flow if scan trigger fails
+        }
+        
+        // Navigate directly to the node detail page for new nodes
+        navigate(`/organizations/${slug}/nodes/${data.node.uuid}`);
       } else {
         navigate(`/organizations/${slug}`);
       }

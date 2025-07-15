@@ -84,10 +84,21 @@ export const CreateNodeModal: React.FC<CreateNodeModalProps> = ({
     setError(null);
 
     try {
-      await NodeApiService.createNode(formData.organization_uuid, {
+      const data = await NodeApiService.createNode(formData.organization_uuid, {
         name: formData.name,
         address: formData.address
       });
+      
+      // Trigger discovery scan after successful node creation
+      if (data && data.node && data.node.uuid) {
+        try {
+          await NodeApiService.startNodeScan(formData.organization_uuid, data.node.uuid, ['discovery']);
+          console.log('Discovery scan triggered successfully for node:', data.node.uuid);
+        } catch (scanError) {
+          console.error('Failed to trigger discovery scan:', scanError);
+          // Don't fail the entire flow if scan trigger fails
+        }
+      }
       
       // Call success callback if provided
       if (onSuccess) {
@@ -97,8 +108,10 @@ export const CreateNodeModal: React.FC<CreateNodeModalProps> = ({
       // Close modal
       onClose();
       
-      // Navigate to the organization's node list if we have a slug
-      if (organizationSlug) {
+      // Navigate to the node detail page if we have both organizationSlug and node UUID
+      if (organizationSlug && data && data.node && data.node.uuid) {
+        navigate(`/organizations/${organizationSlug}/nodes/${data.node.uuid}`);
+      } else if (organizationSlug) {
         navigate(`/organizations/${organizationSlug}`);
       } else {
         navigate('/');

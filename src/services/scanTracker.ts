@@ -1,5 +1,6 @@
-import { NodeApiService } from '@/api/nodes';
-import type { ScanSessionResponse, ScanSessionStatus, ScanInfo, NodeScanSession } from '@/types/node';
+// import { NodeApiService } from '@/api/nodes';
+import type { ScanSessionResponse, ScanSessionStatus, ScanInfo } from '@/types/node';
+// import type { NodeScanSession } from '@/types/node';
 
 export interface TrackedScan {
   sessionId: string;
@@ -13,7 +14,7 @@ export interface TrackedScan {
 
 class ScanTracker {
   private trackedScans: Map<string, TrackedScan> = new Map<string, TrackedScan>();
-  private pollingInterval = 2000; // 2 seconds
+  // private pollingInterval = 2000; // 2 seconds - TEMPORARILY DISABLED
 
   startTracking(
     sessionResponse: ScanSessionResponse,
@@ -41,119 +42,16 @@ class ScanTracker {
       taskIntervals: new Map(),
     };
 
-    // Start polling
-    const intervalId = setInterval(async () => {
-      console.log(`Polling session ${session_id}...`);
-      try {
-        const response = await NodeApiService.getScanSession(tracking_urls.session);
-        
-        // Validate the response structure
-        if (!response || typeof response !== 'object') {
-          throw new Error('Invalid response structure from scan session API');
-        }
-        
-        // Handle the actual API response structure (NodeScanSession)
-        if ('session_id' in response && 'status' in response && 'node_uuid' in response) {
-          // This is a NodeScanSession response
-          const sessionStatus = response as unknown as NodeScanSession;
-          
-          // Convert to ScanSessionStatus format for compatibility
-          const status: ScanSessionStatus = {
-            session_id: sessionStatus.session_id,
-            node_uuid: sessionStatus.node_uuid,
-            organization_uuid: sessionStatus.organization_uuid,
-            status: sessionStatus.status === 'complete' ? 'completed' : 
-                   sessionStatus.status === 'failed' ? 'failed' : 'running',
-            total_scans: 1, // Default to 1 since we don't have individual scan info
-            completed_scans: sessionStatus.status === 'complete' ? 1 : 0,
-            failed_scans: sessionStatus.status === 'failed' ? 1 : 0,
-            scans: [], // No individual scan info in this response
-            created_at: sessionStatus.created_at,
-            completed_at: sessionStatus.completed_at || undefined
-          };
-          
-          // Call update callback
-          onUpdate(status);
-          
-          // Stop polling if session is complete or failed
-          if (sessionStatus.status === 'complete' || sessionStatus.status === 'failed') {
-            console.log(`Scan session ${session_id} is ${sessionStatus.status}, stopping polling`);
-            console.log(`Response session_id: ${sessionStatus.session_id}, tracking session_id: ${session_id}`);
-            
-            // Try to stop tracking with session_id first, then fallback to session_id
-            const trackingId = sessionStatus.session_id;
-            const wasStopped = this.stopTracking(trackingId);
-            
-            // If session_id didn't work, try with the original session_id
-            if (!wasStopped && trackingId !== session_id) {
-              console.log(`Failed to stop with session_id ${trackingId}, trying session_id ${session_id}`);
-              this.stopTracking(session_id);
-            }
-            
-            onComplete(status);
-          }
-        } else if ('scans' in response && Array.isArray((response as any).scans)) {
-          // This is the expected ScanSessionStatus response
-          const status: ScanSessionStatus = response as ScanSessionStatus;
-          // Update the tracked scan
-          const trackedScan = this.trackedScans.get(session_id);
-          if (trackedScan) {
-            trackedScan.scans = status.scans;
-          }
-          
-          // Call update callback
-          onUpdate(status);
-          
-          // Check if all scans are complete
-          const allComplete = status.scans.every(scan => 
-            scan && scan.status && (scan.status === 'completed' || scan.status === 'failed')
-          );
-          
-          if (allComplete || status.status === 'completed' || status.status === 'failed') {
-            this.stopTracking(session_id);
-            onComplete(status);
-          }
-        } else {
-          console.warn(`Unexpected response structure for session ${session_id}:`, response);
-          throw new Error('Unexpected response structure from scan session API');
-        }
-      } catch (error: any) {
-        console.error(`Error tracking scan session ${session_id}:`, error);
-        
-        // Stop polling on HTTP errors (404, 500, etc.)
-        if (error.response?.status) {
-          console.warn(`Stopping tracking for session ${session_id} due to HTTP error: ${error.response.status}`);
-          this.stopTracking(session_id);
-          
-          // Call onComplete with error status to update UI
-          const errorStatus: ScanSessionStatus = {
-            session_id,
-            node_uuid: sessionResponse.node_uuid,
-            organization_uuid: sessionResponse.organization_uuid,
-            status: 'failed',
-            total_scans: sessionResponse.total_scans,
-            completed_scans: 0,
-            failed_scans: sessionResponse.total_scans,
-            scans: sessionResponse.scans.map(scan => ({
-              ...scan,
-              status: 'failed' as const,
-              progress: 0
-            })),
-            created_at: sessionResponse.created_at
-          };
-          onComplete(errorStatus);
-        }
-        // For network errors or other issues, continue polling (could implement exponential backoff later)
-      }
-    }, this.pollingInterval);
-
-    trackedScan.intervalId = intervalId;
+    // TEMPORARILY DISABLED: Polling logic commented out
+    console.log(`Polling disabled for session ${session_id} - tracking setup but no active polling`);
+    
     this.trackedScans.set(session_id, trackedScan);
     
     // Start tracking individual tasks if available
-    this.startTaskTracking(session_id, sessionResponse);
+    // this.startTaskTracking(sessionId, sessionResponse);
   }
 
+  /*
   private startTaskTracking(sessionId: string, sessionResponse: ScanSessionResponse) {
     const { tracking_urls } = sessionResponse;
     // Check if we have individual task tracking URLs
@@ -187,7 +85,9 @@ class ScanTracker {
       trackedScan.taskIntervals?.set(taskId, taskInterval);
     });
   }
+  */
 
+  /*
   private stopTaskTracking(sessionId: string, taskId: string) {
     const trackedScan: TrackedScan | undefined = this.trackedScans.get(sessionId);
     if (trackedScan?.taskIntervals?.has(taskId)) {
@@ -199,6 +99,7 @@ class ScanTracker {
       }
     }
   }
+  */
 
   stopTracking(sessionId: string): boolean {
     const trackedScan: TrackedScan | undefined = this.trackedScans.get(sessionId);
