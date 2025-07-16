@@ -25,6 +25,11 @@ const OrgNodeReports: React.FC = () => {
     nodeId || ''
   );
 
+  // Check if any reports have risk score data
+  const hasRiskScoreData = reportsData?.reports?.some((report: NodeReport) => 
+    report.risk_score !== undefined && report.risk_score !== null
+  ) || false;
+
   if (loading || orgsLoading) {
     return (
       <div className="space-y-6">
@@ -76,7 +81,7 @@ const OrgNodeReports: React.FC = () => {
             <TableRow>
               <TableHead>Report Title</TableHead>
               <TableHead>Type</TableHead>
-              <TableHead>Risk Score</TableHead>
+              {hasRiskScoreData && <TableHead>Risk Score</TableHead>}
               <TableHead>Created</TableHead>
               <TableHead>Session ID</TableHead>
               <TableHead>Actions</TableHead>
@@ -85,7 +90,7 @@ const OrgNodeReports: React.FC = () => {
           <TableBody>
             {(!reportsData?.reports || reportsData.reports.length === 0) ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={hasRiskScoreData ? 6 : 5} className="text-center py-8">
                   <div className="flex flex-col items-center gap-2">
                     <FileText className="h-8 w-8 text-muted-foreground" />
                     <p className="text-muted-foreground">No reports available</p>
@@ -109,15 +114,21 @@ const OrgNodeReports: React.FC = () => {
                       {report.report_type.replace(/_/g, ' ')}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={report.risk_score >= 15 ? 'destructive' : report.risk_score >= 10 ? 'secondary' : 'default'}
-                      className="text-xs"
-                    >
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      {report.risk_score >= 15 ? 'Critical' : report.risk_score >= 10 ? 'High' : report.risk_score >= 5 ? 'Medium' : 'Low'} ({report.risk_score})
-                    </Badge>
-                  </TableCell>
+                  {hasRiskScoreData && (
+                    <TableCell>
+                      {report.risk_score !== undefined && report.risk_score !== null ? (
+                        <Badge 
+                          variant={report.risk_score >= 15 ? 'destructive' : report.risk_score >= 10 ? 'secondary' : 'default'}
+                          className="text-xs"
+                        >
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          {report.risk_score >= 15 ? 'Critical' : report.risk_score >= 10 ? 'High' : report.risk_score >= 5 ? 'Medium' : 'Low'} ({report.risk_score})
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell className="text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />

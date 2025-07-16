@@ -134,7 +134,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
           {/* Disclaimer */}
           <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
             <p className="text-xs text-blue-800 dark:text-blue-200">
-              <strong>Note:</strong> This is a prototype feature. Your dispute will be recorded but no validation logic is currently implemented.
+              <strong>Note:</strong> This is a beta feature, the humans might intervene to validate your dispute.
             </p>
           </div>
         </div>

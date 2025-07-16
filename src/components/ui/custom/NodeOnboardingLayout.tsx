@@ -7,6 +7,7 @@ import type { OnboardingStep } from './NodeOnboardingStepper';
 import { DiscoveryProgressCard } from '@/components/ui/custom/DiscoveryProgressCard';
 import { useNodeDiscoverySubscription } from '@/hooks/useWebSocketSubscription';
 import { useSearchParams } from 'react-router-dom';
+import { NodeApiService } from '@/api/nodes';
 import type { Node as ApiNode } from '@/types/node';
 
 interface Node extends ApiNode {
@@ -16,11 +17,13 @@ interface Node extends ApiNode {
 interface Organization {
   name: string;
   slug: string;
+  uuid: string; // Add uuid property
 }
 
 interface NodeOnboardingLayoutProps {
   node: Node;
   organization: Organization;
+  refetchNode?: () => void; // Add optional refetch function
 }
 
 function getCurrentStep(node: Node): OnboardingStep {
@@ -32,7 +35,8 @@ function getCurrentStep(node: Node): OnboardingStep {
 
 export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({ 
   node, 
-  organization 
+  organization,
+  refetchNode
 }) => {
   const discoveryMessage = useNodeDiscoverySubscription(node.uuid);
   const [searchParams] = useSearchParams();
@@ -48,17 +52,25 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
 
     console.log(`🎯 Discovery WebSocket message received for node ${node.uuid}, type: ${discoveryMessage.type}`);
     console.log(`📦 Full discovery message:`, discoveryMessage);
-    console.log(`⏰ Starting 10-second reload timer`);
     
     // Hide progress display since we got the result
     setShowingProgress(false);
     
-    setTimeout(() => {
-      console.log(`🚀 RELOADING PAGE NOW! Message type: ${discoveryMessage.type}`);
-      window.location.reload();
-    }, 10000); // 10 seconds
+    // Use refetch if available for faster updates, otherwise reload page
+    if (refetchNode) {
+      console.log(`🔄 Using refetch function after WebSocket message`);
+      setTimeout(() => {
+        refetchNode();
+      }, 1000); // Short delay to ensure backend is updated
+    } else {
+      console.log(`⏰ Starting 3-second reload timer`);
+      setTimeout(() => {
+        console.log(`🚀 RELOADING PAGE NOW! Message type: ${discoveryMessage.type}`);
+        window.location.reload();
+      }, 3000); // Reduced from 10 to 3 seconds
+    }
     
-  }, [discoveryMessage, node.uuid, node.discovery_status]);
+  }, [discoveryMessage, node.uuid, node.discovery_status, refetchNode]);
 
   // Auto-start discovery for new nodes and show progress
   useEffect(() => {
@@ -89,24 +101,61 @@ export const NodeOnboardingLayout: React.FC<NodeOnboardingLayoutProps> = ({
     return () => clearInterval(interval);
   }, [showingProgress]);
 
-  // Fallback refresh after 30 seconds in case WebSocket doesn't fire
+  // Fallback refresh after 15 seconds in case WebSocket doesn't fire
   useEffect(() => {
     if (!showingProgress) {
       return;
     }
 
-    console.log(`⏰ Setting 30-second fallback refresh timer for node ${node.uuid}`);
+    console.log(`⏰ Setting 15-second fallback refresh timer for node ${node.uuid}`);
     
     const fallbackTimeout = setTimeout(() => {
-      console.log(`🔄 30-second fallback triggered - refreshing page for node ${node.uuid}`);
+      console.log(`🔄 15-second fallback triggered - refreshing page for node ${node.uuid}`);
       window.location.reload();
-    }, 30000); // 30 seconds
+    }, 15000); // Reduced from 30 to 15 seconds
 
     return () => {
-      console.log(`🚫 Clearing 30-second fallback timer for node ${node.uuid}`);
+      console.log(`🚫 Clearing 15-second fallback timer for node ${node.uuid}`);
       clearTimeout(fallbackTimeout);
     };
   }, [showingProgress, node.uuid]);
+
+  // Proactive polling for discovery status changes - poll every 5 seconds for pending nodes
+  useEffect(() => {
+    if (node.discovery_status !== 'pending') {
+      return;
+    }
+
+    console.log(`🔄 Starting proactive polling for node ${node.uuid}`);
+
+    const pollInterval = setInterval(async () => {
+      try {
+        console.log(`📡 Polling discovery status for node ${node.uuid}`);
+        const updatedNode = await NodeApiService.getNode(organization.uuid, node.uuid);
+        
+        // If status changed, use refetch if available, otherwise reload page
+        if (updatedNode.discovery_status !== node.discovery_status) {
+          console.log(`🎯 Discovery status changed from ${node.discovery_status} to ${updatedNode.discovery_status}`);
+          
+          if (refetchNode) {
+            console.log(`🔄 Using refetch function to update node data`);
+            refetchNode();
+          } else {
+            console.log(`🔄 Reloading page to reflect status change`);
+            window.location.reload();
+          }
+        }
+      } catch (error) {
+        console.error('Error polling node status:', error);
+        // Continue polling even if there's an error
+      }
+    }, 5000); // Poll every 5 seconds
+
+    return () => {
+      console.log(`🛑 Stopping proactive polling for node ${node.uuid}`);
+      clearInterval(pollInterval);
+    };
+  }, [node.discovery_status, node.uuid, organization.uuid, refetchNode]);
 
   // Check for test discovery state from query params
   const discoveryState = searchParams.get('discovery');

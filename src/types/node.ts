@@ -210,7 +210,7 @@ export interface ReportFinding {
   issue: string;
   evidence: string;
   maya_analysis: string;
-  exploitation_ease: string;
+  exploitation_ease?: string;
 }
 
 export interface ReportFindings {
@@ -218,6 +218,62 @@ export interface ReportFindings {
   critical_risks: ReportFinding[];
   convenient_fixes: ReportFinding[];
   documentation_items: ReportFinding[];
+}
+
+// New report format types
+export interface NewReportFindings {
+  report: {
+    key_findings?: string[];
+    node_summary?: {
+      ip_hostname?: string;
+      likely_role?: string;
+      health_status?: string;
+      likely_protocol?: string;
+      discovery_confidence?: number;
+      discovered_capabilities?: string[];
+    };
+    summary_text?: string;
+    report_metadata?: {
+      persona?: string;
+      report_type?: string;
+      api_provider?: string;
+      generated_at?: string;
+      analyzer_version?: string;
+    };
+    analyst_commentary?: {
+      tldr?: string;
+      next_steps?: string;
+      business_impact?: string;
+    };
+    recommended_actions?: {
+      critical?: string[];
+      high?: string[];
+      medium?: string[];
+      low?: string[];
+      optional?: string[];
+    };
+    availability_and_apis?: {
+      rpc?: string;
+      grpc?: string;
+      metrics?: string;
+    };
+    security_observations?: {
+      concerns?: string[];
+      positives?: string[];
+    };
+  };
+  status?: string;
+  persona?: string;
+  timestamp?: string;
+  report_type?: string;
+  email_generated?: boolean;
+  report_metadata?: {
+    persona?: string;
+    report_type?: string;
+    api_provider?: string;
+    generated_at?: string;
+    analyzer_version?: string;
+  };
 }
 
 export interface ReportMetadata {
@@ -238,9 +294,54 @@ export interface NodeReport {
   report_type: string;
   title: string;
   summary: string;
-  findings?: ReportFindings;
+  findings?: ReportFindings | NewReportFindings;
   risk_score: number;
   report_metadata?: ReportMetadata;
+  report_data?: {
+    report?: {
+      // Comprehensive security report fields
+      executive_summary?: any;
+      validator_summary?: any;
+      maya_assessment?: any;
+      security_findings?: any;
+      mayas_action_plan?: any;
+      investor_summary?: any;
+      depin_economics?: any;
+      // Network report fields
+      key_findings?: string[];
+      node_summary?: {
+        ip_hostname?: string;
+        likely_role?: string;
+        health_status?: string;
+        likely_protocol?: string;
+        discovery_confidence?: number;
+        discovered_capabilities?: string[];
+      };
+      summary_text?: string;
+      analyst_commentary?: {
+        tldr?: string;
+        next_steps?: string;
+        business_impact?: string;
+      };
+      recommended_actions?: {
+        [key: string]: string[];
+      };
+      availability_and_apis?: {
+        [key: string]: string;
+      };
+      security_observations?: {
+        concerns?: string[];
+        positives?: string[];
+      };
+      report_metadata?: any;
+    };
+    status?: string;
+    persona?: string;
+    timestamp?: string;
+    report_type?: string;
+    email_generated?: boolean;
+    report_metadata?: any;
+  };
   created_at: string;
   updated_at: string | null;
 }

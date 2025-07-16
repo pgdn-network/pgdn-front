@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, FileText } from 'lucide-react';
 
 /**
  * ScanResultsPage Component
@@ -64,30 +64,179 @@ const WebScanResult: React.FC<{ result: any }> = ({ result }) => {
 
 // 2. Node Scan
 const NodeScanResult: React.FC<{ result: any }> = ({ result }) => {
-  const node = result?.pgdn_result?.data?.[0]?.payload;
-  if (!node) return <div>No node scan data.</div>;
+  const nodeData = result?.pgdn_result?.data?.[0]?.payload;
+  if (!nodeData) return <div>No node scan data.</div>;
+  
+  const scanResults = nodeData.results || [];
+  const openPorts = nodeData.open_ports || [];
+  const detectedServices = nodeData.detected_services || [];
+  
+  // Group results by port for better display
+  const resultsByPort = scanResults.reduce((acc: any, result: any) => {
+    if (!acc[result.port]) {
+      acc[result.port] = [];
+    }
+    acc[result.port].push(result);
+    return acc;
+  }, {});
+
   return (
-    <div>
-      <div className="mb-2">Open Ports: {Array.isArray(node.open_ports) ? node.open_ports.join(', ') : 'N/A'}</div>
-      <b>Port Scan Results:</b>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Port</TableHead>
-            <TableHead>Banner</TableHead>
-            <TableHead>Error</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.isArray(node.results) && node.results.map((r: any, i: number) => (
-            <TableRow key={i}>
-              <TableCell>{r.port}</TableCell>
-              <TableCell className="font-mono text-xs">{r.banner || '-'}</TableCell>
-              <TableCell className={r.error ? 'text-red-600' : ''}>{r.error || '-'}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="space-y-6">
+      {/* Summary Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            {nodeData.total_probes || 0}
+          </div>
+          <div className="text-sm text-blue-600 dark:text-blue-400">Total Probes</div>
+        </div>
+        <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            {nodeData.successful_probes || 0}
+          </div>
+          <div className="text-sm text-green-600 dark:text-green-400">Successful Probes</div>
+        </div>
+        <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            {openPorts.length}
+          </div>
+          <div className="text-sm text-purple-600 dark:text-purple-400">Open Ports</div>
+        </div>
+        <div className="bg-orange-50 dark:bg-orange-950 p-4 rounded-lg">
+          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+            {nodeData.duration || 0}s
+          </div>
+          <div className="text-sm text-orange-600 dark:text-orange-400">Scan Duration</div>
+        </div>
+      </div>
+
+      {/* Target Information */}
+      <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+        <h3 className="text-lg font-semibold mb-3">Scan Target</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Target</div>
+            <div className="font-medium font-mono">{nodeData.target}</div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Protocol</div>
+            <div className="font-medium">{nodeData.protocol?.toUpperCase()}</div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Scanner Type</div>
+            <div className="font-medium">{nodeData.scanner_type}</div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Scan Level</div>
+            <div className="font-medium">{nodeData.scan_level}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Open Ports */}
+      {openPorts.length > 0 && (
+        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-3">Open Ports</h3>
+          <div className="flex flex-wrap gap-2">
+            {openPorts.map((port: number) => (
+              <span key={port} className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-sm font-mono">
+                {port}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Detected Services */}
+      {detectedServices.length > 0 && (
+        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-3">Detected Services</h3>
+          <div className="flex flex-wrap gap-2">
+            {detectedServices.map((service: string, index: number) => (
+              <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full text-sm">
+                {service}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Results by Port */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border">
+        <h3 className="text-lg font-semibold mb-4">Detailed Scan Results</h3>
+        {Object.keys(resultsByPort).length === 0 ? (
+          <p className="text-gray-500">No scan results available.</p>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(resultsByPort).map(([port, portResults]: [string, any]) => (
+              <div key={port} className="border rounded-lg p-4">
+                <h4 className="text-md font-semibold mb-3 flex items-center gap-2">
+                  Port {port}
+                  {openPorts.includes(parseInt(port)) && (
+                    <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">
+                      OPEN
+                    </span>
+                  )}
+                </h4>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Probe</TableHead>
+                        <TableHead>SSL</TableHead>
+                        <TableHead>Latency</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Banner/Response</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {portResults.map((result: any, index: number) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-mono text-xs">{result.probe}</TableCell>
+                          <TableCell>
+                            {result.ssl ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">
+                                SSL
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 rounded text-xs">
+                                Plain
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {result.latency_ms ? `${result.latency_ms.toFixed(1)}ms` : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {result.error ? (
+                              <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded text-xs">
+                                {result.error}
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">
+                                Success
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs max-w-xs">
+                            {result.banner ? (
+                              <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs overflow-hidden">
+                                {result.banner.length > 100 ? `${result.banner.substring(0, 100)}...` : result.banner}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -166,6 +315,60 @@ const ComplianceScanResult: React.FC<{ result: any }> = ({ result }) => {
 const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
   console.log('DiscoveryScanResult - Raw result:', result);
   
+  // Check if scan failed
+  if (result?.success === false || result?.discovery_result?.success === false) {
+    const errorMessage = result?.error_message || result?.discovery_result?.error_message || 'Discovery scan failed';
+    const target = result?.target || result?.scan_params?.target || 'Unknown target';
+    
+    return (
+      <div className="space-y-4">
+        <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-6 rounded-lg">
+          <div className="flex items-center gap-3 mb-3">
+            <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">Discovery Scan Failed</h3>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-red-700 dark:text-red-300">
+              <span className="font-medium">Target:</span> {target}
+            </p>
+            <p className="text-sm text-red-700 dark:text-red-300">
+              <span className="font-medium">Error:</span> {errorMessage}
+            </p>
+            {result?.discovery_result?.protocols_found !== undefined && (
+              <p className="text-sm text-red-700 dark:text-red-300">
+                <span className="font-medium">Protocols Found:</span> {result.discovery_result.protocols_found}
+              </p>
+            )}
+          </div>
+          <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/50 rounded">
+            <p className="text-sm text-red-800 dark:text-red-200">
+              The discovery scan was unable to identify the target node or detect any supported protocols. 
+              This could indicate that the target is not accessible, not running supported services, or is behind a firewall.
+            </p>
+          </div>
+        </div>
+        
+        {/* Optional: Show scan attempt details if available */}
+        {(result?.scan_params || result?.discovery_result?.matched_protocols?.length > 0) && (
+          <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+            <h4 className="font-medium mb-2 text-gray-700 dark:text-gray-300">Scan Details</h4>
+            <div className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+              {result?.scan_params?.target && (
+                <div><span className="font-medium">Target:</span> {result.scan_params.target}</div>
+              )}
+              {result?.scan_params?.run && (
+                <div><span className="font-medium">Scan Type:</span> {result.scan_params.run}</div>
+              )}
+              {result?.discovery_result?.matched_protocols && (
+                <div><span className="font-medium">Matched Protocols:</span> {result.discovery_result.matched_protocols.join(', ') || 'None'}</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+  
   const discoveryResult = result?.discovery_result;
   if (!discoveryResult) {
     return (
@@ -200,6 +403,9 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
     );
   }
 
+  // Extract the actual node data from the payload
+  const nodeData = detailedResults.payload || detailedResults;
+
   return (
     <div className="space-y-6">
       {/* Summary */}
@@ -212,13 +418,13 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
         </div>
         <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
           <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {detailedResults.confidence * 100}%
+            {(nodeData.confidence * 100).toFixed(0)}%
           </div>
           <div className="text-sm text-green-600 dark:text-green-400">Confidence</div>
         </div>
         <div className="bg-purple-50 dark:bg-purple-950 p-4 rounded-lg">
           <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            {detailedResults.total_scan_time?.toFixed(2)}s
+            {nodeData.total_scan_time?.toFixed(2)}s
           </div>
           <div className="text-sm text-purple-600 dark:text-purple-400">Scan Duration</div>
         </div>
@@ -231,25 +437,25 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
           <div>
             <div className="font-medium mb-2">Basic Details</div>
             <div className="space-y-1 text-sm">
-              <div><span className="font-medium">Hostname:</span> {detailedResults.hostname}</div>
-              <div><span className="font-medium">IP:</span> {detailedResults.ip}</div>
+              <div><span className="font-medium">Hostname:</span> {nodeData.hostname}</div>
+              <div><span className="font-medium">IP:</span> {nodeData.ip}</div>
               <div><span className="font-medium">Network:</span> 
                 <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
-                  detailedResults.network === 'mainnet' 
+                  nodeData.network === 'mainnet' 
                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
                     : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                 }`}>
-                  {detailedResults.network}
+                  {nodeData.network}
                 </span>
               </div>
               <div><span className="font-medium">Node Type:</span> 
                 <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
-                  detailedResults.node_type === 'validator' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                  detailedResults.node_type === 'public_rpc' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                  detailedResults.node_type === 'hybrid' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
+                  nodeData.node_type === 'validator' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                  nodeData.node_type === 'public_rpc' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                  nodeData.node_type === 'hybrid' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
                   'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
                 }`}>
-                  {detailedResults.node_type}
+                  {nodeData.node_type}
                 </span>
               </div>
             </div>
@@ -271,7 +477,7 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
       <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
         <h3 className="text-lg font-semibold mb-3">Capabilities</h3>
         <div className="flex flex-wrap gap-2">
-          {detailedResults.capabilities?.map((capability: string, index: number) => (
+          {nodeData.capabilities?.map((capability: string, index: number) => (
             <span key={index} className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-sm">
               {capability.replace(/_/g, ' ')}
             </span>
@@ -283,9 +489,9 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Accessible Ports */}
         <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-3">Accessible Ports ({detailedResults.accessible_ports?.length || 0})</h3>
+          <h3 className="text-lg font-semibold mb-3">Accessible Ports ({nodeData.accessible_ports?.length || 0})</h3>
           <div className="flex flex-wrap gap-1">
-            {detailedResults.accessible_ports?.map((port: number, index: number) => (
+            {nodeData.accessible_ports?.map((port: number, index: number) => (
               <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs font-mono">
                 {port}
               </span>
@@ -297,7 +503,7 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
         <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
           <h3 className="text-lg font-semibold mb-3">Working Endpoints</h3>
           <div className="space-y-2">
-            {detailedResults.working_endpoints?.map((endpoint: string, index: number) => (
+            {nodeData.working_endpoints?.map((endpoint: string, index: number) => (
               <div key={index} className="font-mono text-sm bg-white dark:bg-gray-800 p-2 rounded border">
                 {endpoint}
               </div>
@@ -312,15 +518,15 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Discovery Time</div>
-            <div className="text-lg font-semibold">{detailedResults.discovery_time?.toFixed(3)}s</div>
+            <div className="text-lg font-semibold">{nodeData.discovery_time?.toFixed(3)}s</div>
           </div>
           <div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Classification Time</div>
-            <div className="text-lg font-semibold">{detailedResults.classification_time?.toFixed(3)}s</div>
+            <div className="text-lg font-semibold">{nodeData.classification_time?.toFixed(3)}s</div>
           </div>
           <div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Total Scan Time</div>
-            <div className="text-lg font-semibold">{detailedResults.total_scan_time?.toFixed(3)}s</div>
+            <div className="text-lg font-semibold">{nodeData.total_scan_time?.toFixed(3)}s</div>
           </div>
         </div>
       </div>
@@ -331,10 +537,10 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
         <div className="space-y-2">
           <div><span className="font-medium">Analysis Level:</span> 
             <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs">
-              {detailedResults.analysis_level}
+              {nodeData.analysis_level}
             </span>
           </div>
-          <div><span className="font-medium">Discovered At:</span> {new Date(detailedResults.discovered_at).toLocaleString()}</div>
+          <div><span className="font-medium">Discovered At:</span> {new Date(nodeData.discovered_at).toLocaleString()}</div>
           <div><span className="font-medium">Scanner Method:</span> {result.scan_method || 'N/A'}</div>
         </div>
       </div>
@@ -342,48 +548,30 @@ const DiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
   );
 };
 
-// 8. Deep Discovery Scan (likely similar format to discovery but with more detailed analysis)
+// 8. Deep Discovery Scan (updated for new JSON format)
 const DeepDiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
-  // Robustly handle deep_discovery API response structure
-  let scanResults, enhancedResults, nodeData, scanSummary;
-  if (result?.enhanced_results) {
-    scanResults = result;
-    enhancedResults = scanResults.enhanced_results?.[0]?.enhanced_data;
-    nodeData = enhancedResults?.nodes?.[0];
-    scanSummary = enhancedResults?.scan_summary;
-  } else if (result?.scan_results?.enhanced_results) {
-    scanResults = result.scan_results;
-    enhancedResults = scanResults.enhanced_results?.[0]?.enhanced_data;
-    nodeData = enhancedResults?.nodes?.[0];
-    scanSummary = enhancedResults?.scan_summary;
+  console.log('DeepDiscoveryScanResult - Raw result:', result);
+  
+  // Handle new JSON format: result.scan_results.pgdn_result.data[0].payload
+  let nodeData;
+  
+  if (result?.scan_results?.pgdn_result?.data?.[0]?.payload) {
+    nodeData = result.scan_results.pgdn_result.data[0].payload;
+  } else if (result?.pgdn_result?.data?.[0]?.payload) {
+    nodeData = result.pgdn_result.data[0].payload;
   } else {
-    nodeData = undefined;
+    // Fallback to old format for backward compatibility
+    let scanResults, enhancedResults;
+    if (result?.enhanced_results) {
+      scanResults = result;
+      enhancedResults = scanResults.enhanced_results?.[0]?.enhanced_data;
+      nodeData = enhancedResults?.nodes?.[0];
+    } else if (result?.scan_results?.enhanced_results) {
+      scanResults = result.scan_results;
+      enhancedResults = scanResults.enhanced_results?.[0]?.enhanced_data;
+      nodeData = enhancedResults?.nodes?.[0];
+    }
   }
-  const endpointDetails = nodeData?.endpoint_details || {};
-  const securityScan = nodeData?.security_scan || {};
-  const sslInfo = nodeData?.ssl_info || {};
-  const serviceVersions = nodeData?.service_versions || {};
-
-  // Filter Docker API to only show entries without error
-  const dockerApiEntries = endpointDetails.docker_api ? Object.entries(endpointDetails.docker_api).filter(([_, info]: any) => !info.error) : [];
-  // Filter banners to only show non-empty
-  const bannerEntries = endpointDetails.banners ? Object.entries(endpointDetails.banners).filter(([_, banner]: any) => banner) : [];
-  // Filter SSL certificates to only show those with some data
-  const sslCertEntries = sslInfo.certificates ? Object.entries(sslInfo.certificates).filter(([_, cert]: any) => cert && Object.keys(cert).length > 0) : [];
-
-  // Helper to render key-value pairs as a table
-  const renderKVTable = (obj: any) => (
-    <Table>
-      <TableBody>
-        {Object.entries(obj).map(([k, v]: any) => (
-          <TableRow key={k}>
-            <TableCell className="font-mono text-xs">{k}</TableCell>
-            <TableCell className="font-mono text-xs">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
 
   if (!nodeData) {
     return (
@@ -401,6 +589,35 @@ const DeepDiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
     );
   }
 
+  // Extract data from new format
+  const endpointDetails = nodeData?.endpoint_details || {};
+  const securityScan = nodeData?.security_scan || {};
+  const healthStatus = nodeData?.health_status || {};
+  const versionInfo = nodeData?.version_info || {};
+
+  // Filter Docker API to only show entries without error
+  const dockerApiEntries = endpointDetails.docker_api ? Object.entries(endpointDetails.docker_api).filter(([_, info]: any) => !info.error) : [];
+  // Filter banners to only show non-empty
+  const bannerEntries = endpointDetails.banners ? Object.entries(endpointDetails.banners).filter(([_, banner]: any) => banner) : [];
+
+  // For backward compatibility, try to extract scanSummary and scanResults
+  const scanSummary = result?.enhanced_results?.[0]?.enhanced_data?.scan_summary || result?.scan_results?.enhanced_results?.[0]?.enhanced_data?.scan_summary || {};
+  const scanResults = result?.scan_results || result;
+
+  // Helper to render key-value pairs as a table
+  const renderKVTable = (obj: any) => (
+    <Table>
+      <TableBody>
+        {Object.entries(obj).map(([k, v]: any) => (
+          <TableRow key={k}>
+            <TableCell className="font-mono text-xs">{k}</TableCell>
+            <TableCell className="font-mono text-xs">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+
   // Icon helpers
   const SectionIcon = ({ name }: { name: string }) => {
     switch (name) {
@@ -414,94 +631,155 @@ const DeepDiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
         return (<svg className="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth={2} fill="none" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 9h16" /></svg>);
       case 'security':
         return (<svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11V7m0 8v-2m-6 4a9 9 0 1118 0 9 9 0 01-18 0z" /></svg>);
-      case 'system':
-        return (<svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth={2} fill="none" /></svg>);
-      case 'validator':
-        return (<svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2" /></svg>);
       case 'network':
         return (<svg className="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={2} fill="none" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /></svg>);
-      case 'chain':
-        return (<svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth={2} fill="none" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8" /></svg>);
-      case 'ssl':
-        return (<svg className="w-5 h-5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 17v-6m0 0V7m0 4h4m-4 0H8" /></svg>);
       default:
         return null;
     }
   };
 
-  // Main return: all sections wrapped in a single fragment
+  // Main return: display the new format data
   return (
     <React.Fragment>
       <div className="space-y-6">
-        {/* Health Status (FIRST) */}
-        {nodeData.health_status && (
+        {/* Node Summary (NEW FORMAT) */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <SectionIcon name="network" />
+            Node Summary
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="mb-2"><strong>Host:</strong> {nodeData.hostname || nodeData.ip || '-'}</div>
+              <div className="mb-2"><strong>Node Type:</strong> {nodeData.node_type || '-'}</div>
+              <div className="mb-2"><strong>Network:</strong> {nodeData.network || '-'}</div>
+              <div className="mb-2"><strong>Confidence:</strong> {nodeData.confidence || '-'}</div>
+            </div>
+            <div>
+              <div className="mb-2"><strong>Analysis Level:</strong> {nodeData.analysis_level || '-'}</div>
+              <div className="mb-2"><strong>Discovery Time:</strong> {nodeData.discovery_time ? `${nodeData.discovery_time.toFixed(2)}s` : '-'}</div>
+              <div className="mb-2"><strong>Total Scan Time:</strong> {nodeData.total_scan_time ? `${nodeData.total_scan_time.toFixed(2)}s` : '-'}</div>
+            </div>
+          </div>
+          {nodeData.capabilities && nodeData.capabilities.length > 0 && (
+            <div className="mt-4">
+              <strong>Capabilities:</strong>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {nodeData.capabilities.map((cap: string) => (
+                  <span key={cap} className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs">{cap}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Health Status */}
+        {healthStatus?.overall_status && (
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <SectionIcon name="health" />
               Health Status
             </h3>
-            <div className="mb-2">Overall Status: <b>{nodeData.health_status.overall_status}</b></div>
-            {Array.isArray(nodeData.health_status.issues) && nodeData.health_status.issues.length > 0 && (
-              <div className="mb-2 text-xs text-red-600">Issues: {nodeData.health_status.issues.join(', ')}</div>
-            )}
-            {Array.isArray(nodeData.health_status.capabilities_working) && nodeData.health_status.capabilities_working.length > 0 && (
-              <div className="mb-2 text-xs">Capabilities Working: {nodeData.health_status.capabilities_working.join(', ')}</div>
-            )}
-            {nodeData.health_status.endpoint_summary && (
-              <div className="mb-2 text-xs">
-                Endpoint Summary:
-                <ul className="ml-2 list-disc">
-                  {Object.entries(nodeData.health_status.endpoint_summary).map(([k, v]) => (
-                    <li key={k}><span className="font-medium">{k.replace(/_/g, ' ')}:</span> {String(v)}</li>
+            <div className="mb-2"><strong>Overall Status:</strong> <span className={healthStatus.overall_status === 'healthy' ? 'text-green-600' : 'text-red-600'}>{healthStatus.overall_status}</span></div>
+            {Array.isArray(healthStatus.capabilities_working) && healthStatus.capabilities_working.length > 0 && (
+              <div className="mb-2">
+                <strong>Working Capabilities:</strong>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {healthStatus.capabilities_working.map((cap: string) => (
+                    <span key={cap} className="px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded text-xs">{cap}</span>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
-            <div className="mb-2 text-xs">RPC Available: {nodeData.health_status.rpc_available}</div>
-            <div className="mb-2 text-xs">gRPC Available: {nodeData.health_status.grpc_available}</div>
-            <div className="mb-2 text-xs">Metrics Available: {nodeData.health_status.metrics_available}</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div><strong>RPC Available:</strong> {healthStatus.rpc_available || 'N/A'}</div>
+              <div><strong>gRPC Available:</strong> {healthStatus.grpc_available || 'N/A'}</div>
+              <div><strong>Metrics Available:</strong> {healthStatus.metrics_available || 'N/A'}</div>
+            </div>
           </div>
         )}
 
-        {/* --- Version Info (SECOND) --- */}
-        {nodeData.version_info && (
+        {/* Version Info */}
+        {versionInfo && Object.keys(versionInfo).length > 0 && (
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <SectionIcon name="version" />
               Version Info
             </h3>
-            {renderKVTable(nodeData.version_info)}
+            {renderKVTable(versionInfo)}
           </div>
         )}
 
-        {/* --- Endpoint Details --- */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <SectionIcon name="endpoint" />
-            Endpoint Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Scanned Ports & Detected Services */}
-            <div>
-              <div className="font-medium mb-2 flex items-center gap-2"><SectionIcon name="service" />Scanned Ports</div>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {endpointDetails.scanned_ports?.map((port: number) => (
-                  <span key={port} className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs font-mono">{port}</span>
-                ))}
+        {/* Working Endpoints */}
+        {nodeData.working_endpoints && nodeData.working_endpoints.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <SectionIcon name="endpoint" />
+              Working Endpoints
+            </h3>
+            <div className="space-y-2">
+              {nodeData.working_endpoints.map((endpoint: string) => (
+                <div key={endpoint} className="font-mono text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded">{endpoint}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Accessible Ports */}
+        {nodeData.accessible_ports && nodeData.accessible_ports.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <SectionIcon name="service" />
+              Accessible Ports
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {nodeData.accessible_ports.map((port: number) => (
+                <span key={port} className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs font-mono">{port}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Security Scan */}
+        {securityScan && Object.keys(securityScan).length > 0 && (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <SectionIcon name="security" />
+              Security Analysis
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="mb-2"><strong>Open Ports Count:</strong> {securityScan.open_ports_count || 0}</div>
+                {securityScan.ssl_ports && securityScan.ssl_ports.length > 0 && (
+                  <div className="mb-2">
+                    <strong>SSL Ports:</strong> {securityScan.ssl_ports.join(', ')}
+                  </div>
+                )}
               </div>
-              <div className="font-medium mb-2 flex items-center gap-2"><SectionIcon name="service" />Detected Services</div>
-              <div className="space-y-1">
-                {endpointDetails.services && Object.entries(endpointDetails.services).map(([port, svc]: any) => (
-                  svc.detected ? (
-                    <div key={port} className="flex items-center gap-2 text-xs">
-                      <span className="font-mono">Port {port}:</span>
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={2} fill="none" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12l2 2 4-4" /></svg>
-                      <span>Detected</span>
-                    </div>
-                  ) : null
-                ))}
+              <div>
+                {securityScan.standard_ports && securityScan.standard_ports.length > 0 && (
+                  <div className="mb-2">
+                    <strong>Standard Ports:</strong> {securityScan.standard_ports.join(', ')}
+                  </div>
+                )}
+                {securityScan.non_standard_ports && securityScan.non_standard_ports.length > 0 && (
+                  <div className="mb-2">
+                    <strong>Non-Standard Ports:</strong> {securityScan.non_standard_ports.join(', ')}
+                  </div>
+                )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Endpoint Details */}
+        {(bannerEntries.length > 0 || (endpointDetails.http_headers && Object.keys(endpointDetails.http_headers).length > 0) || dockerApiEntries.length > 0) && (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <SectionIcon name="service" />
+              Endpoint Details
+            </h3>
+            
             {/* Banners (only show if non-error) */}
             {bannerEntries.length > 0 && (
               <div>
@@ -524,149 +802,41 @@ const DeepDiscoveryScanResult: React.FC<{ result: any }> = ({ result }) => {
                 </Table>
               </div>
             )}
-          </div>
-          {/* HTTP Headers */}
-          {endpointDetails.http_headers && Object.keys(endpointDetails.http_headers).length > 0 && (
-            <div className="mt-6">
-              <div className="font-medium mb-2 flex items-center gap-2"><SectionIcon name="service" />HTTP Headers</div>
-              {Object.entries(endpointDetails.http_headers).map(([port, info]: any) => (
-                <div key={port} className="mb-4">
-                  <div className="font-semibold">Port {port} (Status: {info.status_code})</div>
-                  <Table>
-                    <TableBody>
-                      {info.headers && Object.entries(info.headers).map(([k, v]: any) => (
-                        <TableRow key={k}>
-                          <TableCell className="font-mono text-xs">{k}</TableCell>
-                          <TableCell className="font-mono text-xs">{String(v)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* Docker API (only show if non-error) */}
-          {dockerApiEntries.length > 0 && (
-            <div className="mt-6">
-              <div className="font-medium mb-2 flex items-center gap-2"><SectionIcon name="service" />Docker API</div>
-              {dockerApiEntries.map(([port, info]: any) => (
-                <div key={port} className="mb-2 text-xs">
-                  <span className="font-mono">Port {port}:</span> <span>{JSON.stringify(info)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          {/* Response Codes */}
-          {endpointDetails.response_codes && Object.keys(endpointDetails.response_codes).length > 0 && (
-            <div className="mt-6">
-              <div className="font-medium mb-2 flex items-center gap-2"><SectionIcon name="service" />Response Codes</div>
-              {renderKVTable(endpointDetails.response_codes)}
-            </div>
-          )}
-        </div>
-        {/* ...Service Versions removed... */}
-        {/* --- Security Scan --- */}
-        {securityScan && Object.keys(securityScan).length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="security" />
-              Security Scan
-            </h3>
-            {renderKVTable(securityScan)}
-          </div>
-        )}
-        {/* --- System State --- */}
-        {nodeData.system_state && Object.keys(nodeData.system_state).length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="system" />
-              System State
-            </h3>
-            {renderKVTable(nodeData.system_state)}
-          </div>
-        )}
-        {/* --- Validator Info --- */}
-        {nodeData.validator_info && Object.keys(nodeData.validator_info).length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="validator" />
-              Validator Info
-            </h3>
-            {renderKVTable(nodeData.validator_info)}
-          </div>
-        )}
-        {/* --- Network Metrics --- */}
-        {nodeData.network_metrics && Object.keys(nodeData.network_metrics).length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="network" />
-              Network Metrics
-            </h3>
-            {renderKVTable(nodeData.network_metrics)}
-          </div>
-        )}
-        {/* --- Chain State --- */}
-        {nodeData.chain_state && Object.keys(nodeData.chain_state).length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="chain" />
-              Chain State
-            </h3>
-            {renderKVTable(nodeData.chain_state)}
-          </div>
-        )}
-        {/* --- SSL Certificate Info --- */}
-        {sslCertEntries.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="ssl" />
-              SSL Certificate Info
-            </h3>
-            {sslCertEntries.map(([port, cert]: any) => (
-              <div key={port} className="mb-4">
-                <div className="font-semibold">Port {port}</div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                  <div><b>Subject:</b> {JSON.stringify(cert.subject)}</div>
-                  <div><b>Issuer:</b> {JSON.stringify(cert.issuer)}</div>
-                  <div><b>Version:</b> {cert.version ?? 'N/A'}</div>
-                  <div><b>Serial Number:</b> {cert.serial_number ?? 'N/A'}</div>
-                  <div><b>Not Before:</b> {cert.not_before ?? 'N/A'}</div>
-                  <div><b>Not After:</b> {cert.not_after ?? 'N/A'}</div>
-                  <div><b>Signature Algorithm:</b> {cert.signature_algorithm ?? 'N/A'}</div>
-                </div>
+
+            {/* HTTP Headers */}
+            {endpointDetails.http_headers && Object.keys(endpointDetails.http_headers).length > 0 && (
+              <div className="mt-6">
+                <div className="font-medium mb-2 flex items-center gap-2"><SectionIcon name="service" />HTTP Headers</div>
+                {Object.entries(endpointDetails.http_headers).map(([port, info]: any) => (
+                  <div key={port} className="mb-4">
+                    <div className="font-semibold">Port {port} (Status: {info.status_code})</div>
+                    <Table>
+                      <TableBody>
+                        {info.headers && Object.entries(info.headers).map(([k, v]: any) => (
+                          <TableRow key={k}>
+                            <TableCell className="font-mono text-xs">{k}</TableCell>
+                            <TableCell className="font-mono text-xs">{String(v)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ))}
               </div>
-            ))}
-            <div className="mt-2 text-xs">Certificate Count: {sslInfo.certificate_count ?? 'N/A'}</div>
+            )}
           </div>
         )}
-        {/* --- Service Version Info (only show if not errored) --- */}
-        {serviceVersions.nmap_results && !serviceVersions.nmap_results.error && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <SectionIcon name="service" />
-              Service Version Info
-            </h3>
-            <div className="text-xs">Nmap Results: {JSON.stringify(serviceVersions.nmap_results)}</div>
-          </div>
-        )}
-        {/* --- Security Scan Details --- */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <SectionIcon name="security" />
-            Security Scan Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-            <div>
-              <div><b>Open Ports Count:</b> {securityScan.open_ports_count ?? 'N/A'}</div>
-              <div><b>SSL Ports:</b> {Array.isArray(securityScan.ssl_ports) ? securityScan.ssl_ports.join(', ') : 'N/A'}</div>
-              <div><b>Unencrypted Ports:</b> {Array.isArray(securityScan.unencrypted_ports) ? securityScan.unencrypted_ports.join(', ') : 'N/A'}</div>
+
+        {/* Raw Data (for debugging) */}
+        <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+          <details className="group">
+            <summary className="cursor-pointer text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+              Raw Scan Data (Click to expand)
+            </summary>
+            <div className="mt-3">
+              <JsonViewer data={result} />
             </div>
-            <div>
-              <div><b>Standard Ports:</b> {Array.isArray(securityScan.standard_ports) ? securityScan.standard_ports.join(', ') : 'N/A'}</div>
-              <div><b>Non-Standard Ports:</b> {Array.isArray(securityScan.non_standard_ports) ? securityScan.non_standard_ports.join(', ') : 'N/A'}</div>
-            </div>
-          </div>
+          </details>
         </div>
         {/* Performance Metrics (BOTTOM) */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
@@ -760,8 +930,11 @@ const FallbackScanResult: React.FC<{ result: any }> = ({ result }) => (
  */
 export const ScanResultsPage: React.FC<{ 
   scanData: any; 
-  onDispute?: (scanType: string, target: string, sessionId?: string) => void; 
-}> = ({ scanData, onDispute }) => {
+  onDispute?: (scanType: string, target: string, sessionId?: string) => void;
+  onGenerateReport?: () => void;
+  isReportLoading?: boolean;
+  canGenerateReport?: boolean;
+}> = ({ scanData, onDispute, onGenerateReport, isReportLoading }) => {
   // Extract scan types and results
   const scanResults = Array.isArray(scanData?.scan_results) ? scanData.scan_results : [];
 
@@ -786,7 +959,7 @@ export const ScanResultsPage: React.FC<{
     return {
       target: scanData?.target || '-',
       nodeIp: scanData?.normalized_data?.geo?.ip || scanData?.normalized_data?.ip || scanData?.node_ip || '-',
-      scanTime: scanData?.created_at || scanData?.scan_time || scanData?.session_start || '-',
+      scanTime: scanData?.started_at || scanData?.created_at || scanData?.scan_time || scanData?.session_start || '-',
       score: scanData?.score_data?.score,
       scoreSummary: scanData?.score_data?.summary,
       scoreFlags: scanData?.score_data?.flags,
@@ -835,6 +1008,18 @@ export const ScanResultsPage: React.FC<{
                     >
                       <AlertTriangle className="h-4 w-4 mr-1" />
                       Dispute
+                    </Button>
+                  )}
+                  {onGenerateReport && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onGenerateReport}
+                      disabled={isReportLoading || r.scan_type !== 'deep_discovery'}
+                      className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300"
+                    >
+                      <FileText className="h-4 w-4 mr-1" />
+                      {isReportLoading ? 'Creating...' : 'Create Report'}
                     </Button>
                   )}
                   <Button

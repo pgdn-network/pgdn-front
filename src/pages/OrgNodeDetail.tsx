@@ -534,7 +534,11 @@ const OrgNodeDetail: React.FC = () => {
   
   return (
     <>
-      <NodeOnboardingLayout node={node} organization={organization} />
+      <NodeOnboardingLayout 
+        node={node} 
+        organization={organization} 
+        refetchNode={refetch}
+      />
       
       {/* Validation Modal - always available */}
       <ValidationModal
