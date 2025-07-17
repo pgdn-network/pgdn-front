@@ -56,6 +56,7 @@ export interface Node {
   network?: string;
   node_type?: string;
   protocols?: string[]; // Array of protocol UUIDs
+  snapshot?: NodeSnapshot; // Snapshot data when detailed=true
 }
 
 export interface CveMatch {

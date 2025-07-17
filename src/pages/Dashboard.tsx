@@ -42,49 +42,59 @@ const Dashboard: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedOrg = searchParams.get('org') || 'all';
   const [nodes, setNodes] = useState<Node[]>([]);
+  const [totalNodes, setTotalNodes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [nodesLoading, setNodesLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit] = useState(50); // Items per page
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { loading: protocolsLoading, getProtocol } = useProtocols();
   const { user } = useAuth();
   
   const handleOrgChange = (value: string) => {
     setSearchParams({ org: value });
+    setCurrentPage(1); // Reset to first page when changing organization
   };
 
   // Fetch nodes based on selected organization
   useEffect(() => {
+    // Don't fetch if organizations are still loading
+    if (orgsLoading) return;
+    
     const fetchNodes = async () => {
       setNodesLoading(true);
       try {
-        let nodesData: Node[] = [];
+        let nodesResponse: { nodes: Node[], total: number } = { nodes: [], total: 0 };
+        const offset = (currentPage - 1) * pageLimit;
 
         if (selectedOrg && selectedOrg !== 'all') {
           // Find organization UUID from slug using cached organizations
           const org = organizations.find(org => org.slug === selectedOrg);
           if (org) {
             // Organization-specific API call using UUID
-            nodesData = await NodeApiService.getNodes(org.uuid, 50);
+            nodesResponse = await NodeApiService.getNodes(org.uuid, pageLimit, offset);
           } else {
             console.warn(`Organization with slug "${selectedOrg}" not found in cache. Skipping nodes fetch.`);
             setNodes([]); // Clear nodes if org not found
+            setTotalNodes(0);
             setNodesLoading(false);
             return; // Guard clause: do not call API with empty orgId
           }
         } else {
           // No org selected or 'all' selected, call global endpoint
-          nodesData = await NodeApiService.getNodes('', 50);
+          nodesResponse = await NodeApiService.getNodes('', pageLimit, offset);
         }
         // Update state with fetched nodes data
-        if (nodesData && Array.isArray(nodesData)) {
+        if (nodesResponse.nodes && Array.isArray(nodesResponse.nodes)) {
           // Map node_protocols to protocols for Dashboard compatibility
-          const mappedNodes = nodesData.map((node: any) => {
+          const mappedNodes = nodesResponse.nodes.map((node: any) => {
             if (Array.isArray(node.node_protocols)) {
               return { ...node, protocols: node.node_protocols };
             }
             return node;
           });
           setNodes(mappedNodes);
+          setTotalNodes(nodesResponse.total || 0);
         }
       } catch (error) {
         console.error('Error fetching nodes:', error);
@@ -94,7 +104,7 @@ const Dashboard: React.FC = () => {
     };
 
     fetchNodes();
-  }, [selectedOrg, organizations]); // Re-fetch when organization filter changes or organizations load
+  }, [selectedOrg, organizations, orgsLoading, currentPage, pageLimit]); // Re-fetch when page changes
 
   // Update loading state when all API calls complete
   useEffect(() => {
@@ -111,9 +121,9 @@ const Dashboard: React.FC = () => {
 
   // WebSocket notifications are automatically handled by the WebSocketProvider
 
-  // Helper function to get icon and color based on current_state
-  const getStateIcon = (currentState: string | null | undefined) => {
-    const state = (currentState || 'new').toLowerCase();
+  // Helper function to get icon and color based on simple_state
+  const getStateIcon = (simpleState: string | null | undefined) => {
+    const state = (simpleState || 'new').toLowerCase();
     
     switch (state) {
       case 'authorized':
@@ -160,7 +170,7 @@ const Dashboard: React.FC = () => {
         return {
           icon: HelpCircle,
           color: 'text-gray-400',
-          label: currentState || 'Unknown'
+          label: simpleState || 'Unknown'
         };
     }
   };
@@ -287,7 +297,8 @@ const Dashboard: React.FC = () => {
               <TableRow>
                 <TableHead>Node</TableHead>
                 <TableHead>Protocol</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Simple State</TableHead>
+                <TableHead>Discovery Status</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Score</TableHead>
                 <TableHead>Last Scan</TableHead>
@@ -319,9 +330,9 @@ const Dashboard: React.FC = () => {
                     <div className="text-xs text-muted">Unknown protocol</div>
                   );
                 } else {
-                  protocolDisplay = <div className="text-xs text-muted">No protocol assigned</div>;
+                  protocolDisplay = <div className="text-sm text-muted">—</div>;
                 }
-                const stateInfo = getStateIcon(node.current_state);
+                const stateInfo = getStateIcon(node.simple_state);
                 const StateIcon = stateInfo.icon;
                 
                 return (
@@ -353,22 +364,39 @@ const Dashboard: React.FC = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <StatusDot status={node.active ? 'online' : 'offline'} />
-                        <span className="capitalize text-sm">{node.active ? 'Active' : 'Inactive'}</span>
+                        <span className="capitalize text-sm">{node.simple_state || 'Unknown'}</span>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="capitalize text-sm">{node.discovery_status || 'Unknown'}</span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <MapPin className="w-3 h-3 text-muted" />
-                        <span className="text-muted">Not available</span>
+                        {node.snapshot?.geo_location ? (
+                          <span>{node.snapshot.geo_location}</span>
+                        ) : node.snapshot?.geo_city && node.snapshot?.geo_country ? (
+                          <span>{node.snapshot.geo_city}, {node.snapshot.geo_country}</span>
+                        ) : (
+                          <span className="text-muted">Not available</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted">Not available</span>
+                      {node.snapshot?.latest_score !== null && node.snapshot?.latest_score !== undefined ? (
+                        <span className="text-sm font-medium">{node.snapshot.latest_score}</span>
+                      ) : (
+                        <span className="text-sm text-muted">Not available</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <Clock className="w-3 h-3 text-muted" />
-                        <span className="text-muted">Not available</span>
+                        {node.snapshot?.latest_scan_date ? (
+                          <span>{new Date(node.snapshot.latest_scan_date).toLocaleDateString()}</span>
+                        ) : (
+                          <span className="text-muted">Not available</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -386,6 +414,31 @@ const Dashboard: React.FC = () => {
             </TableBody>
           </Table>
         </Card>
+        
+        {/* Pagination Controls */}
+        {totalNodes > pageLimit && (
+          <div className="flex justify-center items-center gap-4 mt-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-muted">
+              Page {currentPage} of {Math.ceil(totalNodes / pageLimit)} ({totalNodes} total nodes)
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage >= Math.ceil(totalNodes / pageLimit)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -33,6 +33,7 @@ export default {
     extend: {
       colors: {
         background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         surface: {
           DEFAULT: 'hsl(var(--surface))',
           secondary: 'hsl(var(--surface-secondary))',
@@ -42,13 +43,25 @@ export default {
           DEFAULT: 'hsl(var(--border))',
           strong: 'hsl(var(--border-strong))',
         },
-        primary: 'hsl(var(--primary))',
-        secondary: 'hsl(var(--secondary))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
+        },
         muted: 'hsl(var(--muted))',
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           hover: 'hsl(var(--accent-hover))',
+          foreground: 'hsl(var(--foreground))',
         },
+        ring: 'hsl(var(--ring))',
         link: {
           DEFAULT: 'hsl(var(--link))',
           hover: 'hsl(var(--link-hover))',

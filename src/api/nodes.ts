@@ -44,20 +44,26 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async getNodes(organizationUuid: string, limit: number = 50): Promise<Node[]> {
+  static async getNodes(organizationUuid: string, limit: number = 50, offset: number = 0): Promise<{ nodes: Node[], total: number }> {
     let url;
     if (!organizationUuid || organizationUuid === 'all') {
-      url = `/nodes?limit=${limit}`;
+      url = `/nodes?limit=${limit}&offset=${offset}&detailed=true`;
     } else {
-      url = `${this.baseUrl}/${organizationUuid}/nodes?limit=${limit}`;
+      url = `${this.baseUrl}/${organizationUuid}/nodes?limit=${limit}&offset=${offset}&detailed=true`;
     }
     const response = await apiService.get(url);
     // If the response is an object with a nodes array, return that
     if (response.data && Array.isArray(response.data.nodes)) {
-      return response.data.nodes;
+      return {
+        nodes: response.data.nodes,
+        total: response.data.total || response.data.nodes.length
+      };
     }
     // Otherwise, assume the response is already an array
-    return response.data;
+    return {
+      nodes: response.data,
+      total: response.data.length
+    };
   }
 
   static async createNode(organizationUuid: string, nodeData: Partial<Node>): Promise<CreateNodeResponse> {

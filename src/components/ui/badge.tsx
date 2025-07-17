@@ -10,13 +10,19 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
+          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90 dark:bg-gray-800 dark:text-white font-semibold",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
+          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90 dark:bg-gray-700 dark:text-white font-medium",
         destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "border-transparent bg-destructive text-destructive-foreground [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-red-600 dark:text-white font-medium",
         outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+          "text-foreground border-border [a&]:hover:bg-accent [a&]:hover:text-accent-foreground dark:text-white dark:border-gray-400 dark:hover:bg-gray-700 dark:hover:text-white font-medium",
+        info:
+          "border-transparent bg-blue-100 text-blue-800 [a&]:hover:bg-blue-200 dark:bg-blue-700 dark:text-white font-medium",
+        success:
+          "border-transparent bg-green-100 text-green-800 [a&]:hover:bg-green-200 dark:bg-green-700 dark:text-white font-medium",
+        warning:
+          "border-transparent bg-yellow-100 text-yellow-800 [a&]:hover:bg-yellow-200 dark:bg-yellow-600 dark:text-white font-medium",
       },
     },
     defaultVariants: {

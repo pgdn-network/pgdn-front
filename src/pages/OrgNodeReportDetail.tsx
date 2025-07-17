@@ -15,7 +15,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { Card } from '@/components/ui/custom/Card';
-import { Badge } from '@/components/ui/custom/Badge';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { NodeApiService } from '@/api/nodes';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
@@ -234,7 +234,7 @@ const OrgNodeReportDetail: React.FC = () => {
                       {finding.evidence && (
                         <div>
                           <p className="text-sm font-medium text-muted-foreground mb-1">Evidence</p>
-                          <p className="text-sm bg-muted p-2 rounded">{finding.evidence}</p>
+                          <p className="text-sm bg-muted dark:bg-gray-800 p-2 rounded">{finding.evidence}</p>
                         </div>
                       )}
                       
@@ -285,8 +285,8 @@ const OrgNodeReportDetail: React.FC = () => {
               </div>
               
               {report.report_data.report.node_summary.discovery_confidence && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm">
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm dark:text-blue-200">
                     <span className="font-medium">Discovery Confidence:</span> {Math.round(report.report_data.report.node_summary.discovery_confidence * 100)}%
                   </p>
                 </div>
@@ -297,7 +297,7 @@ const OrgNodeReportDetail: React.FC = () => {
                   <p className="text-sm font-medium text-muted-foreground mb-2">Discovered Capabilities</p>
                   <div className="flex flex-wrap gap-2">
                     {report.report_data.report.node_summary.discovered_capabilities.map((capability: string, index: number) => (
-                      <Badge key={index} variant="outline">{capability.replace('_', ' ')}</Badge>
+                      <Badge key={index} variant="default" className="uppercase tracking-wide text-xs font-semibold">{capability.replace('_', ' ')}</Badge>
                     ))}
                   </div>
                 </div>
@@ -332,9 +332,9 @@ const OrgNodeReportDetail: React.FC = () => {
               </div>
               <div className="space-y-4">
                 {report.report_data.report.analyst_commentary.tldr && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-purple-800 mb-1">TL;DR</p>
-                    <p className="text-sm">{report.report_data.report.analyst_commentary.tldr}</p>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                    <p className="text-sm font-medium text-purple-800 dark:text-purple-400 mb-1">TL;DR</p>
+                    <p className="text-sm dark:text-purple-200">{report.report_data.report.analyst_commentary.tldr}</p>
                   </div>
                 )}
                 {report.report_data.report.analyst_commentary.business_impact && (
@@ -423,15 +423,15 @@ const OrgNodeReportDetail: React.FC = () => {
                   if (!actions || actions.length === 0) return null;
                   
                   const priorityColors = {
-                    critical: 'border-red-200 bg-red-50',
-                    high: 'border-orange-200 bg-orange-50',
-                    medium: 'border-yellow-200 bg-yellow-50',
-                    low: 'border-blue-200 bg-blue-50',
-                    optional: 'border-gray-200 bg-gray-50'
+                    critical: 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20',
+                    high: 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20',
+                    medium: 'border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20',
+                    low: 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20',
+                    optional: 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/20'
                   };
 
                   return (
-                    <div key={priority} className={`border rounded-lg p-4 ${priorityColors[priority as keyof typeof priorityColors] || 'border-gray-200 bg-gray-50'}`}>
+                    <div key={priority} className={`border rounded-lg p-4 ${priorityColors[priority as keyof typeof priorityColors] || 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/20'}`}>
                       <h4 className="font-medium text-foreground mb-2 capitalize">{priority} Priority</h4>
                       <ul className="space-y-1">
                         {actions.map((action: string, index: number) => (
@@ -481,24 +481,24 @@ const OrgNodeReportDetail: React.FC = () => {
                 
                 {/* Show metrics in cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-xs text-red-600 font-medium mb-1">Total Vulnerabilities</p>
-                    <p className="text-lg font-bold text-red-700">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                    <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1">Total Vulnerabilities</p>
+                    <p className="text-lg font-bold text-red-700 dark:text-red-300">
                       {report.report_data.report.executive_summary.total_vulnerabilities || 0}
                     </p>
                   </div>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-xs text-red-600 font-medium mb-1">Critical</p>
-                    <p className="text-lg font-bold text-red-700">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                    <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1">Critical</p>
+                    <p className="text-lg font-bold text-red-700 dark:text-red-300">
                       {report.report_data.report.executive_summary.critical_vulnerabilities || 0}
                     </p>
                   </div>
                   <div className="bg-muted border rounded-lg p-3">
                     <p className="text-xs text-muted-foreground font-medium mb-1">Risk Level</p>
                     <p className={`text-lg font-bold ${
-                      report.report_data.report.executive_summary.overall_risk_level === 'Low' ? 'text-green-600' :
-                      report.report_data.report.executive_summary.overall_risk_level === 'Medium' ? 'text-orange-600' :
-                      'text-red-600'
+                      report.report_data.report.executive_summary.overall_risk_level === 'Low' ? 'text-green-600 dark:text-green-400' :
+                      report.report_data.report.executive_summary.overall_risk_level === 'Medium' ? 'text-orange-600 dark:text-orange-400' :
+                      'text-red-600 dark:text-red-400'
                     }`}>
                       {report.report_data.report.executive_summary.overall_risk_level}
                     </p>
@@ -506,16 +506,16 @@ const OrgNodeReportDetail: React.FC = () => {
                 </div>
 
                 {report.report_data.report.executive_summary.budget_needed && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                    <p className="text-sm dark:text-blue-200">
                       <span className="font-medium">Budget Needed:</span> {report.report_data.report.executive_summary.budget_needed}
                     </p>
                   </div>
                 )}
                 
                 {report.report_data.report.executive_summary.business_risk && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                    <p className="text-sm">
+                  <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+                    <p className="text-sm dark:text-orange-200">
                       <span className="font-medium">Business Risk:</span> {report.report_data.report.executive_summary.business_risk}
                     </p>
                   </div>
@@ -532,9 +532,9 @@ const OrgNodeReportDetail: React.FC = () => {
                   </div>
                 )}
                 {report.report_data.report.executive_summary.risk_assessment && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-red-800 mb-1">Risk Assessment</p>
-                    <p className="text-sm text-red-700">{report.report_data.report.executive_summary.risk_assessment}</p>
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                    <p className="text-sm font-medium text-red-800 dark:text-red-400 mb-1">Risk Assessment</p>
+                    <p className="text-sm text-red-700 dark:text-red-300">{report.report_data.report.executive_summary.risk_assessment}</p>
                   </div>
                 )}
                 {report.report_data.report.executive_summary.recommendations && (
@@ -588,8 +588,8 @@ const OrgNodeReportDetail: React.FC = () => {
                 )}
                 
                 {report.report_data.report.validator_summary.maya_risk_translation && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm">
+                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-sm dark:text-blue-200">
                       <span className="font-medium">Maya's Assessment:</span> {report.report_data.report.validator_summary.maya_risk_translation}
                     </p>
                   </div>
@@ -628,21 +628,21 @@ const OrgNodeReportDetail: React.FC = () => {
                     <p className="text-sm font-medium text-muted-foreground mb-2">Performance Metrics</p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {report.report_data.report.validator_summary.performance_metrics.uptime && (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                          <p className="text-xs text-green-600 font-medium mb-1">Uptime</p>
-                          <p className="text-sm font-bold text-green-700">{report.report_data.report.validator_summary.performance_metrics.uptime}</p>
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                          <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">Uptime</p>
+                          <p className="text-sm font-bold text-green-700 dark:text-green-300">{report.report_data.report.validator_summary.performance_metrics.uptime}</p>
                         </div>
                       )}
                       {report.report_data.report.validator_summary.performance_metrics.response_time && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <p className="text-xs text-blue-600 font-medium mb-1">Response Time</p>
-                          <p className="text-sm font-bold text-blue-700">{report.report_data.report.validator_summary.performance_metrics.response_time}</p>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Response Time</p>
+                          <p className="text-sm font-bold text-blue-700 dark:text-blue-300">{report.report_data.report.validator_summary.performance_metrics.response_time}</p>
                         </div>
                       )}
                       {report.report_data.report.validator_summary.performance_metrics.throughput && (
-                        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                          <p className="text-xs text-purple-600 font-medium mb-1">Throughput</p>
-                          <p className="text-sm font-bold text-purple-700">{report.report_data.report.validator_summary.performance_metrics.throughput}</p>
+                        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                          <p className="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">Throughput</p>
+                          <p className="text-sm font-bold text-purple-700 dark:text-purple-300">{report.report_data.report.validator_summary.performance_metrics.throughput}</p>
                         </div>
                       )}
                     </div>
@@ -661,8 +661,8 @@ const OrgNodeReportDetail: React.FC = () => {
               </div>
               <div className="space-y-4">
                 {report.report_data.report.maya_assessment.infrastructure_headline && (
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                    <p className="text-sm font-medium">{report.report_data.report.maya_assessment.infrastructure_headline}</p>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                    <p className="text-sm font-medium dark:text-purple-200">{report.report_data.report.maya_assessment.infrastructure_headline}</p>
                   </div>
                 )}
                 <div className="grid gap-3">
@@ -685,9 +685,9 @@ const OrgNodeReportDetail: React.FC = () => {
                     </div>
                   )}
                   {report.report_data.report.maya_assessment.overall_score && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                      <p className="text-sm font-medium text-purple-800 mb-1">Overall Score</p>
-                      <p className="text-2xl font-bold text-purple-700">{report.report_data.report.maya_assessment.overall_score}/100</p>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
+                      <p className="text-sm font-medium text-purple-800 dark:text-purple-400 mb-1">Overall Score</p>
+                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">{report.report_data.report.maya_assessment.overall_score}/100</p>
                     </div>
                   )}
                   {report.report_data.report.maya_assessment.security_posture && (
@@ -772,7 +772,7 @@ const OrgNodeReportDetail: React.FC = () => {
                             {finding.evidence && (
                               <div className="mb-2">
                                 <p className="text-xs font-medium text-muted-foreground mb-1">Evidence</p>
-                                <p className="text-sm bg-gray-100 p-2 rounded">{finding.evidence}</p>
+                                <p className="text-sm bg-gray-100 dark:bg-gray-800 dark:text-gray-200 p-2 rounded">{finding.evidence}</p>
                               </div>
                             )}
                             {finding.maya_analysis && (
@@ -823,8 +823,8 @@ const OrgNodeReportDetail: React.FC = () => {
               </div>
               <div className="space-y-4">
                 {report.report_data.report.mayas_action_plan.summary && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p className="text-sm">{report.report_data.report.mayas_action_plan.summary}</p>
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                    <p className="text-sm dark:text-yellow-200">{report.report_data.report.mayas_action_plan.summary}</p>
                   </div>
                 )}
                 {report.report_data.report.mayas_action_plan.immediate_infrastructure_fixes && (
@@ -832,16 +832,16 @@ const OrgNodeReportDetail: React.FC = () => {
                     <h4 className="font-medium text-foreground mb-2">Immediate Infrastructure Fixes</h4>
                     <div className="space-y-2">
                       {report.report_data.report.mayas_action_plan.immediate_infrastructure_fixes.map((action: any, index: number) => (
-                        <div key={index} className="border border-red-200 rounded-lg p-3 bg-red-50">
+                        <div key={index} className="border border-red-200 dark:border-red-800 rounded-lg p-3 bg-red-50 dark:bg-red-900/20">
                           <div className="flex items-start justify-between mb-2">
-                            <p className="text-sm font-medium">{action.action}</p>
+                            <p className="text-sm font-medium dark:text-red-200">{action.action}</p>
                             <Badge variant="destructive">Priority {action.priority}</Badge>
                           </div>
                           {action.rationale && (
                             <p className="text-xs text-muted-foreground mb-2">{action.rationale}</p>
                           )}
                           {action.time_estimate && (
-                            <p className="text-xs text-blue-600 mb-2">Estimated Time: {action.time_estimate}</p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">Estimated Time: {action.time_estimate}</p>
                           )}
                           {action.commands && action.commands.length > 0 && (
                             <div className="mt-2">
@@ -863,8 +863,8 @@ const OrgNodeReportDetail: React.FC = () => {
                     <h4 className="font-medium text-foreground mb-2">This Weekend</h4>
                     <div className="space-y-2">
                       {report.report_data.report.mayas_action_plan.this_weekend.map((task: any, index: number) => (
-                        <div key={index} className="border border-orange-200 rounded-lg p-3 bg-orange-50">
-                          <p className="text-sm">{task.action || task}</p>
+                        <div key={index} className="border border-orange-200 dark:border-orange-800 rounded-lg p-3 bg-orange-50 dark:bg-orange-900/20">
+                          <p className="text-sm dark:text-orange-200">{task.action || task}</p>
                         </div>
                       ))}
                     </div>
@@ -875,8 +875,8 @@ const OrgNodeReportDetail: React.FC = () => {
                     <h4 className="font-medium text-foreground mb-2">Next Sprint</h4>
                     <div className="space-y-2">
                       {report.report_data.report.mayas_action_plan.next_sprint.map((task: any, index: number) => (
-                        <div key={index} className="border border-blue-200 rounded-lg p-3 bg-blue-50">
-                          <p className="text-sm">{task.action || task}</p>
+                        <div key={index} className="border border-blue-200 dark:border-blue-800 rounded-lg p-3 bg-blue-50 dark:bg-blue-900/20">
+                          <p className="text-sm dark:text-blue-200">{task.action || task}</p>
                         </div>
                       ))}
                     </div>
