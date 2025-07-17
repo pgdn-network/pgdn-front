@@ -467,6 +467,33 @@ export interface NodeSnapshot {
   last_activity: string;
   last_updated: string;
   organization_uuid: string;
+  detected_protocols: string[];
+  node_type: string | null;
+  node_classification: string | null;
+  discovery_confidence: number | null;
+  protocol_capabilities: any | null;
+  working_endpoints: any | null;
+  primary_rpc_endpoint: string | null;
+  primary_grpc_endpoint: string | null;
+  protocol_version: string | null;
+  chain_identifier: string | null;
+  total_transactions: number | null;
+  latest_checkpoint: string | null;
+  docker_services_detected: boolean;
+  docker_api_accessible: boolean;
+  rpc_available: boolean;
+  grpc_available: boolean;
+  metrics_endpoint_available: boolean;
+  unencrypted_ports: number[] | null;
+  ssl_ports: number[] | null;
+  standard_ports: number[] | null;
+  non_standard_ports: number[] | null;
+  certificate_issues_count: number;
+  last_discovery_date: string;
+  last_deep_discovery_date: string | null;
+  discovery_method: string;
+  scanner_version: string | null;
+  analysis_level: string;
 }
 
 // Node Creation Response

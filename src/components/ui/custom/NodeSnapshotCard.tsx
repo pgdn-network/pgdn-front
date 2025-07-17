@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, MapPin, Server, Activity } from 'lucide-react';
+import { Clock, Server, Activity } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { NodeSnapshot } from '@/types/node';
 
@@ -39,20 +39,6 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
     );
   }
 
-  const getStatusColor = (status: string | undefined | null) => {
-    if (!status) return 'bg-gray-100 text-gray-800';
-    switch (status.toLowerCase()) {
-      case 'healthy':
-        return 'bg-green-100 text-green-800';
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'critical':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getScanStatusColor = (status: string | undefined | null) => {
     if (!status) return 'bg-gray-100 text-gray-800';
     switch (status.toLowerCase()) {
@@ -79,27 +65,33 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
           <Activity className="h-5 w-5 mr-2" />
           Node Snapshot
         </h2>
-        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(snapshot.operational_status)}`}>
-          {(snapshot.operational_status ? snapshot.operational_status.charAt(0).toUpperCase() + snapshot.operational_status.slice(1) : 'Unknown')}
-        </span>
+        {snapshot.latest_score !== null && (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Security Grade:</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className={`px-3 py-1 text-sm font-bold rounded-full cursor-help ${getScoreGrade(snapshot.latest_score).color}`}>
+                    {getScoreGrade(snapshot.latest_score).grade}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Security Score: {snapshot.latest_score}%</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left Column */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Column - Scan Information */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              <Server className="h-4 w-4 mr-1" />
-              Status Message:
-            </span>
-            <span className="text-sm text-gray-900 dark:text-white">{snapshot.status_message || 'N/A'}</span>
-          </div>
-          
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
               <Clock className="h-4 w-4 mr-1" />
@@ -120,30 +112,42 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           {snapshot.scan_completeness_rate !== null && (
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500 dark:text-gray-400">Scan Completeness:</span>
-              <span className="text-sm text-gray-900 dark:text-white">{snapshot.scan_completeness_rate}%</span>
+              <span className="text-sm text-gray-900 dark:text-white">{Math.round(snapshot.scan_completeness_rate * 100)}%</span>
             </div>
           )}
-          
-          {snapshot.latest_score !== null && (
+
+          {snapshot.detected_protocols && snapshot.detected_protocols.length > 0 && (
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500 dark:text-gray-400">Security Grade:</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className={`px-2 py-1 text-xs font-bold rounded-full cursor-help ${getScoreGrade(snapshot.latest_score).color}`}>
-                      {getScoreGrade(snapshot.latest_score).grade}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Score: {snapshot.latest_score}%</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Detected Protocols:</span>
+              <div className="flex flex-wrap gap-1">
+                {snapshot.detected_protocols.map((protocol: string) => (
+                  <span
+                    key={protocol}
+                    className="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded"
+                  >
+                    {protocol.toUpperCase()}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
+
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Analysis Level:</span>
+            <span className="text-sm text-gray-900 dark:text-white capitalize">
+              {snapshot.analysis_level || '—'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Discovery Method:</span>
+            <span className="text-sm text-gray-900 dark:text-white">
+              {snapshot.discovery_method?.replace('_', ' ') || '—'}
+            </span>
+          </div>
         </div>
         
-        {/* Right Column */}
+        {/* Right Column - Security & Capabilities */}
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
@@ -164,18 +168,35 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Open Ports:</span>
-            <span className="text-sm text-gray-900 dark:text-white">{snapshot.total_open_ports || 0}</span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Web Server:</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">RPC Available:</span>
             <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-              snapshot.web_server_detected === true
+              snapshot.rpc_available === true
                 ? 'bg-green-100 text-green-800' 
                 : 'bg-gray-100 text-gray-800'
             }`}>
-              {snapshot.web_server_detected === true ? 'Detected' : 'Not Detected'}
+              {snapshot.rpc_available === true ? 'Yes' : 'No'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500 dark:text-gray-400">gRPC Available:</span>
+            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+              snapshot.grpc_available === true
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-gray-100 text-gray-800'
+            }`}>
+              {snapshot.grpc_available === true ? 'Yes' : 'No'}
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Docker Services:</span>
+            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+              snapshot.docker_services_detected === true
+                ? 'bg-blue-100 text-blue-800' 
+                : 'bg-gray-100 text-gray-800'
+            }`}>
+              {snapshot.docker_services_detected === true ? 'Detected' : 'Not Detected'}
             </span>
           </div>
           
@@ -209,37 +230,30 @@ export const NodeSnapshotCard: React.FC<NodeSnapshotCardProps> = ({ snapshot, lo
         </div>
       )}
       
-      {/* Location Information */}
-      {(snapshot.geo_city || snapshot.geo_country) && (
+      {/* Endpoints Section */}
+      {(snapshot.primary_rpc_endpoint || snapshot.primary_grpc_endpoint) && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-            <MapPin className="h-4 w-4 mr-1" />
-            {[snapshot.geo_city, snapshot.geo_country].filter(Boolean).join(', ')}
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Endpoints:</h3>
+          <div className="space-y-2">
+            {snapshot.primary_rpc_endpoint && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Primary RPC:</span>
+                <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                  {snapshot.primary_rpc_endpoint}
+                </code>
+              </div>
+            )}
+            {snapshot.primary_grpc_endpoint && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500 dark:text-gray-400">Primary gRPC:</span>
+                <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                  {snapshot.primary_grpc_endpoint}
+                </code>
+              </div>
+            )}
           </div>
         </div>
       )}
-      
-      {/* Tasks and Interventions Summary */}
-      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Active Tasks: </span>
-            <span className="text-gray-900 dark:text-white">{snapshot.active_tasks_count || 0}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Failed Tasks: </span>
-            <span className="text-gray-900 dark:text-white">{snapshot.failed_tasks_count || 0}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Open Interventions: </span>
-            <span className="text-gray-900 dark:text-white">{snapshot.open_interventions_count || 0}</span>
-          </div>
-          <div>
-            <span className="text-gray-500 dark:text-gray-400">Critical Interventions: </span>
-            <span className="text-gray-900 dark:text-white">{snapshot.critical_interventions_count || 0}</span>
-          </div>
-        </div>
-      </div>
 
     </div>
   );
