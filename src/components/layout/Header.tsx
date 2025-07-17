@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, Bell, Menu, Settings, User, LogOut, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,44 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
   const { user, logout } = useAuth()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchValue, setSearchValue] = React.useState(searchParams.get('search') || '')
+
+  // Check if we're on the Dashboard page
+  const isDashboardPage = location.pathname === '/'
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value)
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (isDashboardPage) {
+      // Update search params on current page
+      const newParams = new URLSearchParams(searchParams)
+      if (searchValue.trim() && searchValue.trim().length >= 3) {
+        newParams.set('search', searchValue.trim())
+      } else {
+        newParams.delete('search')
+      }
+      setSearchParams(newParams)
+    } else {
+      // Navigate to dashboard with search query
+      const params = new URLSearchParams()
+      if (searchValue.trim() && searchValue.trim().length >= 3) {
+        params.set('search', searchValue.trim())
+      }
+      navigate(`/?${params.toString()}`)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(e as any)
+    }
+  }
 
   const handleLogout = async () => {
     setIsUserMenuOpen(false)
@@ -40,10 +78,15 @@ export const Header: React.FC<HeaderProps> = ({ onMobileMenuToggle }) => {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="w-4 h-4 text-muted" />
             </div>
-            <Input
-              placeholder="Search nodes, reports, configurations..."
-              className="pl-10 bg-surface border-border-strong focus:border-accent focus:bg-surface-secondary transition-all duration-200"
-            />
+            <form onSubmit={handleSearchSubmit}>
+              <Input
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Search nodes, reports, configurations... (min 3 chars)"
+                className="pl-10 bg-surface border-border-strong focus:border-accent focus:bg-surface-secondary transition-all duration-200"
+              />
+            </form>
           </div>
         </div>
 

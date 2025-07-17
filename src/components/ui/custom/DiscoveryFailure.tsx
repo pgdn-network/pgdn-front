@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ProtocolSelectModal } from './ProtocolSelectModal';
 import { NodeApiService } from '@/api/nodes';
-import { useAuth } from '@/hooks/useAuth';
 import { useProtocols } from '@/contexts/ProtocolsContext';
 
 interface DiscoveryFailureProps {
@@ -23,7 +22,6 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
   const [newAddress, setNewAddress] = useState(node?.address || '');
   const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
   const [retryError, setRetryError] = useState<string | null>(null);
-  const { user } = useAuth();
   const { protocols } = useProtocols();
 
   // Extract detected protocols from node data (likely empty in failure cases)
@@ -38,7 +36,7 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
 
   const handleProtocolSelect = async (selectedProtocols: any[]) => {
     setIsProtocolModalOpen(false);
-    if (!user?.org_uuid) {
+    if (!organization?.uuid) {
       console.error('No organization UUID available');
       return;
     }
@@ -55,7 +53,7 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
         updateData.node_protocols = selectedProtocols.map(p => p.id);
       }
       
-      await NodeApiService.patchNode(user.org_uuid, node.uuid, updateData);
+      await NodeApiService.patchNode(organization.uuid, node.uuid, updateData);
       console.log('✅ Node updated successfully with protocol UUIDs:', selectedProtocols.map(p => p.id));
       
       // Redirect to the main node page
@@ -69,7 +67,7 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
   };
 
   const handleRetryDiscovery = async () => {
-    if (!user?.org_uuid) {
+    if (!organization?.uuid) {
       console.error('No organization UUID available');
       return;
     }
@@ -79,12 +77,12 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
     
     try {
       // First, reset the node discovery status to pending
-      await NodeApiService.patchNode(user.org_uuid, node.uuid, {
+      await NodeApiService.patchNode(organization.uuid, node.uuid, {
         discovery_status: 'pending'
       });
       
       // Then trigger a new discovery scan
-      await NodeApiService.startNodeScan(user.org_uuid, node.uuid, ['discovery']);
+      await NodeApiService.startNodeScan(organization.uuid, node.uuid, ['discovery']);
       
       console.log('✅ Discovery scan restarted successfully');
       
@@ -102,7 +100,7 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
   };
 
   const handleUpdateAddress = async () => {
-    if (!user?.org_uuid || !newAddress.trim()) {
+    if (!organization?.uuid || !newAddress.trim()) {
       console.error('No organization UUID available or address is empty');
       return;
     }
@@ -110,7 +108,7 @@ export const DiscoveryFailure: React.FC<DiscoveryFailureProps> = ({ node, organi
     setIsUpdatingAddress(true);
     try {
       // Update the node address
-      await NodeApiService.patchNode(user.org_uuid, node.uuid, {
+      await NodeApiService.patchNode(organization.uuid, node.uuid, {
         address: newAddress.trim()
       });
       

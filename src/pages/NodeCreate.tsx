@@ -62,18 +62,16 @@ const NodeCreate: React.FC = () => {
         address: formData.address
       });
       
-      // Trigger discovery scan after successful node creation
       if (data && data.node && data.node.uuid) {
-        try {
-          await NodeApiService.startNodeScan(formData.organization_uuid, data.node.uuid, ['discovery']);
-          console.log('Discovery scan triggered successfully for node:', data.node.uuid);
-        } catch (scanError) {
-          console.error('Failed to trigger discovery scan:', scanError);
-          // Don't fail the entire flow if scan trigger fails
-        }
+        // Find the organization slug for navigation
+        const organization = organizations.find(org => org.uuid === formData.organization_uuid);
+        const orgSlug = organization?.slug || formData.organization_uuid;
+        
+        // Navigate to the node page (discovery will be triggered automatically based on status)
+        navigate(`/organizations/${orgSlug}/nodes/${data.node.uuid}`);
+      } else {
+        navigate('/');
       }
-      
-      navigate('/');
     } catch (err: any) {
       // Try to parse claimable node error
       if (err?.response?.status === 409 && err?.response?.data?.detail?.error) {

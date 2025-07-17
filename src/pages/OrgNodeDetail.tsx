@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Server, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EventCard } from '@/components/ui/custom/EventCard';
@@ -30,6 +30,7 @@ import { NodeInfoCard } from '@/components/ui/custom/NodeInfoCard';
 
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Helper function to count running scans (all returned scans are running)
   const getRemainingScansCount = (scans: any[]) => {
@@ -92,6 +93,54 @@ const OrgNodeDetail: React.FC = () => {
 
   // Listen for WebSocket messages and refresh tasks when scan completes
   const discoveryMessage = useNodeDiscoverySubscription(nodeId || '');
+  
+  // Trigger discovery scan if coming from node creation
+  useEffect(() => {
+    if (searchParams.get('triggerDiscovery') === 'true' && organizationUuid && nodeId && !loading) {
+      // Remove the parameter from URL first
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('triggerDiscovery');
+      setSearchParams(newParams, { replace: true });
+      
+      // Trigger discovery scan
+      const triggerDiscoveryScan = async () => {
+        try {
+          await NodeApiService.startNodeScan(organizationUuid, nodeId, ['discovery']);
+          console.log('Discovery scan triggered successfully for node:', nodeId);
+          setScanJustStarted(true);
+          setScanStartTime(Date.now());
+        } catch (scanError) {
+          console.error('Failed to trigger discovery scan:', scanError);
+        }
+      };
+      
+      triggerDiscoveryScan();
+    }
+  }, [searchParams, setSearchParams, organizationUuid, nodeId, loading]);
+
+  // Auto-trigger discovery scan if discovery status is failed or pending
+  useEffect(() => {
+    if (node && organizationUuid && nodeId && !loading && !scanJustStarted) {
+      const discoveryStatus = node.discovery_status?.toLowerCase();
+      
+      if (discoveryStatus === 'failed' || discoveryStatus === 'pending') {
+        console.log(`Discovery status is ${discoveryStatus}, triggering discovery scan for node:`, nodeId);
+        
+        const triggerDiscoveryScan = async () => {
+          try {
+            await NodeApiService.startNodeScan(organizationUuid, nodeId, ['discovery']);
+            console.log('Auto discovery scan triggered successfully for node:', nodeId);
+            setScanJustStarted(true);
+            setScanStartTime(Date.now());
+          } catch (scanError) {
+            console.error('Failed to trigger auto discovery scan:', scanError);
+          }
+        };
+        
+        triggerDiscoveryScan();
+      }
+    }
+  }, [node, organizationUuid, nodeId, loading, scanJustStarted]);
   
   useEffect(() => {
     if (discoveryMessage && (discoveryMessage.type === 'scan_completed' || discoveryMessage.type === 'scan_failed')) {

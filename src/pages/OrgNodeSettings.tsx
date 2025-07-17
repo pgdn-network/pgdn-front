@@ -23,7 +23,7 @@ const OrgNodeSettings: React.FC = () => {
   const navigate = useNavigate();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { addNotification } = useNotifications();
-  const { getProtocol } = useProtocols();
+  const { getProtocol, protocols } = useProtocols();
   
   const [node, setNode] = useState<Node | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +37,7 @@ const OrgNodeSettings: React.FC = () => {
     active: true,
     network: '',
     nodeType: '',
+    protocols: [] as string[], // Array of protocol UUIDs
     scanFrequency: 'daily',
     scanLevel: 'standard',
     enableNotifications: true,
@@ -66,6 +67,9 @@ const OrgNodeSettings: React.FC = () => {
           active: nodeData.active ?? true,
           network: nodeData.network || '',
           nodeType: nodeData.node_type || '',
+          protocols: Array.isArray(nodeData.protocols) ? nodeData.protocols : 
+                    (Array.isArray(nodeData.node_protocols) ? nodeData.node_protocols : 
+                    (nodeData.protocol_details?.uuid ? [nodeData.protocol_details.uuid] : [])),
           scanFrequency: 'daily', // Default value
           scanLevel: 'standard', // Default value
           enableNotifications: true, // Default value
@@ -107,6 +111,7 @@ const OrgNodeSettings: React.FC = () => {
         active: formData.active,
         network: formData.network,
         node_type: formData.nodeType,
+        node_protocols: formData.protocols,
         meta: {
           ...node?.meta,
           notes: formData.notes,
@@ -145,8 +150,8 @@ const OrgNodeSettings: React.FC = () => {
     navigate(`/organizations/${slug}/nodes/${nodeId}`);
   };
 
-  // Get protocol information for logo - check both protocols array and protocol_details
-  const protocolUuid = node?.protocols?.[0] || node?.protocol_details?.uuid;
+  // Get protocol information for logo - check protocols array first, then node_protocols, then protocol_details
+  const protocolUuid = node?.protocols?.[0] || node?.node_protocols?.[0] || node?.protocol_details?.uuid;
   const protocol = protocolUuid ? getProtocol(protocolUuid) : null;
   
   // Get logo based on protocol name
@@ -213,7 +218,7 @@ const OrgNodeSettings: React.FC = () => {
               )}
               <h1 className="text-2xl font-bold text-foreground">Node Settings</h1>
             </div>
-            {/* Badges for network and node type */}
+            {/* Badges for network, node type, and protocol */}
             <div className="flex flex-wrap gap-2 mb-4">
               {network && (
                 <span
@@ -245,6 +250,13 @@ const OrgNodeSettings: React.FC = () => {
                   </Tooltip>
                 </TooltipProvider>
               )}
+              {/* Protocol Badge */}
+              <span
+                className={`px-2 py-1 rounded text-xs font-semibold 
+                  ${protocol ? 'bg-indigo-600 text-white' : 'bg-gray-400 text-white'}`}
+              >
+                {protocol?.display_name || 'Unknown Protocol'}
+              </span>
             </div>
             {(!network && !nodeType) && (
               <p className="text-muted-foreground">
@@ -290,33 +302,49 @@ const OrgNodeSettings: React.FC = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="network">Network</Label>
-                  <Select value={formData.network} onValueChange={(value) => handleInputChange('network', value)}>
-                    <SelectTrigger className="bg-white dark:bg-gray-900">
-                      <SelectValue placeholder="Select network" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mainnet">Mainnet</SelectItem>
-                      <SelectItem value="testnet">Testnet</SelectItem>
-                      <SelectItem value="devnet">Devnet</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="nodeType">Node Type</Label>
-                  <Select value={formData.nodeType} onValueChange={(value) => handleInputChange('nodeType', value)}>
-                    <SelectTrigger className="bg-white dark:bg-gray-900">
-                      <SelectValue placeholder="Select node type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="validator">Validator</SelectItem>
-                      <SelectItem value="public_rpc">Public RPC</SelectItem>
-                      <SelectItem value="hybrid">Hybrid</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="nodeType">Node Type</Label>
+                <Select value={formData.nodeType} onValueChange={(value) => handleInputChange('nodeType', value)}>
+                  <SelectTrigger className="bg-white dark:bg-gray-900">
+                    <SelectValue placeholder="Select node type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="validator">Validator</SelectItem>
+                    <SelectItem value="public_rpc">Public RPC</SelectItem>
+                    <SelectItem value="hybrid">Hybrid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Protocol Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="protocols">Protocol</Label>
+                <Select 
+                  value={formData.protocols[0] || 'none'} 
+                  onValueChange={(value) => handleInputChange('protocols', value === 'none' ? [] : [value])}
+                  disabled={node?.simple_state !== 'new'}
+                >
+                  <SelectTrigger className="bg-white dark:bg-gray-900">
+                    <SelectValue placeholder={formData.protocols.length === 0 ? "Select protocol (Unknown)" : "Select protocol"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Protocol</SelectItem>
+                    {protocols.map((protocol) => (
+                      <SelectItem key={protocol.uuid} value={protocol.uuid}>
+                        {protocol.display_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {node?.simple_state !== 'new' ? (
+                  <p className="text-sm text-muted-foreground">
+                    Protocol can only be changed for nodes in 'new' state. Current state: {node?.simple_state}
+                  </p>
+                ) : formData.protocols.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    Current protocol is unknown. Select a protocol to update it.
+                  </p>
+                ) : null}
               </div>
               
               <div className="flex items-center space-x-2">

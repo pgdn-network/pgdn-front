@@ -41,6 +41,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedOrg = searchParams.get('org') || 'all';
+  const searchQuery = searchParams.get('search') || '';
   const [nodes, setNodes] = useState<Node[]>([]);
   const [totalNodes, setTotalNodes] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -52,7 +53,9 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   
   const handleOrgChange = (value: string) => {
-    setSearchParams({ org: value });
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('org', value);
+    setSearchParams(newParams);
     setCurrentPage(1); // Reset to first page when changing organization
   };
 
@@ -72,7 +75,7 @@ const Dashboard: React.FC = () => {
           const org = organizations.find(org => org.slug === selectedOrg);
           if (org) {
             // Organization-specific API call using UUID
-            nodesResponse = await NodeApiService.getNodes(org.uuid, pageLimit, offset);
+            nodesResponse = await NodeApiService.getNodes(org.uuid, pageLimit, offset, searchQuery);
           } else {
             console.warn(`Organization with slug "${selectedOrg}" not found in cache. Skipping nodes fetch.`);
             setNodes([]); // Clear nodes if org not found
@@ -82,7 +85,7 @@ const Dashboard: React.FC = () => {
           }
         } else {
           // No org selected or 'all' selected, call global endpoint
-          nodesResponse = await NodeApiService.getNodes('', pageLimit, offset);
+          nodesResponse = await NodeApiService.getNodes('', pageLimit, offset, searchQuery);
         }
         // Update state with fetched nodes data
         if (nodesResponse.nodes && Array.isArray(nodesResponse.nodes)) {
@@ -104,12 +107,17 @@ const Dashboard: React.FC = () => {
     };
 
     fetchNodes();
-  }, [selectedOrg, organizations, orgsLoading, currentPage, pageLimit]); // Re-fetch when page changes
+  }, [selectedOrg, organizations, orgsLoading, currentPage, pageLimit, searchQuery]); // Re-fetch when page or search changes
 
   // Update loading state when all API calls complete
   useEffect(() => {
     setLoading(nodesLoading || orgsLoading || protocolsLoading);
   }, [nodesLoading, orgsLoading, protocolsLoading]);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // getProtocol is now provided by the ProtocolsContext
 
@@ -273,7 +281,7 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-primary flex items-center gap-2">
             <Globe className="w-5 h-5 text-secondary" />
-            Network Nodes
+            {searchQuery && searchQuery.length >= 3 ? `Search Results for "${searchQuery}"` : 'Network Nodes'}
           </h2>
           {organizations.length > 1 && (
             <Select value={selectedOrg} onValueChange={handleOrgChange}>
@@ -378,7 +386,7 @@ const Dashboard: React.FC = () => {
                         ) : node.snapshot?.geo_city && node.snapshot?.geo_country ? (
                           <span>{node.snapshot.geo_city}, {node.snapshot.geo_country}</span>
                         ) : (
-                          <span className="text-muted">Not available</span>
+                          <span className="text-muted">—</span>
                         )}
                       </div>
                     </TableCell>
@@ -386,7 +394,7 @@ const Dashboard: React.FC = () => {
                       {node.snapshot?.latest_score !== null && node.snapshot?.latest_score !== undefined ? (
                         <span className="text-sm font-medium">{node.snapshot.latest_score}</span>
                       ) : (
-                        <span className="text-sm text-muted">Not available</span>
+                        <span className="text-sm text-muted">—</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -395,7 +403,7 @@ const Dashboard: React.FC = () => {
                         {node.snapshot?.latest_scan_date ? (
                           <span>{new Date(node.snapshot.latest_scan_date).toLocaleDateString()}</span>
                         ) : (
-                          <span className="text-muted">Not available</span>
+                          <span className="text-muted">—</span>
                         )}
                       </div>
                     </TableCell>
@@ -427,7 +435,8 @@ const Dashboard: React.FC = () => {
               Previous
             </Button>
             <span className="text-sm text-muted">
-              Page {currentPage} of {Math.ceil(totalNodes / pageLimit)} ({totalNodes} total nodes)
+              Page {currentPage} of {Math.ceil(totalNodes / pageLimit)} 
+              ({totalNodes} {searchQuery && searchQuery.length >= 3 ? `result${totalNodes !== 1 ? 's' : ''} for "${searchQuery}"` : 'total nodes'})
             </span>
             <Button
               variant="outline"

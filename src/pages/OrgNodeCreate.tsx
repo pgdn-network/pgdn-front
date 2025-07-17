@@ -96,17 +96,8 @@ const OrgNodeCreate: React.FC = () => {
       
       const data = await NodeApiService.createNode(organizationUuid, nodeData);
       
-      // Trigger discovery scan after successful node creation
       if (data && data.node && data.node.uuid) {
-        try {
-          await NodeApiService.startNodeScan(organizationUuid, data.node.uuid, ['discovery']);
-          console.log('Discovery scan triggered successfully for node:', data.node.uuid);
-        } catch (scanError) {
-          console.error('Failed to trigger discovery scan:', scanError);
-          // Don't fail the entire flow if scan trigger fails
-        }
-        
-        // Navigate directly to the node detail page for new nodes
+        // Navigate to the node detail page with discovery trigger flag
         navigate(`/organizations/${slug}/nodes/${data.node.uuid}`);
       } else {
         navigate(`/organizations/${slug}`);

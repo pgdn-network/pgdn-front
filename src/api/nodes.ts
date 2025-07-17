@@ -44,12 +44,22 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async getNodes(organizationUuid: string, limit: number = 50, offset: number = 0): Promise<{ nodes: Node[], total: number }> {
+  static async getNodes(organizationUuid: string, limit: number = 50, offset: number = 0, search?: string): Promise<{ nodes: Node[], total: number }> {
     let url;
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      offset: offset.toString(),
+      detailed: 'true'
+    });
+    
+    if (search && search.trim() && search.trim().length >= 3) {
+      params.set('search', search.trim());
+    }
+    
     if (!organizationUuid || organizationUuid === 'all') {
-      url = `/nodes?limit=${limit}&offset=${offset}&detailed=true`;
+      url = `/nodes?${params.toString()}`;
     } else {
-      url = `${this.baseUrl}/${organizationUuid}/nodes?limit=${limit}&offset=${offset}&detailed=true`;
+      url = `${this.baseUrl}/${organizationUuid}/nodes?${params.toString()}`;
     }
     const response = await apiService.get(url);
     // If the response is an object with a nodes array, return that
