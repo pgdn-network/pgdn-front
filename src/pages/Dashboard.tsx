@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Loader from '@/components/ui/custom/Loader';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
@@ -20,7 +21,6 @@ import {
   XCircle,
   Globe,
   Clock,
-  MapPin,
   Eye,
   Plus,
   Lock,
@@ -36,6 +36,17 @@ import type { Node } from '@/types/node';
 interface DashboardNode extends Node {
   protocols?: string[];
 }
+
+// Score grading function (same as NodeSnapshotCard)
+const getScoreGrade = (score: number | null): { grade: string; color: string } => {
+  if (score === null) return { grade: 'N/A', color: 'bg-gray-100 text-gray-800' };
+  
+  if (score >= 90) return { grade: 'A', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' };
+  if (score >= 80) return { grade: 'B', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300' };
+  if (score >= 65) return { grade: 'C', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' };
+  if (score >= 40) return { grade: 'D', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' };
+  return { grade: 'F', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' };
+};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -307,7 +318,6 @@ const Dashboard: React.FC = () => {
                 <TableHead>Protocol</TableHead>
                 <TableHead>Simple State</TableHead>
                 <TableHead>Discovery Status</TableHead>
-                <TableHead>Location</TableHead>
                 <TableHead>Score</TableHead>
                 <TableHead>Last Scan</TableHead>
                 <TableHead>Actions</TableHead>
@@ -379,20 +389,19 @@ const Dashboard: React.FC = () => {
                       <span className="capitalize text-sm">{node.discovery_status || 'Unknown'}</span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-sm">
-                        <MapPin className="w-3 h-3 text-muted" />
-                        {node.snapshot?.geo_location ? (
-                          <span>{node.snapshot.geo_location}</span>
-                        ) : node.snapshot?.geo_city && node.snapshot?.geo_country ? (
-                          <span>{node.snapshot.geo_city}, {node.snapshot.geo_country}</span>
-                        ) : (
-                          <span className="text-muted">—</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
                       {node.snapshot?.latest_score !== null && node.snapshot?.latest_score !== undefined ? (
-                        <span className="text-sm font-medium">{node.snapshot.latest_score}</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className={`px-2 py-1 text-xs font-bold rounded-full cursor-help ${getScoreGrade(node.snapshot.latest_score).color}`}>
+                                {getScoreGrade(node.snapshot.latest_score).grade}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Security Score: {node.snapshot.latest_score}%</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       ) : (
                         <span className="text-sm text-muted">—</span>
                       )}
