@@ -12,21 +12,28 @@ import {
   Shield,
   Brain,
   Zap,
-  DollarSign
+  DollarSign,
+  Upload
 } from 'lucide-react';
 import { Card } from '@/components/ui/custom/Card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { NodeApiService } from '@/api/nodes';
 import { useOrganizations } from '@/contexts/OrganizationsContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import type { NodeReport } from '@/types/node';
 
 const OrgNodeReportDetail: React.FC = () => {
   const { slug, nodeId, reportUuid } = useParams<{ slug: string; nodeId: string; reportUuid: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  const { addNotification } = useNotifications();
   const [report, setReport] = useState<NodeReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [selectedBlockchain, setSelectedBlockchain] = useState<'sui' | 'zksync'>('sui');
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishes, setPublishes] = useState<any[]>([]);
 
   // Find organization UUID from slug
   const organization = organizations.find(org => org.slug === slug);
@@ -64,6 +71,71 @@ const OrgNodeReportDetail: React.FC = () => {
     }
   };
 
+  const handleOpenPublishModal = () => {
+    setSelectedBlockchain('sui');
+    setIsPublishModalOpen(true);
+  };
+
+  const handleClosePublishModal = () => {
+    setIsPublishModalOpen(false);
+    setSelectedBlockchain('sui');
+  };
+
+  const handlePublishReport = async () => {
+    if (!report || !organizationUuid || !nodeId || !reportUuid) return;
+    
+    setIsPublishing(true);
+    
+    try {
+      await NodeApiService.publishNodeReport(
+        organizationUuid,
+        nodeId,
+        reportUuid,
+        selectedBlockchain
+      );
+      
+      addNotification({
+        type: 'success',
+        title: 'Report Publishing Started',
+        message: `Your report is being published to ${selectedBlockchain.toUpperCase()}. This may take up to a minute.`,
+        duration: 10000
+      });
+      
+      handleClosePublishModal();
+      
+      // Refresh publishes after publishing
+      try {
+        const publishData = await NodeApiService.getNodeLedgerPublishes(
+          organizationUuid, 
+          nodeId, 
+          reportUuid
+        );
+        setPublishes(publishData);
+      } catch (refreshErr) {
+        console.error('Error refreshing publishes:', refreshErr);
+      }
+    } catch (err: any) {
+      let errorMessage = 'Could not publish report. Please try again.';
+      
+      if (err?.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err?.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      addNotification({
+        type: 'error',
+        title: 'Publishing Failed',
+        message: errorMessage,
+        duration: 8000
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   useEffect(() => {
     const fetchReport = async () => {
       if (!organizationUuid || !nodeId || !reportUuid) return;
@@ -74,6 +146,19 @@ const OrgNodeReportDetail: React.FC = () => {
       try {
         const data = await NodeApiService.getNodeReport(organizationUuid, nodeId, reportUuid);
         setReport(data);
+        
+        // Fetch publishes for this report
+        try {
+          const publishData = await NodeApiService.getNodeLedgerPublishes(
+            organizationUuid, 
+            nodeId, 
+            reportUuid
+          );
+          setPublishes(publishData);
+        } catch (publishErr) {
+          console.error('Error fetching publishes:', publishErr);
+          // Don't fail the whole component if publishes can't be loaded
+        }
       } catch (err) {
         console.error('Error fetching report:', err);
         setError('Failed to load report');
@@ -128,6 +213,28 @@ const OrgNodeReportDetail: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline">{report.report_type}</Badge>
+          {report.report_type === 'security_analysis' && (
+            publishes.length > 0 ? (
+              // If published, show a link to the ledger publish page within the app
+              <Link
+                to={`/organizations/${slug}/nodes/${nodeId}/ledger`}
+                className="inline-flex items-center gap-2 px-3 py-1.5 border rounded text-sm font-medium text-green-700 border-green-300 bg-green-50 hover:bg-green-100 transition"
+              >
+                <Upload className="h-4 w-4" />
+                View Ledger Publish
+              </Link>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenPublishModal}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Publish
+              </Button>
+            )
+          )}
         </div>
       </div>
 
@@ -170,86 +277,124 @@ const OrgNodeReportDetail: React.FC = () => {
         </Card>
       </div>
 
-      {/* Findings */}
-      {report.findings && Object.keys(report.findings).length > 0 && (
+      {/* New Security Analysis Report Rendering */}
+      {report.report_type === 'security_analysis' && report.report_data?.report && (
         <div className="space-y-6">
-          {Object.entries(report.findings).map(([key, value]) => {
-            // Handle both old array format and new object format
-            const findingsArray = Array.isArray(value) ? value : value?.findings || [];
-            
-            if (!findingsArray || findingsArray.length === 0) {
-              return null;
-            }
+          {/* Summary Section (from summary or summary_text) */}
+          {report.report_data.report.summary_text && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="h-4 w-4 text-blue-500" />
+                <h3 className="text-lg font-semibold text-foreground">Summary</h3>
+              </div>
+              <p className="text-sm leading-relaxed">{report.report_data.report.summary_text}</p>
+            </Card>
+          )}
 
-            return (
-              <Card key={key} className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <AlertTriangle className="h-4 w-4 text-warning" />
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {key.replace(/_/g, ' ').toUpperCase()}
-                  </h3>
-                  <Badge variant="secondary">{findingsArray.length}</Badge>
-                </div>
-                <div className="grid gap-4">
-                  {findingsArray.map((finding: any, index: number) => (
-                    <div key={index} className="border border-muted rounded-lg p-4 space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">{finding.title || finding.vulnerability || 'Finding'}</h4>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {finding.description || finding.summary || 'No description available'}
-                          </p>
-                        </div>
-                        {finding.severity && (
-                          <Badge variant={getSeverityColor(finding.severity)}>{finding.severity}</Badge>
-                        )}
-                        {finding.exploitation_ease && (
-                          <Badge variant={getExploitationEaseVariant(finding.exploitation_ease)}>
-                            {finding.exploitation_ease}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {finding.recommendation && (
-                        <div className="bg-muted p-3 rounded-lg">
-                          <p className="text-sm font-medium text-muted-foreground mb-1">Recommendation</p>
-                          <p className="text-sm">{finding.recommendation}</p>
-                        </div>
-                      )}
-                      
-                      {finding.impact && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground mb-1">Impact</p>
-                          <p className="text-sm">{finding.impact}</p>
-                        </div>
-                      )}
-                      
-                      {finding.remediation && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground mb-1">Remediation</p>
-                          <p className="text-sm">{finding.remediation}</p>
-                        </div>
-                      )}
-                      
-                      {finding.evidence && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground mb-1">Evidence</p>
-                          <p className="text-sm bg-muted dark:bg-gray-800 p-2 rounded">{finding.evidence}</p>
-                        </div>
-                      )}
-                      
-                      {finding.maya_analysis && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground mb-1">Analysis</p>
-                          <p className="text-sm">{finding.maya_analysis}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            );
-          })}
+          {/* Key Findings (object or array) */}
+          {report.report_data.report.key_findings && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <h3 className="text-lg font-semibold text-foreground">Key Findings</h3>
+              </div>
+              <ul className="list-disc list-inside space-y-2">
+                {/* If key_findings is an object with critical/moderate/informational arrays */}
+                {typeof report.report_data.report.key_findings === 'object' && !Array.isArray(report.report_data.report.key_findings) && (
+                  <>
+                    {['critical', 'moderate', 'informational'].map((severity) => {
+                      const arr = (report.report_data?.report?.key_findings as any)?.[severity];
+                      if (Array.isArray(arr)) {
+                        return arr.map((finding: any, idx: number) => (
+                          <li key={`${severity}-${idx}`} className={`text-sm ${severity === 'critical' ? 'text-red-600' : severity === 'moderate' ? 'text-orange-600' : 'text-blue-600'}`}>
+                            <span className="font-bold">{severity.charAt(0).toUpperCase() + severity.slice(1)}:</span> {finding.issue} - {finding.description}
+                            {finding.recommended_fix && (
+                              <span className="ml-2 text-xs text-muted-foreground">Fix: {finding.recommended_fix}</span>
+                            )}
+                          </li>
+                        ));
+                      }
+                      return null;
+                    })}
+                  </>
+                )}
+                {/* If key_findings is a flat array of strings */}
+                {Array.isArray(report.report_data.report.key_findings) && report.report_data.report.key_findings.map((finding: any, idx: number) => (
+                  <li key={idx} className="text-sm">{typeof finding === 'string' ? finding : JSON.stringify(finding)}</li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* Open Ports */}
+          {Array.isArray((report.report_data.report as any).open_ports) && (report.report_data.report as any).open_ports.length > 0 && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="h-4 w-4 text-green-500" />
+                <h3 className="text-lg font-semibold text-foreground">Open Ports</h3>
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {(report.report_data.report as any).open_ports.map((port: any, idx: number) => (
+                  <li key={idx} className="text-sm">
+                    <span className="font-mono">{port.port}</span>: {port.service} - {port.notes}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* TLS Issues */}
+          {Array.isArray((report.report_data.report as any).tls_issues) && (report.report_data.report as any).tls_issues.length > 0 && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <h3 className="text-lg font-semibold text-foreground">TLS Issues</h3>
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {(report.report_data.report as any).tls_issues.map((issue: any, idx: number) => (
+                  <li key={idx} className="text-sm">
+                    <span className="font-bold">{issue.error}</span>: {issue.impact}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* Compliance Flags */}
+          {Array.isArray((report.report_data.report as any).compliance_flags) && (report.report_data.report as any).compliance_flags.length > 0 && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="h-4 w-4 text-yellow-500" />
+                <h3 className="text-lg font-semibold text-foreground">Compliance Flags</h3>
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {(report.report_data.report as any).compliance_flags.map((flag: any, idx: number) => (
+                  <li key={idx} className="text-sm">
+                    <span className="font-bold">{flag.flag}</span>: {flag.evidence}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* Recommended Fixes */}
+          {Array.isArray((report.report_data.report as any).recommended_fixes) && (report.report_data.report as any).recommended_fixes.length > 0 && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="h-4 w-4 text-purple-500" />
+                <h3 className="text-lg font-semibold text-foreground">Recommended Fixes</h3>
+              </div>
+              <ul className="list-disc list-inside space-y-1">
+                {(report.report_data.report as any).recommended_fixes.map((fix: any, idx: number) => (
+                  <li key={idx} className="text-sm">
+                    <span className="font-bold">{fix.action}</span> - Priority: {fix.priority}, Estimate: {fix.time_estimate}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {/* Report Metadata removed as requested */}
         </div>
       )}
 
@@ -1117,6 +1262,92 @@ const OrgNodeReportDetail: React.FC = () => {
         </div>
       )}
 
+      {/* Blockchain Publishes */}
+      {publishes.length > 0 && (
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Upload className="h-4 w-4 text-green-500" />
+            <h3 className="text-lg font-semibold text-foreground">Blockchain Publication</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Report</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Blockchain</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Published</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tx Hash</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Explorer</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {publishes.map((publish, index) => {
+                  let explorerUrl = null;
+                  if (publish.transaction_hash) {
+                    if (publish.network === 'sui') {
+                      if (publish.network_type === 'testnet') {
+                        explorerUrl = `https://suiexplorer.com/txblock/${publish.transaction_hash}?network=testnet`;
+                      } else {
+                        explorerUrl = `https://suiexplorer.com/txblock/${publish.transaction_hash}?network=mainnet`;
+                      }
+                    } else if (publish.network === 'zksync') {
+                      if (publish.network_type === 'testnet') {
+                        explorerUrl = `https://sepolia.explorer.zksync.io/tx/${publish.transaction_hash}`;
+                      } else {
+                        explorerUrl = `https://explorer.zksync.io/tx/${publish.transaction_hash}`;
+                      }
+                    }
+                  }
+                  return (
+                    <tr key={publish.uuid || index} className="hover:bg-surface-hover data-[state=selected]:bg-surface-secondary border-b border-border transition-colors">
+                      <td className="px-4 py-3 align-middle text-primary">
+                        <div className="space-y-1">
+                          <div className="font-medium text-sm">{publish.report_title || 'Security Analysis Report'}</div>
+                          <div className="text-xs text-muted-foreground font-mono">{publish.report_uuid}</div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 align-middle text-primary">
+                        <Badge variant="outline" className="uppercase">{publish.network}</Badge>
+                      </td>
+                      <td className="px-4 py-3 align-middle text-primary">
+                        <Badge variant={publish.status === 'success' || publish.status === 'completed' ? 'default' : 'secondary'} className="uppercase font-semibold">
+                          {publish.status === 'success' ? 'Completed' : publish.status}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 align-middle text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {publish.created_at ? new Date(publish.created_at).toLocaleDateString() : 'Unknown'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 align-middle text-xs font-mono text-muted-foreground">
+                        <div className="truncate max-w-32" title={publish.transaction_hash}>{publish.transaction_hash}</div>
+                      </td>
+                      <td className="px-4 py-3 align-middle text-primary">
+                        {explorerUrl ? (
+                          <a
+                            href={explorerUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="View on blockchain explorer"
+                            className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 hover:bg-surface-hover text-secondary hover:text-primary h-8 w-8 p-0"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-external-link h-4 w-4"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
       {/* No Findings Message */}
       {(!report.findings || Object.keys(report.findings).length === 0) && 
        (!report.report_data?.report || Object.keys(report.report_data.report).length === 0) && (
@@ -1127,6 +1358,77 @@ const OrgNodeReportDetail: React.FC = () => {
             <p className="text-muted-foreground">This report contains no findings or report data.</p>
           </div>
         </Card>
+      )}
+
+      {/* Publish to Blockchain Modal */}
+      {isPublishModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <Upload className="h-5 w-5 text-blue-500" />
+              <h2 className="text-lg font-semibold">Publish Report to Blockchain</h2>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                Publish "{report.title}" to the blockchain for immutable storage and verification.
+              </p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select Blockchain
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="blockchain"
+                      value="sui"
+                      checked={selectedBlockchain === 'sui'}
+                      onChange={(e) => setSelectedBlockchain(e.target.value as 'sui' | 'zksync')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Sui Network</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="blockchain"
+                      value="zksync"
+                      checked={selectedBlockchain === 'zksync'}
+                      onChange={(e) => setSelectedBlockchain(e.target.value as 'sui' | 'zksync')}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">zkSync</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Note:</strong> Publishing to the blockchain may take up to a minute. You'll receive a notification when the process is complete.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={handleClosePublishModal}
+                disabled={isPublishing}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handlePublishReport}
+                disabled={isPublishing}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isPublishing ? 'Publishing...' : `Publish to ${selectedBlockchain.toUpperCase()}`}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

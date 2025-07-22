@@ -12,6 +12,7 @@ const tabs = [
   { label: 'Reports', value: 'reports', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/reports` },
   { label: 'Scans', value: 'scans', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/scans` },
   { label: 'Events', value: 'history', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/history` },
+  { label: 'Ledger', value: 'ledger', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/ledger` },
   { label: 'Settings', value: 'settings', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/settings` },
 ];
 
@@ -23,6 +24,7 @@ export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId
     (location.pathname.includes('/reports') ? 'reports' :
      location.pathname.includes('/scans') ? 'scans' :
      location.pathname.includes('/history') ? 'history' :
+     location.pathname.includes('/ledger') ? 'ledger' :
      location.pathname.includes('/settings') ? 'settings' :
      'summary');
 

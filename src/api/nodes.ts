@@ -254,6 +254,34 @@ export class NodeApiService {
     );
     return response.data;
   }
+
+  static async publishNodeReport(
+    organizationUuid: string, 
+    nodeUuid: string, 
+    reportUuid: string, 
+    network: 'sui' | 'zksync'
+  ): Promise<any> {
+    const response = await apiService.post<any>(
+      `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/reports/${reportUuid}/publish`,
+      { network }
+    );
+    return response.data;
+  }
+
+  static async getNodeLedgerPublishes(
+    organizationUuid: string, 
+    nodeUuid: string, 
+    reportUuid?: string
+  ): Promise<any[]> {
+    const params = new URLSearchParams();
+    if (reportUuid) {
+      params.append('report_uuid', reportUuid);
+    }
+    
+    const url = `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/ledger-publishes${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await apiService.get<{publishes: any[], total: number, limit: number, offset: number, node_uuid: string, node_name: string, node_address: string}>(url);
+    return response.data.publishes;
+  }
 }
 
 export default NodeApiService;

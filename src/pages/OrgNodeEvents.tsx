@@ -13,6 +13,7 @@ const OrgNodeEvents: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const [eventsData, setEventsData] = useState<NodeEventsResponse | null>(null);
+  const [node, setNode] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,8 +32,13 @@ const OrgNodeEvents: React.FC = () => {
       setError(null);
       
       const offset = (page - 1) * limit;
-      const response = await NodeApiService.getNodeEvents(organizationUuid, nodeId, limit, offset);
-      setEventsData(response);
+      const [eventsResponse, nodeResponse] = await Promise.all([
+        NodeApiService.getNodeEvents(organizationUuid, nodeId, limit, offset),
+        NodeApiService.getNode(organizationUuid, nodeId)
+      ]);
+      
+      setEventsData(eventsResponse);
+      setNode(nodeResponse);
     } catch (err) {
       console.error('Error fetching events:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
@@ -81,7 +87,7 @@ const OrgNodeEvents: React.FC = () => {
 
   return (
     <NodeMainLayout
-      node={{ uuid: nodeId, name: eventsData?.node_name }}
+      node={node}
       organization={organization}
       nodeId={nodeId || ''}
       slug={slug || ''}
@@ -93,8 +99,9 @@ const OrgNodeEvents: React.FC = () => {
       snapshotData={null}
       actionsData={null}
       loading={loading}
+      hideScanButton={true}
     >
-      <div className="space-y-6">
+      <div className="space-y-6">        
         {/* Content */}
         <EventCard 
           events={events} 

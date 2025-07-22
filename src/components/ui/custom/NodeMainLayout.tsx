@@ -21,6 +21,8 @@ interface NodeMainLayoutProps {
   tasksLoading?: boolean;
   scanJustStarted?: boolean;
   scanCompleted?: boolean;
+  // UI control props
+  hideScanButton?: boolean;
 }
 
 export const NodeMainLayout: React.FC<NodeMainLayoutProps> = ({
@@ -33,7 +35,8 @@ export const NodeMainLayout: React.FC<NodeMainLayoutProps> = ({
   tasks = [],
   tasksLoading = false,
   scanJustStarted = false,
-  scanCompleted = false
+  scanCompleted = false,
+  hideScanButton = false
 }) => {
   return (
     <div className="min-h-screen bg-background">
@@ -47,6 +50,7 @@ export const NodeMainLayout: React.FC<NodeMainLayoutProps> = ({
         tasksLoading={tasksLoading}
         scanJustStarted={scanJustStarted}
         scanCompleted={scanCompleted}
+        hideScanButton={hideScanButton}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {children}

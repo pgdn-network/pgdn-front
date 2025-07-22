@@ -13,6 +13,7 @@ import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 const OrgNodeReports: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const { organizations, loading: orgsLoading } = useOrganizations();
+  
   const {
     node,
     organization,
@@ -69,7 +70,8 @@ const OrgNodeReports: React.FC = () => {
       snapshotData={snapshotData}
       actionsData={null}
       loading={loading}
-    >
+      hideScanButton={true}
+    >      
       <div className="flex items-center gap-2 mb-6">
         <Badge variant="outline">
           {reportsData?.reports?.length || 0} total reports

@@ -32,6 +32,7 @@ import OrgNodeDetail from './pages/OrgNodeDetail';
 import OrgNodeCreate from './pages/OrgNodeCreate';
 import OrgNodeReports from './pages/OrgNodeReports';
 import OrgNodeReportDetail from './pages/OrgNodeReportDetail';
+import OrgNodeLedger from './pages/OrgNodeLedger';
 import OrgNodeCves from './pages/OrgNodeCves';
 import OrgNodeCveDetail from './pages/OrgNodeCveDetail';
 import OrgNodeScans from './pages/OrgNodeScans';
@@ -94,6 +95,8 @@ function App() {
                 <Route path="organizations/:slug/nodes/:nodeId" element={<OrgNodeDetail />} />
                 <Route path="organizations/:slug/nodes/:nodeId/ips" element={<NodeIps />} />
                 <Route path="organizations/:slug/nodes/:nodeId/reports" element={<OrgNodeReports />} />
+                <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />
+                <Route path="organizations/:slug/nodes/:nodeId/ledger" element={<OrgNodeLedger />} />
                 <Route path="organizations/:slug/nodes/:nodeId/scans" element={<OrgNodeScans />} />
                 <Route path="organizations/:slug/nodes/:nodeId/scans/:scanId" element={<OrgNodeScanDetail />} />
                 <Route path="organizations/:slug/nodes/:nodeId/reports/:reportUuid" element={<OrgNodeReportDetail />} />

@@ -15,15 +15,14 @@ import { useOrganizations } from '@/contexts/OrganizationsContext';
 import { useProtocols } from '@/contexts/ProtocolsContext';
 import { NodeApiService } from '@/api/nodes';
 import type { Node } from '@/types/node';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
-import { NodeTabNav } from '@/components/ui/custom/NodeTabNav';
+import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 
 const OrgNodeSettings: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const navigate = useNavigate();
   const { organizations, loading: orgsLoading } = useOrganizations();
   const { addNotification } = useNotifications();
-  const { getProtocol, protocols } = useProtocols();
+  const { protocols } = useProtocols();
   
   const [node, setNode] = useState<Node | null>(null);
   const [loading, setLoading] = useState(true);
@@ -150,26 +149,6 @@ const OrgNodeSettings: React.FC = () => {
     navigate(`/organizations/${slug}/nodes/${nodeId}`);
   };
 
-  // Get protocol information for logo - check protocols array first, then node_protocols, then protocol_details
-  const protocolUuid = node?.protocols?.[0] || node?.node_protocols?.[0] || node?.protocol_details?.uuid;
-  const protocol = protocolUuid ? getProtocol(protocolUuid) : null;
-  
-  // Get logo based on protocol name
-  const getLogo = (protocolName: string) => {
-    const normalizedName = protocolName.toLowerCase();
-    if (normalizedName.includes('sui')) {
-      return '/sui-logo.svg';
-    }
-    // Add more protocol logos as they become available
-    return null;
-  };
-
-  // Extract network and node type from node data - they're at the root level
-  const network = node?.network;
-  const nodeType = node?.node_type;
-  
-  const logo = protocol ? getLogo(protocol.name) : null;
-
   if (loading || orgsLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -203,74 +182,22 @@ const OrgNodeSettings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-4">
-        {/* Header */}
-        <div className="mb-6">
-          <div>
-            <div className="flex items-center gap-4 mb-2">
-              {logo && (
-                <img 
-                  src={logo} 
-                  alt={`${protocol?.display_name || 'Protocol'} logo`}
-                  className="h-8 w-8"
-                />
-              )}
-              <h1 className="text-2xl font-bold text-foreground">Node Settings</h1>
-            </div>
-            {/* Badges for network, node type, and protocol */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {network && (
-                <span
-                  className={`px-2 py-1 rounded text-xs font-semibold 
-                    ${network === 'mainnet' ? 'bg-green-500 text-white' : 'bg-orange-400 text-white'}`}
-                >
-                  {network}
-                </span>
-              )}
-              {nodeType && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold 
-                          ${nodeType === 'validator' ? 'bg-blue-600 text-white' : ''}
-                          ${nodeType === 'public_rpc' ? 'bg-purple-600 text-white' : ''}
-                          ${nodeType === 'hybrid' ? 'bg-teal-600 text-white' : ''}
-                        `}
-                      >
-                        {nodeType}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {nodeType === 'validator' && 'This node is a validator, responsible for consensus and block production.'}
-                      {nodeType === 'public_rpc' && 'This node provides public RPC access for the network.'}
-                      {nodeType === 'hybrid' && 'This node acts as both a validator and a public RPC node.'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {/* Protocol Badge */}
-              <span
-                className={`px-2 py-1 rounded text-xs font-semibold 
-                  ${protocol ? 'bg-indigo-600 text-white' : 'bg-gray-400 text-white'}`}
-              >
-                {protocol?.display_name || 'Unknown Protocol'}
-              </span>
-            </div>
-            {(!network && !nodeType) && (
-              <p className="text-muted-foreground">
-                Configure settings for {node?.name || 'this node'}
-              </p>
-            )}
-          </div>
-        </div>
-        {/* Node Tab Bar */}
-        {organization && nodeId && (
-          <NodeTabNav organizationSlug={organization.slug} nodeId={nodeId} />
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <NodeMainLayout
+      node={node}
+      organization={organization}
+      nodeId={nodeId || ''}
+      slug={slug || ''}
+      onStartScan={() => {}}
+      cveData={null}
+      eventsData={null}
+      scanSessionsData={null}
+      reportsData={null}
+      snapshotData={null}
+      actionsData={null}
+      loading={loading}
+      hideScanButton={true}
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -505,8 +432,7 @@ const OrgNodeSettings: React.FC = () => {
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </NodeMainLayout>
   );
 };
 

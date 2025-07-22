@@ -1,8 +1,7 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { NodeTabNav } from '@/components/ui/custom/NodeTabNav';
-import { NodeScanTaskLoader } from '@/components/ui/custom/NodeScanTaskLoader';
-
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Radar } from 'lucide-react';
 import { useProtocols } from '@/contexts/ProtocolsContext';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
@@ -11,31 +10,30 @@ interface NodeOverviewProps {
   node: any;
   organization: any;
   nodeId: string;
-  onStartScan: () => void;
+  onStartScan?: () => void;
   snapshotData?: any;
-  // Task loader props
   tasks?: any[];
   tasksLoading?: boolean;
   scanJustStarted?: boolean;
   scanCompleted?: boolean;
+  hideScanButton?: boolean;
+  className?: string;
 }
 
 export const NodeOverview: React.FC<NodeOverviewProps> = ({ 
   node, 
   organization, 
-  nodeId, 
+  nodeId,
   onStartScan,
+  snapshotData,
   tasks = [],
   tasksLoading = false,
   scanJustStarted = false,
-  scanCompleted = false
+  scanCompleted = false,
+  hideScanButton = false,
+  className
 }) => {
   const { getProtocol } = useProtocols();
-  
-  // Helper function to count running scans (all returned scans are running)
-  const getRemainingScansCount = (scans: any[]) => {
-    return scans.length; // All scans returned are running scans
-  };
 
   // Get protocol information for logo - check both protocols array and protocol_details
   const protocolUuid = node?.protocols?.[0] || node?.protocol_details?.uuid;
@@ -126,23 +124,17 @@ export const NodeOverview: React.FC<NodeOverviewProps> = ({
               </p>
             )}
           </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3 items-center">
-            {/* Task Loader - inline with scan button */}
-            <NodeScanTaskLoader 
-              remaining={getRemainingScansCount(tasks)} 
-              loading={tasksLoading} 
-              scanJustStarted={scanJustStarted}
-              scanCompleted={scanCompleted}
-            />
-            <Button 
-              onClick={onStartScan}
-              disabled={!(node.simple_state === 'active' && node.discovery_status === 'completed')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Radar className="w-4 h-4 mr-1 text-white" />
-              Scan
-            </Button>
-          </div>
+          {!hideScanButton && onStartScan && (
+            <div className="mt-4 flex md:mt-0 md:ml-4 space-x-3 items-center">
+              <Button
+                onClick={onStartScan}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Radar className="w-4 h-4 mr-1 text-white" />
+                Scan
+              </Button>
+            </div>
+          )}
         </div>
         
         <NodeTabNav organizationSlug={organization?.slug} nodeId={nodeId} />

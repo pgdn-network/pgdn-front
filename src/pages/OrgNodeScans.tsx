@@ -112,6 +112,7 @@ const OrgNodeScans: React.FC = () => {
       snapshotData={snapshotData}
       actionsData={null}
       loading={loading}
+      hideScanButton={true}
     >
       <ScanSessionsCard 
         scanSessions={scanSessionsData?.scans || []} 
