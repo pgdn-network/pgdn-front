@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Server, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EventCard } from '@/components/ui/custom/EventCard';
 import { NodeSnapshotCard } from '@/components/ui/custom/NodeSnapshotCard';
 import { NodeActionsCard } from '@/components/ui/custom/NodeActionsCard';
 import { ScanSessionsCard } from '@/components/ui/custom/ScanSessionsCard';
+import { CVECard } from '@/components/ui/custom/CVECard';
 import { ScanModal } from '@/components/ui/custom/ScanModal';
 import { ValidationModal } from '@/components/ui/custom/ValidationModal';
 import { DiscoveryResultsModal } from '@/components/ui/custom/DiscoveryResultsModal';
@@ -31,6 +32,7 @@ import { NodeInfoCard } from '@/components/ui/custom/NodeInfoCard';
 const OrgNodeDetail: React.FC = () => {
   const { slug, nodeId } = useParams<{ slug: string; nodeId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   // Helper function to count running scans (all returned scans are running)
   const getRemainingScansCount = (scans: any[]) => {
@@ -72,6 +74,7 @@ const OrgNodeDetail: React.FC = () => {
   const shouldUseAdditionalData = basicNode?.simple_state === 'active' && basicNode?.discovery_status === 'completed';
   
   const { 
+    cveData,
     eventsData, 
     scanSessionsData, 
     reportsData,
@@ -459,8 +462,8 @@ const OrgNodeDetail: React.FC = () => {
           organization={organization}
           nodeId={nodeId || ''}
           slug={slug || ''}
-          onStartScan={() => setIsScanModalOpen(true)}
-          cveData={null}
+          onStartScan={() => navigate(`/organizations/${slug}/nodes/${nodeId}/scans`)}
+          cveData={cveData}
           eventsData={eventsData}
           scanSessionsData={scanSessionsData}
           reportsData={reportsData}
@@ -493,11 +496,11 @@ const OrgNodeDetail: React.FC = () => {
             />
           </div>
 
-          {/* CVE Details Section 
+          {/* CVE Details Section */}
           <div className="mt-8">
             <CVECard cves={cveData} organizationSlug={slug} nodeId={nodeId} />
           </div>
-          */}
+
           {/* Events Section */}
           <div className="mt-8">
             <EventCard 

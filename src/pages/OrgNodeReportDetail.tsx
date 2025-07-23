@@ -271,7 +271,9 @@ const OrgNodeReportDetail: React.FC = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Risk Score</p>
-              <p className="font-medium">{report.risk_score}/20</p>
+              <p className="font-medium">
+                {report.risk_score !== null ? `${report.risk_score}/20` : 'N/A'}
+              </p>
             </div>
           </div>
         </Card>
@@ -281,13 +283,108 @@ const OrgNodeReportDetail: React.FC = () => {
       {report.report_type === 'security_analysis' && report.report_data?.report && (
         <div className="space-y-6">
           {/* Summary Section (from summary or summary_text) */}
-          {report.report_data.report.summary_text && (
+          {(report.report_data.report.summary_text || report.report_data.report.summary) && (
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <FileText className="h-4 w-4 text-blue-500" />
                 <h3 className="text-lg font-semibold text-foreground">Summary</h3>
               </div>
-              <p className="text-sm leading-relaxed">{report.report_data.report.summary_text}</p>
+              {report.report_data.report.summary_text ? (
+                <p className="text-sm leading-relaxed">{report.report_data.report.summary_text}</p>
+              ) : report.report_data.report.summary ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <p className="text-xs text-muted-foreground font-medium">Security Score</p>
+                      <p className="text-2xl font-bold text-primary">{report.report_data.report.summary.score}/100</p>
+                      <Badge 
+                        variant={
+                          report.report_data.report.summary.risk_level === 'Low' ? 'default' : 
+                          report.report_data.report.summary.risk_level === 'Medium' ? 'outline' : 'destructive'
+                        }
+                        className="mt-2"
+                      >
+                        {report.report_data.report.summary.risk_level} Risk
+                      </Badge>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <p className="text-xs text-muted-foreground font-medium">Node Address</p>
+                      <p className="text-sm font-mono break-all">{report.report_data.report.summary.address}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                      <p className="text-xs text-muted-foreground font-medium">Protocol</p>
+                      <p className="text-sm font-medium uppercase">{report.report_data.report.summary.protocol}</p>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <p className="text-xs text-muted-foreground font-medium mb-2">Assessment Notes</p>
+                    <p className="text-sm leading-relaxed">{report.report_data.report.summary.assessment_notes}</p>
+                  </div>
+                  {report.report_data.report.summary.scan_date && (
+                    <div className="text-xs text-muted-foreground">
+                      Scan Date: {new Date(report.report_data.report.summary.scan_date).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </Card>
+          )}
+
+          {/* Latency Information */}
+          {report.report_data.report.latency && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="h-4 w-4 text-yellow-500" />
+                <h3 className="text-lg font-semibold text-foreground">Network Performance</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-400">
+                    Average Latency: {report.report_data.report.latency.average_ms}ms
+                  </p>
+                </div>
+                {report.report_data.report.latency.critical_ports && report.report_data.report.latency.critical_ports.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Critical Latency Issues</p>
+                    {report.report_data.report.latency.critical_ports.map((port: any, idx: number) => (
+                      <div key={idx} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 rounded-lg">
+                        <p className="text-sm text-red-800 dark:text-red-400">{port.note}</p>
+                        {port.port !== "unspecified" && (
+                          <p className="text-xs text-red-600 dark:text-red-500">Port: {port.port}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* gRPC Information */}
+          {report.report_data.report.grpc && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="h-4 w-4 text-green-500" />
+                <h3 className="text-lg font-semibold text-foreground">gRPC Status</h3>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Badge variant={report.report_data.report.grpc.status === 'active' ? 'default' : 'secondary'}>
+                    {report.report_data.report.grpc.status}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">{report.report_data.report.grpc.notes}</p>
+                {report.report_data.report.grpc.exposed_ports && report.report_data.report.grpc.exposed_ports.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mt-2">Exposed Ports:</p>
+                    <ul className="list-disc list-inside">
+                      {report.report_data.report.grpc.exposed_ports.map((port: any, idx: number) => (
+                        <li key={idx} className="text-sm">{JSON.stringify(port)}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </Card>
           )}
 
@@ -458,12 +555,42 @@ const OrgNodeReportDetail: React.FC = () => {
                 <h3 className="text-lg font-semibold text-foreground">Key Findings</h3>
               </div>
               <ul className="space-y-2">
-                {report.report_data.report.key_findings.map((finding: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{finding}</span>
-                  </li>
-                ))}
+                {Array.isArray(report.report_data.report.key_findings) ? 
+                  report.report_data.report.key_findings.map((finding: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm">{finding}</span>
+                    </li>
+                  )) : (
+                    // Handle object-based key_findings (security analysis format)
+                    ['critical', 'moderate', 'informational'].map((severity) => {
+                      const findings = (report.report_data?.report?.key_findings as any)?.[severity];
+                      if (Array.isArray(findings) && findings.length > 0) {
+                        return findings.map((finding: any, idx: number) => (
+                          <li key={`${severity}-${idx}`} className="flex items-start gap-2">
+                            <CheckCircle className={`h-4 w-4 mt-0.5 flex-shrink-0 ${
+                              severity === 'critical' ? 'text-red-500' : 
+                              severity === 'moderate' ? 'text-orange-500' : 'text-blue-500'
+                            }`} />
+                            <div className="text-sm">
+                              <span className={`font-medium ${
+                                severity === 'critical' ? 'text-red-600' : 
+                                severity === 'moderate' ? 'text-orange-600' : 'text-blue-600'
+                              }`}>
+                                {severity.charAt(0).toUpperCase() + severity.slice(1)}:
+                              </span>
+                              <span className="ml-2">{finding.issue}</span>
+                              {finding.description && (
+                                <div className="text-muted-foreground mt-1">{finding.description}</div>
+                              )}
+                            </div>
+                          </li>
+                        ));
+                      }
+                      return null;
+                    })
+                  )
+                }
               </ul>
             </Card>
           )}

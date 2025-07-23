@@ -10,6 +10,7 @@ interface NodeTabNavProps {
 const tabs = [
   { label: 'Summary', value: 'summary', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}` },
   { label: 'Reports', value: 'reports', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/reports` },
+  { label: 'CVEs', value: 'cves', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/cves` },
   { label: 'Scans', value: 'scans', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/scans` },
   { label: 'Events', value: 'history', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/history` },
   { label: 'Ledger', value: 'ledger', to: (org: string, node: string) => `/organizations/${org}/nodes/${node}/ledger` },
@@ -22,6 +23,7 @@ export const NodeTabNav: React.FC<NodeTabNavProps> = ({ organizationSlug, nodeId
   // Determine active tab by matching the current path
   const activeTab = tabs.find(tab => location.pathname === tab.to(organizationSlug, nodeId))?.value ||
     (location.pathname.includes('/reports') ? 'reports' :
+     location.pathname.includes('/cves') ? 'cves' :
      location.pathname.includes('/scans') ? 'scans' :
      location.pathname.includes('/history') ? 'history' :
      location.pathname.includes('/ledger') ? 'ledger' :

@@ -190,6 +190,7 @@ export interface NodeScanSession {
   target: string | null;
   protocol_filter: string | null;
   scan_level: string | number | null;
+  scan_types?: string[];
   status: string;
   started_at: string;
   completed_at: string | null;
@@ -288,7 +289,7 @@ export interface ReportMetadata {
 
 export interface NodeReport {
   uuid: string;
-  scan_session_id: number;
+  scan_session_id?: number;
   session_id: string;
   node_uuid: string;
   organization_uuid: string;
@@ -296,11 +297,66 @@ export interface NodeReport {
   title: string;
   summary: string;
   findings?: ReportFindings | NewReportFindings;
-  risk_score: number;
+  risk_score: number | null;
   report_metadata?: ReportMetadata;
   report_data?: {
     report?: {
-      // Comprehensive security report fields
+      // New security analysis structure
+      grpc?: {
+        notes: string;
+        status: string;
+        exposed_ports: any[];
+      };
+      latency?: {
+        average_ms: number;
+        critical_ports: {
+          note: string;
+          port: string;
+          latency_ms: number | null;
+        }[];
+      };
+      summary?: {
+        score: number;
+        address: string;
+        node_id: string;
+        protocol: string;
+        scan_date: string;
+        risk_level: string;
+        assessment_notes: string;
+      };
+      open_ports?: any[];
+      tls_issues?: any[];
+      key_findings?: {
+        critical: {
+          issue: string;
+          evidence: string;
+          description: string;
+          recommended_fix: string;
+        }[];
+        moderate: {
+          issue: string;
+          evidence: string;
+          description: string;
+          recommended_fix: string;
+        }[];
+        informational: {
+          issue: string;
+          evidence: string;
+          description: string;
+          recommended_fix: string;
+        }[];
+      };
+      compliance_flags?: {
+        flag: string;
+        evidence: string;
+      }[];
+      recommended_fixes?: {
+        action: string;
+        priority: string;
+        impact_scope: string;
+        time_estimate: string;
+      }[];
+      // Legacy fields for backward compatibility
       executive_summary?: any;
       validator_summary?: any;
       maya_assessment?: any;
@@ -308,8 +364,6 @@ export interface NodeReport {
       mayas_action_plan?: any;
       investor_summary?: any;
       depin_economics?: any;
-      // Network report fields
-      key_findings?: string[];
       node_summary?: {
         ip_hostname?: string;
         likely_role?: string;
