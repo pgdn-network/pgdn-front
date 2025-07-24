@@ -151,10 +151,15 @@ export class NodeApiService {
     return response.data;
   }
 
-  static async startNodeScan(organizationUuid: string, nodeUuid: string, scanners: string[]): Promise<ScanSessionResponse> {
+  static async startNodeScan(organizationUuid: string, nodeUuid: string, scanners: string[], ports?: number[]): Promise<ScanSessionResponse> {
+    const body: { scanners: string[]; ports?: number[] } = { scanners };
+    if (ports && ports.length > 0) {
+      body.ports = ports;
+    }
+    
     const response = await apiService.post<ScanSessionResponse>(
       `${this.baseUrl}/${organizationUuid}/nodes/${nodeUuid}/scan`,
-      { scanners }
+      body
     );
     return response.data;
   }

@@ -57,6 +57,7 @@ export interface Node {
   node_type?: string;
   protocols?: string[]; // Array of protocol UUIDs
   snapshot?: NodeSnapshot; // Snapshot data when detailed=true
+  orchestration_enabled?: boolean; // Whether orchestration is enabled for this node
 }
 
 export interface CveMatch {
