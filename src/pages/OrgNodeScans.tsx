@@ -10,7 +10,6 @@ import { getAvailableScanners } from '@/config/scanTypes';
 import { NodeMainLayout } from '@/components/ui/custom/NodeMainLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/custom/Card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/custom/Badge';
 import { NodeScanTaskLoader } from '@/components/ui/custom/NodeScanTaskLoader';
 import {
   Dialog,
@@ -30,8 +29,10 @@ const OrgNodeScans: React.FC = () => {
   const { addNotification, updateNotification } = useNotifications();
   const [customScanOpen, setCustomScanOpen] = useState(false);
   const [protocolScanOpen, setProtocolScanOpen] = useState(false);
+  const [portScanOpen, setPortScanOpen] = useState(false);
   const [smartScanModalOpen, setSmartScanModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [ports, setPorts] = useState('');
   
   // Targeted state for only what we need
   const [node, setNode] = useState<Node | null>(null);
@@ -72,7 +73,7 @@ const OrgNodeScans: React.FC = () => {
       // Load node info and scan sessions in parallel
       const [nodeData, scanData] = await Promise.all([
         NodeApiService.getNode(organizationUuid, nodeId),
-        NodeApiService.getNodeScanSessions(organizationUuid, nodeId, 25, 0)
+        NodeApiService.getNodeScanSessions(organizationUuid, nodeId, 100, 0)
       ]);
 
       setNode(nodeData);
@@ -135,7 +136,7 @@ const OrgNodeScans: React.FC = () => {
   const scanSessions = scanSessionsData?.scans || [];
   const sortedSessions = [...scanSessions].sort((a, b) =>
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  ).slice(0, 5); // Show last 5 jobs
+  ); // Show all scan jobs (up to 100)
 
   // Utility functions
   const formatScanType = (session: NodeScanSession): string => {
@@ -204,21 +205,13 @@ const OrgNodeScans: React.FC = () => {
     );
   }
 
-  const handleStartScan = async (scanners: string[]) => {
+  const handleStartScan = async (scanners: string[], ports?: number[]) => {
     if (!organizationUuid || !nodeId) return;
     
     try {
-      const response = await NodeApiService.startNodeScan(organizationUuid, nodeId, scanners);
+      const response = await NodeApiService.startNodeScan(organizationUuid, nodeId, scanners, ports);
       console.log('Scan started successfully:', response);
       
-      // Show initial success notification
-      addNotification({
-        type: 'success',
-        title: 'Scan Started Successfully',
-        message: `Started ${scanners.length} scanner${scanners.length > 1 ? 's' : ''}: ${scanners.join(', ')}`,
-        duration: 8000 // 8 seconds duration
-      });
-
       // Create a progress notification that will be updated
       const progressNotificationId = `scan-progress-${response.session_id}`;
       addNotification({
@@ -249,7 +242,7 @@ const OrgNodeScans: React.FC = () => {
           });
         },
         // On complete callback
-        (status) => {
+        async (status) => {
           // Update final status - keep progress notification persistent until manually closed
           updateNotification(progressNotificationId, {
             scanSessionStatus: status,
@@ -264,11 +257,27 @@ const OrgNodeScans: React.FC = () => {
             message: `${status.completed_scans} completed, ${status.failed_scans} failed`,
             duration: 15000 // 15 seconds duration
           });
+          
+          // Refresh scan sessions data to update the "Recent Scan Jobs" card with completion status
+          try {
+            const updatedScanData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeId, 100, 0);
+            setScanSessionsData(updatedScanData);
+          } catch (err) {
+            console.error('Failed to refresh scan sessions on completion:', err);
+          }
         }
       );
       
       // Immediately refresh scans to show the loader
       refreshScans();
+      
+      // Refresh scan sessions data to update the "Recent Scan Jobs" card
+      try {
+        const updatedScanData = await NodeApiService.getNodeScanSessions(organizationUuid, nodeId, 100, 0);
+        setScanSessionsData(updatedScanData);
+      } catch (err) {
+        console.error('Failed to refresh scan sessions:', err);
+      }
       
       // Set flag to show loader immediately
       setScanJustStarted(true);
@@ -320,30 +329,73 @@ const OrgNodeScans: React.FC = () => {
     await handleStartScan(selectedOptions);
   };
 
-  const handleSmartScanStart = async () => {
-    // For Smart Scan, use the default enabled scanners
-    const defaultScanners = availableScanners
-      .filter(scanner => scanner.default)
-      .map(scanner => scanner.id);
 
-    if (defaultScanners.length === 0) {
+  const handleProtocolScanStart = async () => {
+    // For Intelligent Sui Analysis, use advanced scanner
+    const protocolScanners = ['advanced'];
+    setProtocolScanOpen(false);
+    await handleStartScan(protocolScanners);
+  };
+
+  const handlePortScanStart = async () => {
+    // Validate ports input
+    if (!ports.trim()) {
       addNotification({
         type: 'error',
-        title: 'No Default Scanners',
-        message: 'No default scanners are configured for Smart Scan.',
+        title: 'No Ports Specified',
+        message: 'Please enter at least one port.',
         duration: 3000
       });
       return;
     }
 
-    await handleStartScan(defaultScanners);
-  };
+    // Parse comma-separated ports
+    const portList = ports.split(',').map(p => p.trim()).filter(p => p);
+    
+    if (portList.length === 0) {
+      addNotification({
+        type: 'error',
+        title: 'No Valid Ports',
+        message: 'Please enter valid port numbers.',
+        duration: 3000
+      });
+      return;
+    }
 
-  const handleProtocolScanStart = async (scanType: string) => {
-    // For Intelligent Sui Analysis, use node_scan which supports protocol-specific analysis
-    const protocolScanners = ['node_scan'];
-    setProtocolScanOpen(false);
-    await handleStartScan(protocolScanners);
+    if (portList.length > 5) {
+      addNotification({
+        type: 'error',
+        title: 'Too Many Ports',
+        message: 'Maximum 5 ports allowed.',
+        duration: 3000
+      });
+      return;
+    }
+
+    // Validate each port
+    for (const portStr of portList) {
+      const port = parseInt(portStr);
+      if (isNaN(port) || port < 1 || port > 65535) {
+        addNotification({
+          type: 'error',
+          title: 'Invalid Port',
+          message: `Port "${portStr}" is invalid. Ports must be numbers between 1 and 65535.`,
+          duration: 3000
+        });
+        return;
+      }
+    }
+
+    // Convert port strings to numbers
+    const portNumbers = portList.map(p => parseInt(p));
+    
+    // Use port_scan scanner type for port-specific scanning
+    const portScanners = ['port_scan'];
+    setPortScanOpen(false);
+    setPorts('');
+    
+    // Start port scan with specific ports
+    await handleStartScan(portScanners, portNumbers);
   };
 
   const getStatusIcon = (status: string) => {
@@ -358,15 +410,6 @@ const OrgNodeScans: React.FC = () => {
     }
   };
 
-  const getStatusBadgeVariant = (status: string): 'success' | 'destructive' | 'secondary' => {
-    switch (status.toLowerCase()) {
-      case 'done':
-      case 'complete': return 'success';
-      case 'failed':
-      case 'error': return 'destructive';
-      default: return 'secondary';
-    }
-  };
 
 
   return (
@@ -403,6 +446,7 @@ const OrgNodeScans: React.FC = () => {
                     setSmartScanModalOpen(true);
                     setCustomScanOpen(false);
                     setProtocolScanOpen(false);
+                    setPortScanOpen(false);
                   }}
                   className="min-w-24"
                 >
@@ -412,6 +456,7 @@ const OrgNodeScans: React.FC = () => {
                   onClick={() => {
                     setCustomScanOpen(!customScanOpen);
                     setProtocolScanOpen(false);
+                    setPortScanOpen(false);
                   }}
                   variant="outline"
                   className="min-w-24"
@@ -422,12 +467,26 @@ const OrgNodeScans: React.FC = () => {
                   onClick={() => {
                     setProtocolScanOpen(!protocolScanOpen);
                     setCustomScanOpen(false);
+                    setPortScanOpen(false);
                   }}
                   variant="secondary"
                   className="min-w-24"
                 >
                   Protocol Specific
                 </Button>
+                {node?.validated && (
+                  <Button 
+                    onClick={() => {
+                      setPortScanOpen(!portScanOpen);
+                      setCustomScanOpen(false);
+                      setProtocolScanOpen(false);
+                    }}
+                    variant="secondary"
+                    className="min-w-24"
+                  >
+                    Port Scan
+                  </Button>
+                )}
                 <Button
                   asChild
                   variant="outline"
@@ -510,7 +569,7 @@ const OrgNodeScans: React.FC = () => {
                 <div className="space-y-2 mb-4">
                   <Button 
                     onClick={() => {
-                      handleProtocolScanStart('Intelligent Sui Analysis');
+                      handleProtocolScanStart();
                       setProtocolScanOpen(false);
                     }}
                     variant="outline"
@@ -531,13 +590,50 @@ const OrgNodeScans: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Port Scan Configuration */}
+            {portScanOpen && (
+              <div className="mt-4 p-4 border rounded-lg bg-surface-secondary">
+                <h4 className="font-medium mb-3">Port Scan Configuration</h4>
+                <div className="space-y-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Ports</label>
+                    <input
+                      type="text"
+                      value={ports}
+                      onChange={(e) => setPorts(e.target.value)}
+                      placeholder="22,80,443"
+                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div className="text-xs text-muted">
+                    Enter up to 5 ports separated by commas (e.g., 22,80,443). Each port must be between 1 and 65535.
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handlePortScanStart} size="sm">
+                    Start Port Scan
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setPortScanOpen(false);
+                      setPorts('');
+                    }} 
+                    variant="ghost" 
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Scan Queue / Recent Jobs */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Scan Jobs</CardTitle>
+            <CardTitle>Scan Jobs</CardTitle>
           </CardHeader>
           <CardContent>
             {sortedSessions.length === 0 ? (

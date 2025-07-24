@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, FileText } from 'lucide-react';
+import { SuiScanResult } from './SuiScanResult';
+import { PortScanResult } from './PortScanResult';
 
 /**
  * ScanResultsPage Component
@@ -939,10 +941,16 @@ export const ScanResultsPage: React.FC<{
   const scanResults = Array.isArray(scanData?.scan_results) ? scanData.scan_results : [];
 
   // Map scan type to subcomponent
-  const getScanComponent = (scanType: string) => {
+  const getScanComponent = (scanType: string, scanResult: any) => {
+    // Special handling for advanced scans - check if it's Sui data
+    if (scanType === 'advanced' && scanResult?.pgdn_result?.data?.[0]?.type === 'sui_node') {
+      return ({ result }: { result: any }) => <SuiScanResult scan={{ scan_results: result }} />;
+    }
+    
     switch (scanType) {
       case 'web': return WebScanResult;
       case 'node_scan': return NodeScanResult;
+      case 'port_scan': return PortScanResult;
       case 'ssl':
       case 'ssl_test': return SslScanResult;
       case 'whatweb': return WhatWebScanResult;
@@ -993,7 +1001,7 @@ export const ScanResultsPage: React.FC<{
       {/* --- Scan Results List --- */}
       <div className="space-y-10">
         {scanResults.map((r: any, idx: number) => {
-          const ScanComponent = getScanComponent(r.scan_type);
+          const ScanComponent = getScanComponent(r.scan_type, r.scan_results);
           return (
             <div key={r.scan_type + '-' + idx} className="border rounded bg-white dark:bg-gray-900 p-4">
               <div className="flex items-center justify-between mb-4">

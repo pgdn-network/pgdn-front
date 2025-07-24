@@ -222,14 +222,6 @@ const OrgNodeDetail: React.FC = () => {
       
       setIsScanModalOpen(false);
       
-      // Show initial success notification
-      addNotification({
-        type: 'success',
-        title: 'Scan Started Successfully',
-        message: `Started ${scanners.length} scanner${scanners.length > 1 ? 's' : ''}: ${scanners.join(', ')}`,
-        duration: 8000 // 8 seconds duration
-      });
-
       // Create a progress notification that will be updated
       const progressNotificationId = `scan-progress-${response.session_id}`;
       addNotification({
