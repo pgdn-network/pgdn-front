@@ -8,11 +8,12 @@ interface EventCardProps {
   organizationSlug?: string
   nodeId?: string
   showViewMore?: boolean
+  maxEvents?: number
 }
 
 interface ParsedEvent {
   id: string
-  type: 'action' | 'scan' | 'unknown'
+  type: 'action' | 'scan' | 'node' | 'unknown'
   subtype: string
   title: string
   timestamp: Date
@@ -278,12 +279,77 @@ function parseEvent(event: NodeEvent): ParsedEvent {
 
     return {
       id: event.uuid,
-      type: 'action',
+      type: 'node',
       subtype: 'created',
       title: `Node Created: ${eventData.node_name || 'Unknown Node'}`,
       timestamp,
       icon: <Activity className="h-4 w-4" />,
       statusColor: 'border-green-500',
+      details,
+      badges
+    }
+  }
+
+  // Node updated events
+  if (event.event_type === 'node_updated') {
+    const details: Array<{ label: string; value: string | number }> = []
+    const badges: Array<{ text: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = []
+
+    // Format field name for display
+    const fieldDisplayName = eventData.field ? eventData.field.replace('_', ' ').toLowerCase() : 'field'
+    const title = `Node Updated: ${fieldDisplayName} changed to ${eventData.value || 'unknown'}`
+
+    // Add main badge for node update
+    badges.push({ text: 'NODE UPDATED', variant: 'secondary' })
+    
+    // Add hook name badge if available
+    if (eventData.hook_name) {
+      const hookDisplayName = eventData.hook_name.replace(/_/g, ' ').toUpperCase()
+      badges.push({ text: hookDisplayName, variant: 'outline' })
+    }
+    
+    // Add field-specific badge
+    if (eventData.field) {
+      const fieldBadge = eventData.field.toUpperCase()
+      let fieldVariant: 'default' | 'secondary' | 'destructive' | 'outline' = 'outline'
+      
+      // Special handling for important fields
+      if (eventData.field === 'node_type') {
+        fieldVariant = 'default'
+      } else if (eventData.field === 'network') {
+        fieldVariant = 'secondary'
+      }
+      
+      badges.push({ text: fieldBadge, variant: fieldVariant })
+    }
+    
+    // Add updated_by badge (skip scan_hook as it's not informative)
+    if (eventData.updated_by && eventData.updated_by !== 'scan_hook') {
+      badges.push({ text: eventData.updated_by.toUpperCase().replace('_', ' '), variant: 'outline' })
+    }
+    
+    // Add details
+    if (eventData.field) {
+      details.push({ label: 'Field', value: eventData.field })
+    }
+    if (eventData.value) {
+      details.push({ label: 'New Value', value: eventData.value })
+    }
+    if (eventData.table) {
+      details.push({ label: 'Table', value: eventData.table })
+    }
+    if (eventData.updated_by && eventData.updated_by !== 'scan_hook') {
+      details.push({ label: 'Updated By', value: eventData.updated_by })
+    }
+
+    return {
+      id: event.uuid,
+      type: 'node',
+      subtype: 'updated',
+      title,
+      timestamp,
+      icon: <Database className="h-4 w-4" />,
+      statusColor: 'border-blue-500',
       details,
       badges
     }
@@ -322,13 +388,17 @@ function getEventTypeStats(events: ParsedEvent[]) {
     } else if (type === 'scan') {
       if (subtype === 'completed') variant = 'secondary'
       if (subtype === 'started') variant = 'default'
+    } else if (type === 'node') {
+      if (subtype === 'created') variant = 'secondary'
+      if (subtype === 'updated') variant = 'default'
+      displayText = `${subtype} node`
     }
 
     return { text: `${count} ${displayText}`, variant }
   })
 }
 
-export function EventCard({ events, organizationSlug, nodeId, showViewMore = true }: EventCardProps) {
+export function EventCard({ events, organizationSlug, nodeId, showViewMore = true, maxEvents = 10 }: EventCardProps) {
   const safeEvents = Array.isArray(events) ? events : []
   
   if (!safeEvents || safeEvents.length === 0) {
@@ -350,8 +420,8 @@ export function EventCard({ events, organizationSlug, nodeId, showViewMore = tru
     )
   }
 
-  // Limit to 10 events for the card view
-  const limitedEvents = safeEvents.slice(0, 10)
+  // Limit events based on maxEvents prop (default 10 for card views, higher for dedicated pages)
+  const limitedEvents = safeEvents.slice(0, maxEvents)
   const parsedEvents = limitedEvents.map(parseEvent).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
   const eventStats = getEventTypeStats(parsedEvents)
 
@@ -363,10 +433,10 @@ export function EventCard({ events, organizationSlug, nodeId, showViewMore = tru
             <Activity className="h-5 w-5" />
             Activity Timeline
             <span className="text-sm font-normal text-muted-foreground">
-              {parsedEvents.length} events{safeEvents.length > 10 ? ` (${safeEvents.length} total)` : ''}
+              {parsedEvents.length} events{safeEvents.length > maxEvents ? ` (${safeEvents.length} total)` : ''}
             </span>
           </h2>
-          {showViewMore && safeEvents.length > 10 && organizationSlug && nodeId && (
+          {showViewMore && safeEvents.length > maxEvents && organizationSlug && nodeId && (
             <a
               href={`/organizations/${organizationSlug}/nodes/${nodeId}/history`}
               className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
@@ -475,7 +545,7 @@ export function EventCard({ events, organizationSlug, nodeId, showViewMore = tru
         </div>
         
         {/* Show more events link at bottom if there are more */}
-        {showViewMore && safeEvents.length > 10 && organizationSlug && nodeId && (
+        {showViewMore && safeEvents.length > maxEvents && organizationSlug && nodeId && (
           <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
             <a
               href={`/organizations/${organizationSlug}/nodes/${nodeId}/history`}
